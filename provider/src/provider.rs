@@ -22,7 +22,11 @@ use tendermint_rpc::{endpoint::abci_query::AbciQuery, Client};
 use crate::response::encode_data;
 
 /// Provider capable of submitting queries and transactions.
-pub trait Provider: Clone + QueryProvider + TxProvider {}
+pub trait Provider<C>: TendermintClient<C> + QueryProvider + TxProvider
+where
+    C: Client + Send + Sync,
+{
+}
 
 /// Get to the underlying Tendermint client if necessary, for example to query the state of transactions.
 pub trait TendermintClient<C>

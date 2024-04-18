@@ -1,6 +1,8 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::marker::PhantomData;
+
 use anyhow::anyhow;
 use fendermint_actor_machine::GET_METADATA_METHOD;
 use fendermint_vm_actor_interface::adm::{
@@ -10,6 +12,7 @@ use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::{address::Address, econ::TokenAmount, METHOD_SEND};
 use tendermint::abci::response::DeliverTx;
+use tendermint_rpc::Client;
 
 use adm_provider::{
     message::{local_message, GasParams},
@@ -29,14 +32,18 @@ pub struct TxArgs {
     pub gas_params: GasParams,
 }
 
-pub struct Adm {}
+pub struct Adm<C> {
+    _marker: PhantomData<C>,
+}
 
-impl Adm {
+impl<C> Adm<C>
+where
+    C: Client + Send + Sync,
+{
     // TODO: Add method to fund an address in subnet
 
     pub async fn list_machine_metadata(
-        &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         owner: Address,
         height: FvmQueryHeight,
     ) -> anyhow::Result<Vec<Metadata>> {
@@ -48,8 +55,7 @@ impl Adm {
     }
 
     pub async fn get_machine_metadata(
-        &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         address: Address,
         height: FvmQueryHeight,
     ) -> anyhow::Result<fendermint_actor_machine::Metadata> {
@@ -59,7 +65,7 @@ impl Adm {
     }
 
     pub async fn transfer(
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         signer: &mut impl Signer,
         to: Address,
         value: TokenAmount,

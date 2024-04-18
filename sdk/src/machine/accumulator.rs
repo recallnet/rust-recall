@@ -1,6 +1,8 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::marker::PhantomData;
+
 use async_trait::async_trait;
 use bytes::Bytes;
 use cid::Cid;
@@ -10,6 +12,7 @@ use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
+use tendermint_rpc::Client;
 
 use adm_provider::{message::local_message, response::decode_cid, BroadcastMode, Provider, Tx};
 use adm_signer::Signer;
@@ -17,14 +20,18 @@ use adm_signer::Signer;
 use crate::machine::{deploy_machine, DeployTx, Machine};
 use crate::TxArgs;
 
-pub struct Accumulator {
+pub struct Accumulator<C> {
     address: Address,
+    _marker: PhantomData<C>,
 }
 
 #[async_trait]
-impl Machine for Accumulator {
+impl<C> Machine<C> for Accumulator<C>
+where
+    C: Client + Send + Sync,
+{
     async fn new(
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         signer: &mut impl Signer,
         write_access: WriteAccess,
         args: TxArgs,
@@ -35,7 +42,10 @@ impl Machine for Accumulator {
     }
 
     fn attach(address: Address) -> Self {
-        Accumulator { address }
+        Accumulator {
+            address,
+            _marker: PhantomData,
+        }
     }
 
     fn address(&self) -> Address {
@@ -43,10 +53,13 @@ impl Machine for Accumulator {
     }
 }
 
-impl Accumulator {
+impl<C> Accumulator<C>
+where
+    C: Client + Send + Sync,
+{
     pub async fn push(
         &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         signer: &mut impl Signer,
         payload: Bytes,
         broadcast_mode: BroadcastMode,
@@ -66,7 +79,7 @@ impl Accumulator {
 
     pub async fn root(
         &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         height: FvmQueryHeight,
     ) -> anyhow::Result<Cid> {
         let message = local_message(self.address, Root as u64, Default::default());

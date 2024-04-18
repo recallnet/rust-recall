@@ -1,7 +1,7 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-mod key;
+pub mod key;
 mod signer;
 mod void;
 mod wallet;

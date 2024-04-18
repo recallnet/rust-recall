@@ -12,6 +12,7 @@ use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use serde::Serialize;
 use tendermint::{abci::response::DeliverTx, block::Height, Hash};
+use tendermint_rpc::Client;
 
 use adm_provider::{message::local_message, response::decode_bytes, BroadcastMode, Provider};
 use adm_signer::Signer;
@@ -29,9 +30,12 @@ pub struct DeployTx {
 }
 
 #[async_trait]
-pub trait Machine: Send + Sync + Sized {
+pub trait Machine<C>: Send + Sync + Sized
+where
+    C: Client + Send + Sync,
+{
     async fn new(
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         signer: &mut impl Signer,
         write_access: WriteAccess,
         args: TxArgs,
@@ -43,7 +47,7 @@ pub trait Machine: Send + Sync + Sized {
 
     async fn owner(
         &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         height: FvmQueryHeight,
     ) -> anyhow::Result<Address> {
         let message = local_message(self.address(), GET_METADATA_METHOD, Default::default());
@@ -52,13 +56,16 @@ pub trait Machine: Send + Sync + Sized {
     }
 }
 
-async fn deploy_machine(
-    provider: &impl Provider,
+async fn deploy_machine<C>(
+    provider: &impl Provider<C>,
     signer: &mut impl Signer,
     kind: Kind,
     write_access: WriteAccess,
     args: TxArgs,
-) -> anyhow::Result<(Address, DeployTx)> {
+) -> anyhow::Result<(Address, DeployTx)>
+where
+    C: Client + Send + Sync,
+{
     let params = CreateExternalParams { kind, write_access };
     let params = RawBytes::serialize(params)?;
     let message = signer.transaction(

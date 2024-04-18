@@ -1,14 +1,13 @@
 [workspace]
-members = ["provider", "sdk", "signer"]
+members = ["cli", "provider", "sdk", "signer"]
 resolver = "2"
 
 [workspace.package]
-authors = ["TODO"]
-description = "The Amazing Data Machine (ADM)"
+authors = ["ADM Contributors"]
+description = "The Amazing Data Machine (ADM)."
 edition = "2021"
 homepage = "https://github.com/amazingdatamachine/adm/"
 license = "MIT OR Apache-2.0"
-license-file = "LICENSE-APACHE"
 readme = "./README.md"
 repository = "https://github.com/amazingdatamachine/adm/"
 keywords = ["TODO"]
@@ -23,24 +22,39 @@ cid = { version = "0.10.1", default-features = false, features = [
     "serde-codec",
     "std",
 ] }
-clap = { version = "4.1.14", features = ["derive", "env", "string"] }
+clap = { version = "4.1.14", features = [
+    "color",
+    "derive",
+    "env",
+    "string",
+    "unicode"
+] }
+clap-stdin = { version = "0.4.0", features = ["tokio"] }
 hex = "0.4.3"
 num-traits = "0.2.18"
-prost = { version = "0.11.9" }
+prost = "0.11.9"
+reqwest = { version = "0.12.3", features = ["json", "stream"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
+stderrlog = "0.6.0"
+tokio = { version = "1.37.0", features = [
+    "fs",
+    "macros",
+    "rt-multi-thread",
+] }
+tokio-util = "0.7.1"
 tracing = "0.1.40"
 
 # Using the same tendermint-rs dependency as tower-abci. From both we are interested in v037 modules.
 tendermint = { version = "0.31.1", features = ["secp256k1"] }
-tendermint-proto = { version = "0.31.1" }
+tendermint-proto = "0.31.1"
 tendermint-rpc = { version = "0.31.1", features = [
     "secp256k1",
     "http-client",
     "websocket-client",
 ] }
 
-fvm_shared = { version = "4.1.0" }
+fvm_shared = "4.1.0"
 fvm_ipld_encoding = "0.4.0"
 
 fendermint_actor_accumulator = { git = "ssh://git@github.com/amazingdatamachine/ipc.git", branch = "sander/machines" }

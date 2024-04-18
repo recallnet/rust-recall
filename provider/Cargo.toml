@@ -1,13 +1,14 @@
 [package]
-authors = { workspace = true }
-edition = { workspace = true }
-description = "A chain provider for interacting with the Amazing Data Machine (ADM)"
 name = "adm_provider"
-homepage = { workspace = true }
-license = { workspace = true }
-readme = { workspace = true }
-repository = { workspace = true }
-version = { workspace = true }
+description = "A chain provider for interacting with the Amazing Data Machine (ADM)"
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+keywords.workspace = true
+version.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }

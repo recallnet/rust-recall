@@ -68,7 +68,6 @@ impl Wallet {
     pub fn new_secp256k1(
         sk: SecretKey,
         kind: AccountKind,
-        sequence: u64,
         chain_id: ChainID,
     ) -> anyhow::Result<Self> {
         let pk = sk.public_key().serialize();
@@ -80,7 +79,7 @@ impl Wallet {
             sk,
             addr,
             chain_id,
-            sequence,
+            sequence: 0,
         })
     }
 

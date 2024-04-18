@@ -1,6 +1,8 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::marker::PhantomData;
+
 use anyhow::anyhow;
 use async_trait::async_trait;
 use cid::Cid;
@@ -15,6 +17,7 @@ use fendermint_vm_message::{query::FvmQueryHeight, signed::Object as MessageObje
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use tendermint::abci::response::DeliverTx;
+use tendermint_rpc::Client;
 
 use adm_provider::{
     message::local_message,
@@ -26,14 +29,18 @@ use adm_signer::Signer;
 use crate::machine::{deploy_machine, DeployTx, Machine};
 use crate::TxArgs;
 
-pub struct ObjectStore {
+pub struct ObjectStore<C> {
     address: Address,
+    _marker: PhantomData<C>,
 }
 
 #[async_trait]
-impl Machine for ObjectStore {
+impl<C> Machine<C> for ObjectStore<C>
+where
+    C: Client + Send + Sync,
+{
     async fn new(
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         signer: &mut impl Signer,
         write_access: WriteAccess,
         args: TxArgs,
@@ -44,7 +51,10 @@ impl Machine for ObjectStore {
     }
 
     fn attach(address: Address) -> Self {
-        ObjectStore { address }
+        ObjectStore {
+            address,
+            _marker: PhantomData,
+        }
     }
 
     fn address(&self) -> Address {
@@ -52,21 +62,13 @@ impl Machine for ObjectStore {
     }
 }
 
-impl ObjectStore {
-    pub async fn new_objectstore(
-        provider: &impl Provider,
-        signer: &mut impl Signer,
-        write_access: WriteAccess,
-        args: TxArgs,
-    ) -> anyhow::Result<(Self, DeployTx)> {
-        let (address, tx) =
-            deploy_machine(provider, signer, Kind::ObjectStore, write_access, args).await?;
-        Ok((Self::attach(address), tx))
-    }
-
+impl<C> ObjectStore<C>
+where
+    C: Client + Send + Sync,
+{
     pub async fn put(
         &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         signer: &mut impl Signer,
         params: PutParams,
         broadcast_mode: BroadcastMode,
@@ -92,7 +94,7 @@ impl ObjectStore {
 
     pub async fn delete(
         &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         signer: &mut impl Signer,
         params: DeleteParams,
         broadcast_mode: BroadcastMode,
@@ -112,7 +114,7 @@ impl ObjectStore {
 
     pub async fn get(
         &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         params: GetParams,
         height: FvmQueryHeight,
     ) -> anyhow::Result<Option<Object>> {
@@ -124,7 +126,7 @@ impl ObjectStore {
 
     pub async fn list(
         &self,
-        provider: &impl Provider,
+        provider: &impl Provider<C>,
         params: ListParams,
         height: FvmQueryHeight,
     ) -> anyhow::Result<Option<ObjectList>> {

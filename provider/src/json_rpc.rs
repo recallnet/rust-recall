@@ -18,7 +18,7 @@ use tendermint_rpc::{
 };
 
 use crate::provider::{BroadcastMode, QueryProvider, Tx, TxProvider};
-use crate::TendermintClient;
+use crate::{Provider, TendermintClient};
 
 #[derive(Clone)]
 pub struct JsonRpcProvider<C = HttpClient> {
@@ -37,6 +37,8 @@ impl JsonRpcProvider<HttpClient> {
         Ok(Self { inner })
     }
 }
+
+impl<C> Provider<C> for JsonRpcProvider<C> where C: Client + Send + Sync {}
 
 impl<C> TendermintClient<C> for JsonRpcProvider<C>
 where

@@ -1,6 +1,6 @@
 [package]
-name = "adm_sdk"
-description = "An SDK for interacting with the Amazing Data Machine (ADM)."
+name = "adm_cli"
+description = "A CLI for interacting with the Amazing Data Machine (ADM)."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -10,25 +10,36 @@ repository.workspace = true
 keywords.workspace = true
 version.workspace = true
 
+[[bin]]
+name = "adm"
+path = "src/main.rs"
+
 [dependencies]
 anyhow = { workspace = true }
-async-trait = { workspace = true }
 bytes = { workspace = true }
 cid = { workspace = true }
+clap = { workspace = true }
+clap-stdin = { workspace = true }
+reqwest = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
+stderrlog = { workspace = true }
+tokio = { workspace = true }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
 
-tendermint = { workspace = true }
 tendermint-rpc = { workspace = true }
 
-fvm_ipld_encoding = { workspace = true }
 fvm_shared = { workspace = true }
+fvm_ipld_encoding = { workspace = true }
 
 fendermint_actor_accumulator = { workspace = true }
 fendermint_actor_machine = { workspace = true }
 fendermint_actor_objectstore = { workspace = true }
-fendermint_vm_actor_interface = { workspace = true }
+fendermint_crypto = { workspace = true }
 fendermint_vm_core = { workspace = true }
 fendermint_vm_message = { workspace = true }
 
 adm_provider = { path = "../provider" }
+adm_sdk = { path = "../sdk" }
 adm_signer = { path = "../signer" }
