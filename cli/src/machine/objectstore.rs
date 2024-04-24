@@ -2,30 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
-use cid::multihash::{Blake2bHasher, Code, Hasher, MultihashDigest};
+use async_tempfile::TempFile;
+use cid::multihash::{Code, MultihashDigest};
 use cid::Cid;
-use clap::{Args, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use clap_stdin::FileOrStdin;
 use console::{style, Emoji};
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{GetParams, ListParams, Object, ObjectKind, PutParams};
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::serde_bytes::ByteBuf;
-use fvm_ipld_encoding::IPLD_RAW;
 use fvm_shared::address::Address;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde_json::json;
 use std::sync::Arc;
 use tendermint_rpc::HttpClient;
-use tokio::io::AsyncRead;
-use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
+use tokio::io::{self, AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::Mutex;
 use tokio::task::LocalSet;
 
 use adm_provider::{json_rpc::JsonRpcProvider, upload::ObjectClient, BroadcastMode};
-use adm_sdk::machine::{objectstore::ObjectStore, Machine};
+use adm_sdk::machine::{objectstore::generate_cid, objectstore::ObjectStore, Machine};
 
 use crate::{get_signer, print_json, Cli};
 
@@ -51,12 +50,14 @@ struct ObjectstoreCreateArgs {
     public_write: bool,
 }
 
-#[derive(Clone, Debug, Args)]
+#[derive(Clone, Debug, Parser)]
 struct ObjectstorePutArgs {
     #[arg(short, long)]
     address: Address,
     #[arg(short, long)]
     key: String,
+    #[arg(short, long, action)]
+    overwrite: bool,
     #[clap(default_value = "-")]
     input: FileOrStdin,
 }
@@ -83,12 +84,6 @@ struct ObjectstoreListArgs {
     limit: u64,
 }
 
-static CHECKMARK: Emoji<'_, '_> = Emoji("✅  ", "");
-static BROADCAST: Emoji<'_, '_> = Emoji("📡  ", "");
-static TRUCK: Emoji<'_, '_> = Emoji("🚚  ", "");
-static FINISHED: Emoji<'_, '_> = Emoji("🎉  ", "");
-static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", ":-)");
-
 pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Result<()> {
     let provider = JsonRpcProvider::new_http(cli.rpc_url.clone(), None)?;
 
@@ -105,49 +100,37 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }
-        ObjectstoreCommands::Put(args) => {
+        ObjectstoreCommands::Put(ObjectstorePutArgs {
+            key,
+            address,
+            overwrite,
+            input,
+        }) => {
             let mut signer =
                 get_signer(&provider, cli.wallet_pk.clone(), cli.chain_name.clone()).await?;
             let object_client = ObjectClient::new(cli.object_api_url, 1942764459484029);
-            let machine = ObjectStore::<HttpClient>::attach(args.address);
-            let key = args.key.as_str();
-            let mut reader = args.input.into_async_reader().await?;
+            let machine = ObjectStore::<HttpClient>::attach(*address);
+            let mut reader = input.into_async_reader().await?;
+            let mut first_chunk = vec![0; MAX_INTERNAL_OBJECT_LENGTH as usize];
+            let upload_progress = UploadProgressBar::new();
 
-            let mut buf = vec![0; (MAX_INTERNAL_OBJECT_LENGTH + 1) as usize];
-
-            // ========================================
-            let bar = ProgressBar::new_spinner();
-            bar.set_style(
-                ProgressStyle::with_template("{spinner} {wide_msg}")
-                    .unwrap()
-                    .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
-            );
-            bar.println(format!(
-                "{} {}Uploading object...",
-                style("[1/2]").bold().dim(),
-                TRUCK,
-            ));
-            bar.enable_steady_tick(std::time::Duration::from_millis(80));
-            // ========================================
-
-            match reader.read_exact(&mut buf).await {
-                Ok(size) => {
+            match reader.read_exact(&mut first_chunk).await {
+                Ok(first_chunk_size) => {
                     let (tx, rx) = mpsc::channel::<Vec<u8>>(1024);
-                    // Send the first chunk
-                    tx.send(buf[..size].to_vec()).await.unwrap();
-
-                    let hasher = ObjectHasher::new();
-                    hasher.update(&buf[..size]).await;
-                    let bytes_read = Arc::new(Mutex::new(size as usize));
+                    let bytes_read = Arc::new(Mutex::new(0 as usize));
+                    let cid = Arc::new(Mutex::new(Cid::new_v0(Code::Sha2_256.digest(&[]))?));
 
                     // Spawn the non-Send future within the local task set
-                    // This is necessary because the AsyncReader impl from clap
+                    // This is necessary because the clap's AsyncReader impl
                     // is not `Send`
-                    let hasher_clone = hasher.clone();
                     let bytes_read_clone = bytes_read.clone();
+                    let cid_clone = cid.clone();
                     let local_set = LocalSet::new();
+                    let chunk = first_chunk[..first_chunk_size].to_vec();
                     local_set.spawn_local(async {
-                        match process_read_chunk(reader, tx, hasher_clone, bytes_read_clone).await {
+                        match process_read_chunk(reader, tx, chunk, bytes_read_clone, cid_clone)
+                            .await
+                        {
                             Ok(_) => {}
                             Err(e) => {
                                 panic!("Error reading from input: {:?}", e);
@@ -156,58 +139,27 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                     });
                     local_set.await;
 
-                    let object_cid = hasher.cid().await;
+                    let object_cid = cid.lock().await.clone();
                     let params = PutParams {
                         key: key.as_bytes().to_vec(),
                         kind: ObjectKind::External(object_cid),
-                        overwrite: true, // TODO: make an arg
+                        overwrite: *overwrite,
                     };
+                    let total_bytes = first_chunk_size as usize + *bytes_read.lock().await;
                     let response_cid = machine
                         .object_upload(
                             &mut signer,
                             object_client,
-                            args.key.clone(),
+                            key.clone(),
                             object_cid,
                             rx,
-                            *bytes_read.lock().await,
+                            total_bytes,
                             params.clone(),
                         )
                         .await?;
 
-                    // ========================================
-                    bar.println(format!(
-                        "{} {}Uploaded object with CID: {}",
-                        style("[1/2]").bold().dim(),
-                        FINISHED,
-                        response_cid
-                    ));
+                    upload_progress.finish(response_cid, object_cid);
 
-                    // assert remote cid == cid
-                    println!("response_cid: {}", response_cid);
-                    println!("object_cid: {}", object_cid);
-                    assert!(response_cid == object_cid);
-                    bar.println(format!(
-                        "{} {}Local CID matched with remote CID",
-                        style("[1/2]").bold().dim(),
-                        CHECKMARK,
-                    ));
-
-                    bar.finish_and_clear();
-
-                    let bar2 = ProgressBar::new_spinner();
-                    bar2.enable_steady_tick(std::time::Duration::from_millis(100));
-                    bar2.set_style(
-                        ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")
-                            .unwrap()
-                            .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
-                    );
-                    bar2.println(format!(
-                        "{} {}Broadcasting transaction...",
-                        style("[2/2]").bold().dim(),
-                        BROADCAST,
-                    ));
-                    // ========================================
-                    println!("CAlling put!!");
                     let tx = machine
                         .put(
                             &provider,
@@ -218,30 +170,12 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                         )
                         .await?;
 
-                    // ========================================
-                    bar2.println(format!(
-                        "{} {}Transaction complete...",
-                        style("[2/2]").bold().dim(),
-                        SPARKLE,
-                    ));
-
-                    bar2.finish();
-                    // ========================================
-
                     print_json(&tx).unwrap();
-
-                    // TODO: Pipe input to ObjectAPI if greater than MAX_INTERNAL_OBJECT_SIZE
-                    // TODO: Input size in unknown, we could read_exact up to limit, and if there's
-                    // TODO: still more to read, rewind reader and upload to ObjectApi
-                    // TODO: Below is a start on how we'd upload to ObjectApi if input is big enough
-                    // TODO: This doesn't quite work with plain AsyncRead. All the examples use File, which must be Send.
-                    // TODO: We might have to use tokio::sync::mpsc
-                    // TODO: Here's a discussion about showing a progress bar: https://github.com/seanmonstar/reqwest/issues/879
                 }
                 Err(e) => {
                     // internal object
                     if e.kind() == io::ErrorKind::UnexpectedEof {
-                        reader.read_to_end(&mut buf).await?;
+                        reader.read_to_end(&mut first_chunk).await?;
 
                         let tx = machine
                             .put(
@@ -249,8 +183,8 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                                 &mut signer,
                                 PutParams {
                                     key: key.as_bytes().to_vec(),
-                                    kind: ObjectKind::Internal(ByteBuf(buf)),
-                                    overwrite: true, // TODO: make an arg
+                                    kind: ObjectKind::Internal(ByteBuf(first_chunk)),
+                                    overwrite: *overwrite,
                                 },
                                 BroadcastMode::Commit,
                                 Default::default(),
@@ -332,56 +266,85 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 async fn process_read_chunk(
     mut reader: impl AsyncRead + Unpin,
     tx: Sender<Vec<u8>>,
-    hasher: ObjectHasher,
+    first_chunk: Vec<u8>,
     bytes_read: Arc<Mutex<usize>>,
+    cid: Arc<Mutex<Cid>>,
 ) -> anyhow::Result<()> {
-    let mut buffer = vec![0; 8 * 1024 * 1024];
+    // create a tmpfile to help with CID calculation
+    let mut tmp = TempFile::new().await?;
+    let mut upload_buffer = vec![0; 10 * 1024 * 1024];
+
+    // write first chunk to temp file and mpsc channel
+    tx.send(first_chunk.clone()).await.unwrap();
+    tmp.write_all(&first_chunk).await?;
+
+    // read remaining bytes from the reader into temp file and mpsc channel
     loop {
-        match reader.read(&mut buffer).await {
-            Ok(0) => return Ok(()),
+        match reader.read(&mut upload_buffer).await {
+            Ok(0) => {
+                break;
+            }
             Ok(n) => {
-                if tx.send(buffer[..n].to_vec()).await.is_err() {
+                if tx.send(upload_buffer[..n].to_vec()).await.is_err() {
                     return Err(anyhow!("error sending data to channel"))?;
                 }
-                hasher.update(&buffer[..n]).await;
-                let mut total = bytes_read.lock().await;
-                *total += n;
+                let mut bytes = bytes_read.lock().await;
+                *bytes += n;
+                tmp.write_all(&upload_buffer[..n]).await?;
             }
             Err(e) => {
                 return Err(e.into());
             }
         }
     }
+
+    tmp.flush().await?;
+    tmp.rewind().await?;
+    let generated_cid = generate_cid(&mut tmp).await?;
+    cid.lock().await.clone_from(&generated_cid);
+
+    Ok(())
 }
 
-#[derive(Clone)]
-pub struct ObjectHasher {
-    inner: Arc<Mutex<Blake2bHasher<32>>>,
+static CHECKMARK: Emoji<'_, '_> = Emoji("✅  ", "");
+static TRUCK: Emoji<'_, '_> = Emoji("🚚  ", "");
+static FINISHED: Emoji<'_, '_> = Emoji("🎉  ", "");
+
+struct UploadProgressBar {
+    inner: ProgressBar,
 }
 
-impl ObjectHasher {
-    pub fn new() -> Self {
-        let hasher = Blake2bHasher::default();
-        ObjectHasher {
-            inner: Arc::new(Mutex::new(hasher)),
-        }
+impl UploadProgressBar {
+    fn new() -> Self {
+        let inner = ProgressBar::new_spinner();
+        inner.set_style(
+            ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}]")
+                .unwrap()
+                .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+        );
+        inner.println(format!(
+            "{} {}Uploading object...",
+            style("[1/2]").bold().dim(),
+            TRUCK,
+        ));
+        inner.enable_steady_tick(std::time::Duration::from_millis(80));
+
+        Self { inner }
     }
-}
 
-impl ObjectHasher {
-    pub async fn update(&self, data: &[u8]) {
-        self.inner.lock().await.update(data);
-    }
-
-    pub async fn finalize(&self) -> Vec<u8> {
-        self.inner.lock().await.finalize().to_vec()
-    }
-}
-
-impl ObjectHasher {
-    pub async fn cid(&self) -> Cid {
-        let digest = self.finalize().await;
-        let digest = Code::Blake2b256.wrap(digest.as_slice()).unwrap();
-        Cid::new_v1(IPLD_RAW, digest)
+    fn finish(&self, response_cid: Cid, request_cid: Cid) {
+        self.inner.println(format!(
+            "{} {}Uploaded object with CID: {}",
+            style("[1/2]").bold().dim(),
+            FINISHED,
+            response_cid
+        ));
+        assert!(response_cid == request_cid);
+        self.inner.println(format!(
+            "{} {}Local CID matched with remote CID",
+            style("[1/2]").bold().dim(),
+            CHECKMARK,
+        ));
+        self.inner.finish_and_clear();
     }
 }

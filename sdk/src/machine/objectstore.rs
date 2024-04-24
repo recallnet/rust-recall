@@ -4,9 +4,11 @@
 use std::marker::PhantomData;
 
 use anyhow::anyhow;
+use async_tempfile::TempFile;
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine};
 use bytes::Bytes;
+use cid::multihash::{Code, MultihashDigest};
 use cid::Cid;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{
@@ -18,9 +20,11 @@ use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::{query::FvmQueryHeight, signed::Object as MessageObject};
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
+use ipfs_unixfs::file::adder::{Chunker, FileAdder};
 use reqwest;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
+use tokio::io::AsyncReadExt;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
@@ -83,13 +87,10 @@ where
         size: usize,
         params: PutParams,
     ) -> anyhow::Result<Cid> {
+        let from = signer.address();
         let serialized_params = RawBytes::serialize(params)?;
-        let message = object_upload_message(
-            signer.address(),
-            self.address,
-            PutObject as u64,
-            serialized_params,
-        );
+        let message =
+            object_upload_message(from, self.address, PutObject as u64, serialized_params);
         let singed_message = signer.sign_message(
             message,
             Some(MessageObject::new(
@@ -194,4 +195,30 @@ fn decode_list(deliver_tx: &DeliverTx) -> anyhow::Result<Option<ObjectList>> {
     let data = decode_bytes(deliver_tx)?;
     fvm_ipld_encoding::from_slice::<Option<ObjectList>>(&data)
         .map_err(|e| anyhow!("error parsing as Option<ObjectList>: {e}"))
+}
+
+pub async fn generate_cid(tmp: &mut TempFile) -> anyhow::Result<Cid> {
+    let chunk_size = 1024 * 1024;
+    let mut adder = FileAdder::builder()
+        .with_chunker(Chunker::Size(chunk_size))
+        .build();
+    let mut tmp_buffer = vec![0; chunk_size];
+    loop {
+        match tmp.read(&mut tmp_buffer).await {
+            Ok(0) => {
+                break;
+            }
+            Ok(n) => {
+                let _ = adder.push(&tmp_buffer[..n]);
+            }
+            Err(e) => {
+                return Err(e.into());
+            }
+        }
+    }
+    let unixfs_iterator = adder.finish();
+    let last_chunk = unixfs_iterator.last().unwrap();
+    let hash = Code::Sha2_256.digest(&last_chunk.1);
+    let cid = Cid::new_v0(hash)?;
+    Ok(cid)
 }

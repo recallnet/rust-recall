@@ -35,6 +35,7 @@ futures = { workspace = true }
 futures-util = { workspace = true }
 indicatif = { workspace = true }
 console = { workspace = true }
+async-tempfile = { workspace = true }
 
 tendermint-rpc = { workspace = true }
 

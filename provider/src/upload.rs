@@ -1,4 +1,4 @@
-use anyhow::{self};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use cid::Cid;
 use reqwest::multipart::{Form, Part};
@@ -43,10 +43,6 @@ impl ObjectUploader for ObjectClient {
         total_bytes: usize,
         msg: String,
     ) -> anyhow::Result<UploadResponse> {
-        /* let byte_stream =
-                   rx_stream.map(|bytes_vec| Ok::<Bytes, reqwest::Error>(Bytes::from(bytes_vec)));
-               let body = reqwest::Body::wrap_stream(byte_stream);
-        */
         let part = Part::stream_with_length(body, total_bytes as u64)
             .file_name("upload")
             .mime_str("application/octet-stream")?;
@@ -58,6 +54,12 @@ impl ObjectUploader for ObjectClient {
 
         let url = format!("{}v1/object", self.endpoint);
         let response = self.inner.put(url).multipart(form).send().await?;
+        if !response.status().is_success() {
+            return Err(anyhow!(format!(
+                "failed to upload object: {}",
+                response.text().await?
+            )));
+        }
         let cid_str = response.text().await?;
         let cid = Cid::try_from(cid_str)?;
         Ok(UploadResponse { cid })
