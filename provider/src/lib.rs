@@ -6,5 +6,6 @@ pub mod json_rpc;
 pub mod message;
 mod provider;
 pub mod response;
+pub mod upload;
 
 pub use provider::*;

@@ -27,23 +27,26 @@ clap = { version = "4.1.14", features = [
     "derive",
     "env",
     "string",
-    "unicode"
+    "unicode",
 ] }
 clap-stdin = { version = "0.4.0", features = ["tokio"] }
 hex = "0.4.3"
 num-traits = "0.2.18"
 prost = "0.11.9"
-reqwest = { version = "0.12.3", features = ["json", "stream"] }
+reqwest = { version = "0.12.3", features = ["json", "stream", "multipart"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.115"
 stderrlog = "0.6.0"
-tokio = { version = "1.37.0", features = [
-    "fs",
-    "macros",
-    "rt-multi-thread",
-] }
+tokio = { version = "1.37.0", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-util = "0.7.1"
+tokio-stream = "0.1.0"
 tracing = "0.1.40"
+ethers = "2.0.14"
+k256 = "0.13.3"
+futures = "0.3.17"
+futures-util = "0.3.17"
+indicatif = "0.17.8"
+console = "0.15.8"
 
 # Using the same tendermint-rs dependency as tower-abci. From both we are interested in v037 modules.
 tendermint = { version = "0.31.1", features = ["secp256k1"] }

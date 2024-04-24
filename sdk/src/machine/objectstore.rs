@@ -5,6 +5,8 @@ use std::marker::PhantomData;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
+use base64::{engine::general_purpose, Engine};
+use bytes::Bytes;
 use cid::Cid;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{
@@ -16,12 +18,17 @@ use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::{query::FvmQueryHeight, signed::Object as MessageObject};
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
+use reqwest;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use tokio_stream::StreamExt;
 
 use adm_provider::{
-    message::local_message,
+    message::{local_message, object_upload_message},
     response::{decode_bytes, decode_cid},
+    upload::ObjectUploader,
     BroadcastMode, Provider, Tx,
 };
 use adm_signer::Signer;
@@ -66,6 +73,46 @@ impl<C> ObjectStore<C>
 where
     C: Client + Send + Sync,
 {
+    pub async fn object_upload(
+        &self,
+        signer: &mut impl Signer,
+        object_client: impl ObjectUploader,
+        key: String,
+        cid: Cid,
+        rx: mpsc::Receiver<Vec<u8>>,
+        size: usize,
+        params: PutParams,
+    ) -> anyhow::Result<Cid> {
+        let serialized_params = RawBytes::serialize(params)?;
+        let message = object_upload_message(
+            signer.address(),
+            self.address,
+            PutObject as u64,
+            serialized_params,
+        );
+        let singed_message = signer.sign_message(
+            message,
+            Some(MessageObject::new(
+                key.as_bytes().to_vec(),
+                cid,
+                self.address,
+            )),
+        )?;
+        let serialized_signed_message = fvm_ipld_encoding::to_vec(&singed_message)?;
+
+        let object_stream = ReceiverStream::new(rx)
+            .map(|bytes_vec| Ok::<Bytes, reqwest::Error>(Bytes::from(bytes_vec)));
+        let body = reqwest::Body::wrap_stream(object_stream);
+        let response = object_client
+            .upload(
+                body,
+                size,
+                general_purpose::URL_SAFE.encode(&serialized_signed_message),
+            )
+            .await?;
+        Ok(response.cid)
+    }
+
     pub async fn put(
         &self,
         provider: &impl Provider<C>,

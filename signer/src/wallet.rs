@@ -9,7 +9,8 @@ use fendermint_vm_message::{
 };
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::{
-    address::Address, chainid::ChainID, econ::TokenAmount, message::Message, MethodNum,
+    address::Address, chainid::ChainID, crypto::signature::Signature, econ::TokenAmount,
+    message::Message, MethodNum,
 };
 
 use adm_provider::{message::GasParams, QueryProvider};
@@ -61,7 +62,28 @@ impl Signer for Wallet {
         Ok(ChainMessage::Signed(signed))
     }
 
+    fn sign_message(
+        &self,
+        message: Message,
+        object: Option<Object>,
+    ) -> anyhow::Result<SignedMessage> {
+        let signed = SignedMessage::new_secp256k1(message, object, &self.sk, &self.chain_id)?;
+        Ok(signed)
+    }
+
     // TODO: Add stateless sign+verify methods.
+}
+
+impl Wallet {
+    pub fn verify_message(
+        &self,
+        message: &Message,
+        object: &Option<Object>,
+        signature: &Signature,
+    ) -> anyhow::Result<()> {
+        SignedMessage::verify_signature(message, object, signature, &self.chain_id)?;
+        Ok(())
+    }
 }
 
 impl Wallet {

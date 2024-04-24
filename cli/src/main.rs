@@ -35,7 +35,7 @@ struct Cli {
     /// Node CometBFT RPC URL
     #[arg(long, env, default_value = "http://127.0.0.1:26657")]
     rpc_url: Url,
-    /// Node CometBFT RPC URL
+    /// Node Object API URL
     #[arg(long, env, default_value = "http://127.0.0.1:8001")]
     object_api_url: Url,
     /// Wallet private key (ECDSA, secp256k1) for signing transactions
