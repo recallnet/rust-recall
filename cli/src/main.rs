@@ -4,7 +4,7 @@
 // TODO: Handle gas options
 // TODO: Handle broadcast mode options
 // TODO: Add command for Adm::transfer
-// TODO: Add doc strings for commands (they show with --help)
+// TODO: Add doc strings for accumulator commands (they show with --help)
 
 use anyhow::anyhow;
 use clap::{Parser, Subcommand};

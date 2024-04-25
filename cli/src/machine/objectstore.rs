@@ -41,14 +41,19 @@ pub struct ObjectstoreArgs {
 
 #[derive(Clone, Debug, Subcommand)]
 enum ObjectstoreCommands {
+    /// Create a new object store
     Create(ObjectstoreCreateArgs),
+    /// Put an object into the object store
     Put(ObjectstorePutArgs),
+    /// Get an object from the object store
     Get(ObjectstoreGetArgs),
+    /// List objects in the object store
     List(ObjectstoreListArgs),
 }
 
 #[derive(Clone, Debug, Args)]
 struct ObjectstoreCreateArgs {
+    /// Allow public write access to the object store
     #[arg(long, default_value_t = false)]
     public_write: bool,
 }
