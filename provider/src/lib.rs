@@ -4,8 +4,8 @@
 
 pub mod json_rpc;
 pub mod message;
+pub mod object;
 mod provider;
 pub mod response;
-pub mod upload;
 
 pub use provider::*;

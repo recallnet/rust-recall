@@ -3,7 +3,9 @@
 
 use fendermint_vm_message::{chain::ChainMessage, signed::Object, signed::SignedMessage};
 use fvm_ipld_encoding::RawBytes;
-use fvm_shared::{address::Address, econ::TokenAmount, message::Message, MethodNum};
+use fvm_shared::{
+    address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
+};
 
 use adm_provider::message::GasParams;
 
@@ -25,4 +27,11 @@ pub trait Signer: Clone + Send + Sync {
         message: Message,
         object: Option<Object>,
     ) -> anyhow::Result<SignedMessage>;
+
+    fn verify_message(
+        &self,
+        message: &Message,
+        object: &Option<Object>,
+        signature: &Signature,
+    ) -> anyhow::Result<()>;
 }

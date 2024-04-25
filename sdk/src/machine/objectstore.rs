@@ -25,6 +25,7 @@ use reqwest;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
 use tokio::io::AsyncReadExt;
+use tokio::io::AsyncWrite;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
@@ -32,7 +33,7 @@ use tokio_stream::StreamExt;
 use adm_provider::{
     message::{local_message, object_upload_message},
     response::{decode_bytes, decode_cid},
-    upload::ObjectUploader,
+    object::ObjectService,
     BroadcastMode, Provider, Tx,
 };
 use adm_signer::Signer;
@@ -73,14 +74,11 @@ where
     }
 }
 
-impl<C> ObjectStore<C>
-where
-    C: Client + Send + Sync,
-{
-    pub async fn object_upload(
+impl<C> ObjectStore<C> {
+    pub async fn upload(
         &self,
         signer: &mut impl Signer,
-        object_client: impl ObjectUploader,
+        object_client: impl ObjectService,
         key: String,
         cid: Cid,
         rx: mpsc::Receiver<Vec<u8>>,
@@ -114,6 +112,23 @@ where
         Ok(response.cid)
     }
 
+    pub async fn download(
+        &self,
+        object_client: impl ObjectService,
+        key: String,
+        writer: impl AsyncWrite + Unpin + Send + 'static,
+    ) -> anyhow::Result<()> {
+        object_client
+            .download(self.address.to_string(), key, writer)
+            .await?;
+        Ok(())
+    }
+}
+
+impl<C> ObjectStore<C>
+where
+    C: Client + Send + Sync,
+{
     pub async fn put(
         &self,
         provider: &impl Provider<C>,

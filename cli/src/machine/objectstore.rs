@@ -7,9 +7,10 @@ use cid::multihash::{Code, MultihashDigest};
 use cid::Cid;
 use clap::{Args, Parser, Subcommand};
 use clap_stdin::FileOrStdin;
-use console::{style, Emoji};
+use console::Emoji;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{GetParams, ListParams, Object, ObjectKind, PutParams};
+use fendermint_vm_core::chainid;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::serde_bytes::ByteBuf;
 use fvm_shared::address::Address;
@@ -17,13 +18,15 @@ use indicatif::{ProgressBar, ProgressStyle};
 use serde_json::json;
 use std::sync::Arc;
 use tendermint_rpc::HttpClient;
+use tokio::fs::File;
 use tokio::io::{self, AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
-use tokio::sync::mpsc;
-use tokio::sync::mpsc::Sender;
-use tokio::sync::Mutex;
+use tokio::sync::{
+    Mutex,
+    {mpsc, mpsc::Sender},
+};
 use tokio::task::LocalSet;
 
-use adm_provider::{json_rpc::JsonRpcProvider, upload::ObjectClient, BroadcastMode};
+use adm_provider::{json_rpc::JsonRpcProvider, object::ObjectClient, BroadcastMode};
 use adm_sdk::machine::{objectstore::generate_cid, objectstore::ObjectStore, Machine};
 
 use crate::{get_signer, print_json, Cli};
@@ -52,40 +55,56 @@ struct ObjectstoreCreateArgs {
 
 #[derive(Clone, Debug, Parser)]
 struct ObjectstorePutArgs {
+    /// Address of the object store    
     #[arg(short, long)]
     address: Address,
+    /// Key of the object to put
     #[arg(short, long)]
     key: String,
+    /// Overwrite the object if it already exists
     #[arg(short, long, action)]
     overwrite: bool,
+    /// Input file path to upload
     #[clap(default_value = "-")]
     input: FileOrStdin,
 }
 
 #[derive(Clone, Debug, Args)]
 struct ObjectstoreGetArgs {
+    /// Address of the object store
     #[arg(short, long)]
     address: Address,
+    /// Key of the object to get
     #[arg(short, long)]
     key: String,
+    /// Output file path for download
+    #[arg(short, long)]
+    output: String,
 }
 
 #[derive(Clone, Debug, Args)]
 struct ObjectstoreListArgs {
+    /// Address of the object store
     #[arg(short, long)]
     address: Address,
+    /// Prefix to filter objects
     #[arg(short, long, default_value = "")]
     prefix: String,
+    /// Delimiter to filter objects
     #[arg(short, long, default_value = "/")]
     delimiter: String,
+    /// Offset to start listing objects
     #[arg(short, long, default_value_t = 0)]
     offset: u64,
+    /// Limit to list objects
     #[arg(short, long, default_value_t = 0)]
     limit: u64,
 }
 
 pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Result<()> {
     let provider = JsonRpcProvider::new_http(cli.rpc_url.clone(), None)?;
+    let chain_id = chainid::from_str_hashed(&cli.chain_name)?;
+    let object_client = ObjectClient::new(cli.object_api_url, u64::from(chain_id));
 
     match &args.command {
         ObjectstoreCommands::Create(args) => {
@@ -108,11 +127,10 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
         }) => {
             let mut signer =
                 get_signer(&provider, cli.wallet_pk.clone(), cli.chain_name.clone()).await?;
-            let object_client = ObjectClient::new(cli.object_api_url, 1942764459484029);
             let machine = ObjectStore::<HttpClient>::attach(*address);
             let mut reader = input.into_async_reader().await?;
             let mut first_chunk = vec![0; MAX_INTERNAL_OBJECT_LENGTH as usize];
-            let upload_progress = UploadProgressBar::new();
+            let upload_progress = ObjectProgressBar::new();
 
             match reader.read_exact(&mut first_chunk).await {
                 Ok(first_chunk_size) => {
@@ -120,9 +138,11 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                     let bytes_read = Arc::new(Mutex::new(0 as usize));
                     let cid = Arc::new(Mutex::new(Cid::new_v0(Code::Sha2_256.digest(&[]))?));
 
+                    upload_progress.show_processing();
+
                     // Spawn the non-Send future within the local task set
                     // This is necessary because the clap's AsyncReader impl
-                    // is not `Send`
+                    // is not `Send`. LocalSet is used to spawn the non-Send futures.
                     let bytes_read_clone = bytes_read.clone();
                     let cid_clone = cid.clone();
                     let local_set = LocalSet::new();
@@ -139,6 +159,8 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                     });
                     local_set.await;
 
+                    upload_progress.show_uploading();
+
                     let object_cid = cid.lock().await.clone();
                     let params = PutParams {
                         key: key.as_bytes().to_vec(),
@@ -147,7 +169,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                     };
                     let total_bytes = first_chunk_size as usize + *bytes_read.lock().await;
                     let response_cid = machine
-                        .object_upload(
+                        .upload(
                             &mut signer,
                             object_client,
                             key.clone(),
@@ -158,7 +180,11 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                         )
                         .await?;
 
-                    upload_progress.finish(response_cid, object_cid);
+                    upload_progress.show_uploaded(response_cid.clone());
+                    assert!(response_cid == object_cid);
+
+                    upload_progress.show_cid_verified();
+                    upload_progress.finish();
 
                     let tx = machine
                         .put(
@@ -201,7 +227,6 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
         }
         ObjectstoreCommands::Get(args) => {
             // TODO: Handle range requests
-            // TODO: Show progress bar?
             let machine = ObjectStore::<HttpClient>::attach(args.address);
             let key = args.key.as_str();
             let object = machine
@@ -223,13 +248,25 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                     }
                     Object::External((buf, resolved)) => {
                         let cid = Cid::try_from(buf.0)?;
-                        let cid = cid.to_string();
                         if !resolved {
                             return Err(anyhow!("object is not resolved"));
                         }
 
-                        print_json(&json!({"cid": cid}))
-                        // TODO: Get cid from ObjectApi
+                        let progress_bar = ObjectProgressBar::new();
+
+                        // The `download` method is currently using /objectstore API
+                        // since we have decided to keep the GET APIs intact for a while.
+                        // If we decide to remove these APIs we can move to Object API
+                        // for downloading the file with CID.
+                        let file = File::create(args.output.clone()).await?;
+                        machine
+                            .download(object_client, key.to_string(), file)
+                            .await?;
+
+                        progress_bar.show_downloaded(cid, args.output.clone());
+                        progress_bar.finish();
+
+                        Ok(())
                     }
                 }
             } else {
@@ -274,7 +311,8 @@ async fn process_read_chunk(
     let mut tmp = TempFile::new().await?;
     let mut upload_buffer = vec![0; 10 * 1024 * 1024];
 
-    // write first chunk to temp file and mpsc channel
+    // write first chunk to temp file and also
+    // to mpsc channel for uploading
     tx.send(first_chunk.clone()).await.unwrap();
     tmp.write_all(&first_chunk).await?;
 
@@ -306,45 +344,57 @@ async fn process_read_chunk(
     Ok(())
 }
 
-static CHECKMARK: Emoji<'_, '_> = Emoji("✅  ", "");
-static TRUCK: Emoji<'_, '_> = Emoji("🚚  ", "");
-static FINISHED: Emoji<'_, '_> = Emoji("🎉  ", "");
+// === Progress Bar ===
 
-struct UploadProgressBar {
+struct ObjectProgressBar {
     inner: ProgressBar,
 }
 
-impl UploadProgressBar {
+impl ObjectProgressBar {
     fn new() -> Self {
         let inner = ProgressBar::new_spinner();
+        let tick_style = &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+        let template = "{spinner:.green} [{elapsed_precise}] {msg}";
         inner.set_style(
-            ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}]")
+            ProgressStyle::with_template(template)
                 .unwrap()
-                .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]),
+                .tick_strings(tick_style),
         );
-        inner.println(format!(
-            "{} {}Uploading object...",
-            style("[1/2]").bold().dim(),
-            TRUCK,
-        ));
         inner.enable_steady_tick(std::time::Duration::from_millis(80));
 
         Self { inner }
     }
 
-    fn finish(&self, response_cid: Cid, request_cid: Cid) {
+    fn show_processing(&self) {
+        self.inner
+            .println(format!("{}Processing object...", Emoji("🏗️  ", ""),));
+    }
+
+    fn show_uploading(&self) {
+        self.inner
+            .println(format!("{}Uploading object...", Emoji("📡  ", ""),));
+    }
+
+    fn show_uploaded(&self, cid: Cid) {
+        self.inner
+            .println(format!("{}Upload complete {}", Emoji("✔️  ", ""), cid));
+    }
+
+    fn show_downloaded(&self, cid: Cid, path: String) {
         self.inner.println(format!(
-            "{} {}Uploaded object with CID: {}",
-            style("[1/2]").bold().dim(),
-            FINISHED,
-            response_cid
+            "{}Downloaded object {} at {}",
+            Emoji("✔️  ", ""),
+            cid,
+            path
         ));
-        assert!(response_cid == request_cid);
-        self.inner.println(format!(
-            "{} {}Local CID matched with remote CID",
-            style("[1/2]").bold().dim(),
-            CHECKMARK,
-        ));
+    }
+
+    fn show_cid_verified(&self) {
+        self.inner
+            .println(format!("{}CID verified...", Emoji("✅  ", ""),));
+    }
+
+    fn finish(&self) {
         self.inner.finish_and_clear();
     }
 }

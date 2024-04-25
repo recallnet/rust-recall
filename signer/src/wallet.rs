@@ -71,11 +71,7 @@ impl Signer for Wallet {
         Ok(signed)
     }
 
-    // TODO: Add stateless sign+verify methods.
-}
-
-impl Wallet {
-    pub fn verify_message(
+    fn verify_message(
         &self,
         message: &Message,
         object: &Option<Object>,
