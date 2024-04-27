@@ -8,7 +8,6 @@ use async_tempfile::TempFile;
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine};
 use bytes::Bytes;
-use cid::multihash::{Code, MultihashDigest};
 use cid::Cid;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{
@@ -20,7 +19,6 @@ use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::{query::FvmQueryHeight, signed::Object as MessageObject};
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
-use ipfs_unixfs::file::adder::{Chunker, FileAdder};
 use reqwest;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
@@ -29,11 +27,12 @@ use tokio::io::AsyncWrite;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::StreamExt;
+use unixfs_v1::file::adder::{Chunker, FileAdder};
 
 use adm_provider::{
     message::{local_message, object_upload_message},
-    response::{decode_bytes, decode_cid},
     object::ObjectService,
+    response::{decode_bytes, decode_cid},
     BroadcastMode, Provider, Tx,
 };
 use adm_signer::Signer;
@@ -232,8 +231,7 @@ pub async fn generate_cid(tmp: &mut TempFile) -> anyhow::Result<Cid> {
         }
     }
     let unixfs_iterator = adder.finish();
-    let last_chunk = unixfs_iterator.last().unwrap();
-    let hash = Code::Sha2_256.digest(&last_chunk.1);
-    let cid = Cid::new_v0(hash)?;
+    let (cid, _) = unixfs_iterator.last().unwrap();
+    let cid = Cid::try_from(cid.to_bytes())?;
     Ok(cid)
 }

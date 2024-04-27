@@ -59,10 +59,10 @@ impl ObjectService for ObjectClient {
         let form = Form::new()
             .text("chain_id", self.chain_id.to_string())
             .text("msg", msg)
-            .part("upload", part);
+            .part("object", part);
 
-        let url = format!("{}v1/object", self.endpoint);
-        let response = self.inner.put(url).multipart(form).send().await?;
+        let url = format!("{}v1/objects", self.endpoint);
+        let response = self.inner.post(url).multipart(form).send().await?;
         if !response.status().is_success() {
             return Err(anyhow!(format!(
                 "failed to upload object: {}",
