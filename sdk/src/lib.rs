@@ -21,6 +21,7 @@ use adm_provider::{
 };
 use adm_signer::Signer;
 
+pub mod helpers;
 pub mod machine;
 pub mod network;
 
