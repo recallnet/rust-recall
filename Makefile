@@ -23,3 +23,6 @@ check-fmt:
 
 check-clippy:
 	cargo clippy --no-deps --tests -- -D clippy::all
+
+doc-local:
+	cargo doc --no-deps --workspace --exclude adm_cli --open
