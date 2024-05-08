@@ -18,7 +18,6 @@ use indicatif::{ProgressBar, ProgressStyle};
 use serde_json::{json, Value};
 use tendermint_rpc::Url;
 use tokio::{
-    fs::File,
     io::{self, AsyncReadExt, AsyncWriteExt},
     sync::mpsc,
 };
@@ -97,9 +96,6 @@ struct ObjectstoreGetArgs {
     /// Key of the object to get.
     #[arg(short, long)]
     key: String,
-    /// Output file path for download
-    #[arg(short, long)]
-    output: String,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -280,14 +276,11 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                         // since we have decided to keep the GET APIs intact for a while.
                         // If we decide to remove these APIs we can move to Object API
                         // for downloading the file with CID.
-                        // TODO (avichal): To match the put UX, can we replace output file with stdout?
-                        // TODO (avichal): ie, use `>` operator on command line? Seems more flexible.
-                        let file = File::create(args.output.clone()).await?;
                         machine
-                            .download(object_client, key.to_string(), file)
+                            .download(object_client, key.to_string(), io::stdout())
                             .await?;
 
-                        progress_bar.show_downloaded(cid, args.output.clone());
+                        progress_bar.show_downloaded(cid);
                         progress_bar.finish();
 
                         Ok(())
@@ -391,14 +384,9 @@ impl ObjectProgressBar {
         }
     }
 
-    fn show_downloaded(&self, cid: Cid, path: String) {
+    fn show_downloaded(&self, cid: Cid) {
         if let Some(bar) = &self.inner {
-            bar.println(format!(
-                "{}  Downloaded object {} at {}",
-                Emoji("✅", ""),
-                cid,
-                path
-            ));
+            bar.println(format!("{}  Downloaded object {}", Emoji("✅", ""), cid,));
         }
     }
 
