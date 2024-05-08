@@ -80,7 +80,7 @@ where
         params,
         None,
         args.gas_params,
-    )?;
+    ).await?;
     let tx = provider
         .perform(message, BroadcastMode::Commit, decode_create)
         .await?;

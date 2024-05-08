@@ -1,6 +1,7 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use async_trait::async_trait;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::{chain::ChainMessage, signed::Object, signed::SignedMessage};
 use fvm_ipld_encoding::RawBytes;
@@ -12,6 +13,7 @@ use adm_provider::message::GasParams;
 
 use crate::SubnetID;
 
+#[async_trait]
 pub trait Signer: Clone + Send + Sync {
     fn address(&self) -> Address;
 
@@ -19,7 +21,7 @@ pub trait Signer: Clone + Send + Sync {
 
     fn subnet_id(&self) -> Option<SubnetID>;
 
-    fn transaction(
+    async fn transaction(
         &mut self,
         to: Address,
         value: TokenAmount,

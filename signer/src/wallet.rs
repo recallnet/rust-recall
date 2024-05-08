@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
+use async_trait::async_trait;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_actor_interface::eam::EthAddress;
 use fendermint_vm_message::{
@@ -11,6 +12,8 @@ use fvm_ipld_encoding::RawBytes;
 use fvm_shared::{
     address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
 };
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use adm_provider::{message::GasParams, QueryProvider};
 
@@ -28,9 +31,10 @@ pub struct Wallet {
     addr: Address,
     sk: SecretKey,
     subnet_id: SubnetID,
-    sequence: u64, // TODO: make send + sync
+    sequence: Arc<Mutex<u64>>,
 }
 
+#[async_trait]
 impl Signer for Wallet {
     fn address(&self) -> Address {
         self.addr
@@ -44,7 +48,7 @@ impl Signer for Wallet {
         Some(self.subnet_id.clone())
     }
 
-    fn transaction(
+    async fn transaction(
         &mut self,
         to: Address,
         value: TokenAmount,
@@ -53,11 +57,13 @@ impl Signer for Wallet {
         object: Option<Object>,
         gas_params: GasParams,
     ) -> anyhow::Result<ChainMessage> {
+        let mut sequence_guard = self.sequence.lock().await;
+        let sequence = *sequence_guard;
         let message = Message {
             version: Default::default(),
             from: self.addr,
             to,
-            sequence: self.sequence,
+            sequence,
             value,
             method_num,
             params,
@@ -65,7 +71,7 @@ impl Signer for Wallet {
             gas_fee_cap: gas_params.gas_fee_cap,
             gas_premium: gas_params.gas_premium,
         };
-        self.sequence += 1;
+        *sequence_guard += 1;
         let signed =
             SignedMessage::new_secp256k1(message, object, &self.sk, &self.subnet_id.chain_id())?;
         Ok(ChainMessage::Signed(signed))
@@ -103,11 +109,12 @@ impl Wallet {
             AccountKind::Regular => Address::new_secp256k1(&pk)?,
             AccountKind::Ethereum => Address::from(EthAddress::new_secp256k1(&pk)?),
         };
+        let sequence = Arc::new(Mutex::new(0));
         Ok(Wallet {
             sk,
             addr,
             subnet_id,
-            sequence: 0,
+            sequence,
         })
     }
 
@@ -120,7 +127,7 @@ impl Wallet {
 
         match res.value {
             Some((_, state)) => {
-                self.sequence = state.sequence;
+                self.sequence = Arc::new(Mutex::new(state.sequence));
                 Ok(())
             }
             None => Err(anyhow!(
@@ -132,6 +139,6 @@ impl Wallet {
 
     /// Set the sequence to an arbitrary value.
     pub fn set_sequence(&mut self, sequence: u64) {
-        self.sequence = sequence;
+        self.sequence = Arc::new(Mutex::new(sequence));
     }
 }

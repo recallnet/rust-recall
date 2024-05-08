@@ -14,6 +14,8 @@ version.workspace = true
 anyhow = { workspace = true }
 fnv = { workspace = true }
 hex = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
 
 fvm_ipld_encoding = { workspace = true }
 fvm_shared = { workspace = true }

@@ -97,7 +97,7 @@ impl Accumulator {
             params,
             None,
             args.gas_params,
-        )?;
+        ).await?;
         provider
             .perform(message, broadcast_mode, decode_acc_push_return)
             .await

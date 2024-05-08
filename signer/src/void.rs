@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
+use async_trait::async_trait;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::{chain::ChainMessage, signed::Object, signed::SignedMessage};
 use fvm_ipld_encoding::RawBytes;
@@ -25,6 +26,7 @@ impl Void {
     }
 }
 
+#[async_trait]
 impl Signer for Void {
     fn address(&self) -> Address {
         self.address
@@ -38,7 +40,7 @@ impl Signer for Void {
         None
     }
 
-    fn transaction(
+    async fn transaction(
         &mut self,
         _to: Address,
         _value: TokenAmount,

@@ -111,7 +111,7 @@ impl Account {
             RawBytes::default(),
             None,
             args.gas_params,
-        )?;
+        ).await?;
         provider
             .perform(message, BroadcastMode::Commit, |_| Ok(()))
             .await

@@ -87,14 +87,16 @@ impl ObjectStore {
             }
         };
         let params = RawBytes::serialize(params)?;
-        let message = signer.transaction(
-            self.address,
-            Default::default(),
-            PutObject as u64,
-            params,
-            object,
-            args.gas_params,
-        )?;
+        let message = signer
+            .transaction(
+                self.address,
+                Default::default(),
+                PutObject as u64,
+                params,
+                object,
+                args.gas_params,
+            )
+            .await?;
         provider.perform(message, broadcast_mode, decode_cid).await
     }
 
@@ -150,14 +152,16 @@ impl ObjectStore {
         C: Client + Send + Sync,
     {
         let params = RawBytes::serialize(params)?;
-        let message = signer.transaction(
-            self.address,
-            Default::default(),
-            DeleteObject as u64,
-            params,
-            None,
-            args.gas_params,
-        )?;
+        let message = signer
+            .transaction(
+                self.address,
+                Default::default(),
+                DeleteObject as u64,
+                params,
+                None,
+                args.gas_params,
+            )
+            .await?;
         provider.perform(message, broadcast_mode, decode_cid).await
     }
 
