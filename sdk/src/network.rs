@@ -10,16 +10,16 @@ use tendermint_rpc::Url;
 use adm_provider::util::parse_address;
 use adm_signer::SubnetID;
 
-const TESTNET_SUBNET_ID: &str = "/r314159/t410fgk5jhufnidxskatxqmpd7awjb57ijettlw6g7cy";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410ftytqyw4taos3b2grmyq4cvhgvvth3aehutsdjvy";
 const DEVNET_SUBNET_ID: &str = "test";
 
-const TESTNET_OBJECT_API_URL: &str = "http://34.106.228.171:8001";
+const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.testnet.basin.storage";
 const DEVNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 
-const TESTNET_RPC_URL: &str = "http://34.106.228.171:26657";
+const TESTNET_RPC_URL: &str = "https://api.n1.testnet.basin.storage";
 const DEVNET_RPC_URL: &str = "http://127.0.0.1:26657";
 
-const TESTNET_EVM_RPC_URL: &str = "http://34.106.228.171:8745";
+const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.testnet.basin.storage";
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
