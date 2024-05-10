@@ -11,11 +11,11 @@ use fvm_shared::address::Address;
 use serde_json::json;
 use tokio::io::AsyncReadExt;
 
-use adm_provider::{json_rpc::JsonRpcProvider, util::parse_address, BroadcastMode};
+use adm_provider::{json_rpc::JsonRpcProvider, util::parse_address};
 use adm_sdk::machine::{accumulator::Accumulator, Machine};
 use adm_signer::{key::parse_secret_key, AccountKind, Wallet};
 
-use crate::{get_rpc_url, get_subnet_id, print_json, Cli};
+use crate::{get_rpc_url, get_subnet_id, print_json, BroadcastMode, Cli};
 
 #[derive(Clone, Debug, Args)]
 pub struct AccumulatorArgs {
@@ -54,6 +54,9 @@ struct AccumulatorPushArgs {
     /// Input file (or stdin) containing the value to push.
     #[clap(default_value = "-")]
     input: FileOrStdin,
+    /// Broadcast mode for the transaction.
+    #[arg(long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -95,12 +98,13 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
             reader.read_to_end(&mut buf).await?;
             let payload = Bytes::from(buf);
 
+            let broadcast_mode = args.broadcast_mode.get();
             let tx = machine
                 .push(
                     &provider,
                     &mut signer,
                     payload,
-                    BroadcastMode::Commit,
+                    broadcast_mode,
                     Default::default(),
                 )
                 .await?;

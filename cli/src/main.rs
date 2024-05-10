@@ -9,6 +9,7 @@ use serde::Serialize;
 use stderrlog::Timestamp;
 use tendermint_rpc::Url;
 
+use adm_provider::BroadcastMode as SDKBroadcastMode;
 use adm_sdk::network::{use_testnet_addresses, Network as SdkNetwork};
 use adm_signer::SubnetID;
 
@@ -68,6 +69,26 @@ impl Network {
             Network::Mainnet => SdkNetwork::Mainnet,
             Network::Testnet => SdkNetwork::Testnet,
             Network::Devnet => SdkNetwork::Devnet,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+pub enum BroadcastMode {
+    /// Broadcast mode presets for Commit.
+    Commit,
+    /// Broadcast mode presets for Sync.
+    Sync,
+    /// Broadcast mode presets for Async.
+    Async,
+}
+
+impl BroadcastMode {
+    pub fn get(&self) -> SDKBroadcastMode {
+        match self {
+            BroadcastMode::Commit => SDKBroadcastMode::Commit,
+            BroadcastMode::Sync => SDKBroadcastMode::Sync,
+            BroadcastMode::Async => SDKBroadcastMode::Async,
         }
     }
 }

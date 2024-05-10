@@ -22,16 +22,14 @@ use tokio::{
     sync::mpsc,
 };
 
-use adm_provider::{
-    json_rpc::JsonRpcProvider, object::ObjectClient, util::parse_address, BroadcastMode,
-};
+use adm_provider::{json_rpc::JsonRpcProvider, object::ObjectClient, util::parse_address};
 use adm_sdk::machine::{
     objectstore::{self, ObjectStore},
     Machine,
 };
 use adm_signer::{key::parse_secret_key, AccountKind, Wallet};
 
-use crate::{get_rpc_url, get_subnet_id, print_json, Cli};
+use crate::{get_rpc_url, get_subnet_id, print_json, BroadcastMode, Cli};
 
 const MAX_INTERNAL_OBJECT_LENGTH: u64 = 1024;
 
@@ -83,6 +81,9 @@ struct ObjectstorePutArgs {
     /// Input file (or stdin) containing the object to upload.
     #[clap(default_value = "-")]
     input: FileOrStdin,
+    /// Broadcast mode for the transaction.
+    #[arg(long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -144,7 +145,9 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             address,
             overwrite,
             input,
+            broadcast_mode,
         }) => {
+            let broadcast_mode = broadcast_mode.get();
             let mut signer = Wallet::new_secp256k1(
                 private_key.clone(),
                 AccountKind::Ethereum,
@@ -203,7 +206,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                             &provider,
                             &mut signer,
                             params,
-                            BroadcastMode::Commit,
+                            broadcast_mode,
                             Default::default(),
                         )
                         .await?;
@@ -214,7 +217,6 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                     // internal object
                     if e.kind() == io::ErrorKind::UnexpectedEof {
                         reader.read_to_end(&mut first_chunk).await?;
-
                         let tx = machine
                             .put(
                                 &provider,
@@ -224,7 +226,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                                     kind: ObjectKind::Internal(ByteBuf(first_chunk)),
                                     overwrite: *overwrite,
                                 },
-                                BroadcastMode::Commit,
+                                broadcast_mode,
                                 Default::default(),
                             )
                             .await?;
