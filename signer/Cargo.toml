@@ -1,6 +1,6 @@
 [package]
 name = "adm_signer"
-description = "A transaction signer for interacting with the Amazing Data Machine (ADM)."
+description = "A transaction signer for interacting with Textile Basin."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true

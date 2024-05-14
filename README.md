@@ -1,9 +1,9 @@
 # adm
 
-[![License](https://img.shields.io/github/license/amazingdatamachine/adm.svg)](./LICENSE)
+[![License](https://img.shields.io/github/license/textileio/basin.svg)](./LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
 
-> The Amazing Data Machine (ADM)
+> An SDK & CLI for Textile Basin
 
 # Table of Contents
 

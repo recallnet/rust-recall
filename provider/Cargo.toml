@@ -1,6 +1,6 @@
 [package]
 name = "adm_provider"
-description = "A chain provider for interacting with the Amazing Data Machine (ADM)"
+description = "A chain provider for interacting with Textile Basin"
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true

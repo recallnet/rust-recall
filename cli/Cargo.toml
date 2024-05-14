@@ -1,6 +1,6 @@
 [package]
 name = "adm_cli"
-description = "A CLI for interacting with the Amazing Data Machine (ADM)."
+description = "A CLI for interacting with Textile Basin."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true

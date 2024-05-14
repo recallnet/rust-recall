@@ -1,6 +1,6 @@
 [package]
 name = "adm_sdk"
-description = "An SDK for interacting with the Amazing Data Machine (ADM)."
+description = "An SDK for interacting with Textile Basin."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true

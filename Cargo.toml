@@ -3,14 +3,14 @@ members = ["cli", "provider", "sdk", "signer"]
 resolver = "2"
 
 [workspace.package]
-authors = ["ADM Contributors"]
-description = "The Amazing Data Machine (ADM)."
+authors = ["Textile"]
+description = "An SDK & CLI for Textile Basin"
 edition = "2021"
-homepage = "https://github.com/amazingdatamachine/adm/"
+homepage = "https://github.com/textileio/basin/"
 license = "MIT OR Apache-2.0"
 readme = "./README.md"
-repository = "https://github.com/amazingdatamachine/adm/"
-keywords = ["TODO"]
+repository = "https://github.com/textileio/basin/"
+keywords = ["storage", "s3", "ipc", "filecoin"]
 version = "0.1.0"
 
 [workspace.dependencies]
@@ -65,15 +65,15 @@ tendermint-rpc = { version = "0.31.1", features = [
 fvm_shared = "4.1.0"
 fvm_ipld_encoding = "0.4.0"
 
-fendermint_actor_accumulator = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_actor_machine = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_actor_objectstore = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_crypto = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_vm_actor_interface = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_vm_message = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
+fendermint_actor_accumulator = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
+fendermint_actor_machine = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
+fendermint_actor_objectstore = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
+fendermint_crypto = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
+fendermint_vm_actor_interface = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
+fendermint_vm_message = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
 
-ipc_actors_abis = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-ipc-api = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
+ipc_actors_abis = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
+ipc-api = { git = "https://github.com/textileio/ipc.git", rev = "884e33fe3661cbcc248a6c0e81871973a4ca5011" }
 
 [patch.crates-io]
 # Contains some API changes that the upstream has not merged.
@@ -81,13 +81,13 @@ merkle-tree-rs = { git = "https://github.com/consensus-shipyard/merkle-tree-rs.g
 
 # Uncomment entries below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.
-[patch."ssh://git@github.com/amazingdatamachine/ipc.git"]
-fendermint_actor_accumulator = { path = "../ipc/fendermint/actors/accumulator" }
-fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
-fendermint_actor_objectstore = { path = "../ipc/fendermint/actors/objectstore" }
-fendermint_crypto = { path = "../ipc/fendermint/crypto" }
-fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
-fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
-
-ipc_actors_abis = { path = "../ipc/contracts/binding" }
-ipc-api = { path = "../ipc/ipc/api" }
+[patch."https://github.com/textileio/ipc.git"]
+#fendermint_actor_accumulator = { path = "../ipc/fendermint/actors/accumulator" }
+#fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
+#fendermint_actor_objectstore = { path = "../ipc/fendermint/actors/objectstore" }
+#fendermint_crypto = { path = "../ipc/fendermint/crypto" }
+#fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
+#fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
+#
+#ipc_actors_abis = { path = "../ipc/contracts/binding" }
+#ipc-api = { path = "../ipc/ipc/api" }
