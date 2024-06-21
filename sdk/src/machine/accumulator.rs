@@ -80,11 +80,11 @@ impl Machine for Accumulator {
             gas_params,
         )
         .await?;
-        Ok((Self::attach(address), tx))
+        Ok((Self::attach(address).await?, tx))
     }
 
-    fn attach(address: Address) -> Self {
-        Accumulator { address }
+    async fn attach(address: Address) -> anyhow::Result<Self> {
+        Ok(Accumulator { address })
     }
 
     fn address(&self) -> Address {

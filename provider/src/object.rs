@@ -3,6 +3,7 @@
 
 use async_trait::async_trait;
 use fvm_shared::address::Address;
+use iroh::net::NodeId;
 
 use crate::response::Cid;
 
@@ -12,11 +13,12 @@ pub trait ObjectProvider: Send + Sync {
     /// Upload an object.
     async fn upload(
         &self,
-        body: reqwest::Body,
+        cid: Cid,
+        source: NodeId,
         size: usize,
         msg: String,
         chain_id: u64,
-    ) -> anyhow::Result<Cid>;
+    ) -> anyhow::Result<()>;
 
     /// Download an object.
     async fn download(
