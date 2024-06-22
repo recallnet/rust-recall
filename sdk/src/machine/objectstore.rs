@@ -248,7 +248,10 @@ impl ObjectStore {
 
             let object_cid = Cid(cid::Cid::new_v1(
                 0x55,
-                cid::multihash::Multihash::wrap(0x1e, object_hash.as_ref())?,
+                cid::multihash::Multihash::wrap(
+                    cid::multihash::Code::Blake3_256.into(),
+                    object_hash.as_ref(),
+                )?,
             ));
 
             // Upload
@@ -377,11 +380,11 @@ impl ObjectStore {
             }
         };
 
-        let node_id = self.iroh.node_id();
+        let node_addr = self.iroh.my_addr().await?;
         provider
             .upload(
                 cid,
-                node_id,
+                node_addr,
                 size,
                 general_purpose::URL_SAFE.encode(&serialized_signed_message),
                 chain_id.into(),

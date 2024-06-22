@@ -11,7 +11,7 @@ use fendermint_vm_message::{
     query::{FvmQuery, FvmQueryHeight},
 };
 use fvm_shared::address::Address;
-use iroh::net::NodeId;
+use iroh::net::NodeAddr;
 use reqwest::multipart::Form;
 use tendermint::abci::response::DeliverTx;
 use tendermint::block::Height;
@@ -149,7 +149,7 @@ where
     async fn upload(
         &self,
         cid: Cid,
-        source: NodeId,
+        source: NodeAddr,
         _total_bytes: usize,
         msg: String,
         chain_id: u64,
@@ -163,7 +163,7 @@ where
             .text("chain_id", chain_id.to_string())
             .text("msg", msg)
             .text("cid", cid.to_string())
-            .text("source", source.to_string());
+            .text("source", serde_json::to_string(&source)?);
 
         let url = format!("{}v1/objects", client.url);
         let response = client.inner.post(url).multipart(form).send().await?;

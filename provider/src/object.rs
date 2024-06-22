@@ -3,7 +3,7 @@
 
 use async_trait::async_trait;
 use fvm_shared::address::Address;
-use iroh::net::NodeId;
+use iroh::net::NodeAddr;
 
 use crate::response::Cid;
 
@@ -14,7 +14,7 @@ pub trait ObjectProvider: Send + Sync {
     async fn upload(
         &self,
         cid: Cid,
-        source: NodeId,
+        source: NodeAddr,
         size: usize,
         msg: String,
         chain_id: u64,
