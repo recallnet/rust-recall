@@ -160,7 +160,7 @@ impl ObjectStore {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         key: &str,
-        mut reader: R,
+        reader: R,
         options: AddOptions,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
@@ -190,17 +190,21 @@ impl ObjectStore {
                 anyhow::bail!("Unexpected end while ingesting data");
             };
             match event? {
-                AddProgress::Found { id, name, size } => {
+                AddProgress::Found {
+                    id: _,
+                    name: _,
+                    size,
+                } => {
                     object_size = size as usize;
                     pro_bar = Some(bars.add(new_progress_bar(size as _)));
                 }
-                AddProgress::Done { id, hash } => {
+                AddProgress::Done { id: _, hash: _ } => {
                     pro_bar.take().unwrap().finish_and_clear();
                 }
                 AddProgress::AllDone { hash, .. } => {
                     break hash;
                 }
-                AddProgress::Progress { id, offset } => {
+                AddProgress::Progress { id: _, offset } => {
                     pro_bar.as_mut().unwrap().set_position(offset);
                 }
                 AddProgress::Abort(err) => {

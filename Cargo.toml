@@ -69,7 +69,7 @@ tendermint-rpc = { version = "0.31.1", features = [
 fvm_shared = "4.1.0"
 fvm_ipld_encoding = "0.4.0"
 
-iroh = { git = "https://github.com/n0-computer/iroh", branch = "main" }
+iroh = "0.21"
 
 fendermint_actor_accumulator = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
 fendermint_actor_machine = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }

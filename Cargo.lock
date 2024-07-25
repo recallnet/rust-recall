@@ -413,18 +413,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-channel"
-version = "2.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89b47800b0be77592da0afd425cc03468052844aff33b84e33cc696f64e77b6a"
-dependencies = [
- "concurrent-queue",
- "event-listener-strategy",
- "futures-core",
- "pin-project-lite",
-]
-
-[[package]]
 name = "async-stream"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2397,27 +2385,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "event-listener"
-version = "5.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6032be9bd27023a771701cc49f9f053c751055f71efb2e0ae5c15809093675ba"
-dependencies = [
- "concurrent-queue",
- "parking",
- "pin-project-lite",
-]
-
-[[package]]
-name = "event-listener-strategy"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f214dc438f977e6d4e3500aaa277f5ad94ca83fbbd9b1a15713ce2344ccc5a1"
-dependencies = [
- "event-listener 5.3.1",
- "pin-project-lite",
-]
-
-[[package]]
 name = "execute"
 version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4167,7 +4134,8 @@ checksum = "8f518f335dce6725a761382244631d86cf0ccb2863413590b31338feb467f9c3"
 [[package]]
 name = "iroh"
 version = "0.21.0"
-source = "git+https://github.com/n0-computer/iroh?branch=main#73de21b35d6b83def03f51caca06c1931ea8ee77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3c7d382231db2459a2850acc2c5a385830d4dd915025490d1ed3ff051b0cf1c"
 dependencies = [
  "anyhow",
  "bao-tree",
@@ -4210,7 +4178,8 @@ dependencies = [
 [[package]]
 name = "iroh-base"
 version = "0.21.0"
-source = "git+https://github.com/n0-computer/iroh?branch=main#73de21b35d6b83def03f51caca06c1931ea8ee77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31f493beda1c4f8c7be999eff8a80cd1e2428da4c61f5cdd14990af8122342e"
 dependencies = [
  "aead",
  "anyhow",
@@ -4251,10 +4220,10 @@ dependencies = [
 [[package]]
 name = "iroh-blobs"
 version = "0.21.0"
-source = "git+https://github.com/n0-computer/iroh?branch=main#73de21b35d6b83def03f51caca06c1931ea8ee77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99235d72ae2f63c564e192ba321208f44c2ce0309358c1e5da61c513d5b0a973"
 dependencies = [
  "anyhow",
- "async-channel",
  "bao-tree",
  "bytes",
  "chrono",
@@ -4292,7 +4261,8 @@ dependencies = [
 [[package]]
 name = "iroh-docs"
 version = "0.21.0"
-source = "git+https://github.com/n0-computer/iroh?branch=main#73de21b35d6b83def03f51caca06c1931ea8ee77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e3e730c8767c5d2c2809c9c127919f1ca9a65d6c176d47387bc49d1d0ab27792"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4330,13 +4300,14 @@ dependencies = [
 [[package]]
 name = "iroh-gossip"
 version = "0.21.0"
-source = "git+https://github.com/n0-computer/iroh?branch=main#73de21b35d6b83def03f51caca06c1931ea8ee77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60a25bef4066809009d90cb5ff885c0d1adf77690805431f45577e624af0b4c6"
 dependencies = [
  "anyhow",
- "async-channel",
  "bytes",
  "derive_more 1.0.0-beta.6",
  "ed25519-dalek",
+ "flume 0.11.0",
  "futures-lite 2.3.0",
  "futures-util",
  "genawaiter",
@@ -4370,7 +4341,8 @@ dependencies = [
 [[package]]
 name = "iroh-metrics"
 version = "0.21.0"
-source = "git+https://github.com/n0-computer/iroh?branch=main#73de21b35d6b83def03f51caca06c1931ea8ee77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "472ec21d59b34c8fbebbd8fcecfdc0f4b00a7af2d6453b303a1e9c9499674f67"
 dependencies = [
  "anyhow",
  "erased_set",
@@ -4390,10 +4362,10 @@ dependencies = [
 [[package]]
 name = "iroh-net"
 version = "0.21.0"
-source = "git+https://github.com/n0-computer/iroh?branch=main#73de21b35d6b83def03f51caca06c1931ea8ee77"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a3e2e9b2a555736a82cb53d16037b0ba0233034ac5042efce129b1460b0a50a"
 dependencies = [
  "anyhow",
- "async-channel",
  "axum",
  "backoff",
  "base64 0.22.1",
@@ -4402,6 +4374,7 @@ dependencies = [
  "der",
  "derive_more 1.0.0-beta.6",
  "duct",
+ "flume 0.11.0",
  "futures-buffered",
  "futures-concurrency",
  "futures-lite 2.3.0",
@@ -5339,7 +5312,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "681030a937600a36906c185595136d26abfebb4aa9c65701cefcaf8578bb982b"
 dependencies = [
- "proc-macro-crate 3.1.0",
+ "proc-macro-crate 1.1.3",
  "proc-macro2",
  "quote",
  "syn 2.0.59",
@@ -9088,7 +9061,7 @@ version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "45b42a2f611916b5965120a9cde2b60f2db4454826dd9ad5e6f47c24a5b3b259"
 dependencies = [
- "event-listener 4.0.3",
+ "event-listener",
  "futures-util",
  "parking_lot",
  "thiserror",

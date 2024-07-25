@@ -246,7 +246,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                 return Err(anyhow!("input must be a file"));
             }
 
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             let tx = machine
                 .add(
                     &provider,
@@ -281,7 +281,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             let tx = machine
                 .delete(
                     &provider,
@@ -304,7 +304,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             let provider =
                 JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, Some(object_api_url))?;
 
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             machine
                 .get(
                     &provider,
@@ -321,7 +321,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
         ObjectstoreCommands::Query(args) => {
             let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
 
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             let list = machine
                 .query(
                     &provider,
@@ -339,8 +339,8 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                 .objects
                 .iter()
                 .map(|(key_bytes, object)| {
-                    let key = core::str::from_utf8(&key_bytes).unwrap_or_default().to_string();                    
-                    let cid = cid::Cid::try_from(object.cid.clone().0).unwrap_or_default();                    
+                    let key = core::str::from_utf8(&key_bytes).unwrap_or_default().to_string();
+                    let cid = cid::Cid::try_from(object.cid.clone().0).unwrap_or_default();
                     let value = json!({"cid": cid.to_string(), "resolved": object.resolved, "size": object.size, "metadata": object.metadata});
                     json!({"key": key, "value": value})
                 })
