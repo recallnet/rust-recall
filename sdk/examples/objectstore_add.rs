@@ -5,7 +5,6 @@ use std::env;
 
 use anyhow::anyhow;
 use fendermint_actor_machine::WriteAccess;
-use fendermint_actor_objectstore::ObjectListItem;
 use rand::{thread_rng, Rng};
 use tokio::io::{AsyncSeekExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
@@ -79,23 +78,14 @@ async fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
     let list = machine.query(&provider, options).await?;
-    for obj in list.objects {
-        let key = core::str::from_utf8(&obj.0).unwrap_or_default();
-        match &obj.1 {
-            ObjectListItem::Internal((cid, size)) => {
-                println!(
-                    "Query result cid: {} (key={}; on-chain; size={})",
-                    cid, key, size
-                );
-            }
-            ObjectListItem::External((cid, resolved)) => {
-                // `resolved` indicates the validators were able to fetch and verify the file
-                println!(
-                    "Query result cid: {} (key={}; detached; resolved={})",
-                    cid, key, resolved
-                );
-            }
-        }
+    for (key_bytes, object) in list.objects {
+        let key = core::str::from_utf8(&key_bytes).unwrap_or_default();
+        // `resolved` indicates the validators were able to fetch and verify the file
+        let cid = cid::Cid::try_from(object.cid.0)?;
+        println!(
+            "Query result cid: {} (key={}; detached; resolved={})",
+            cid, key, object.resolved
+        );
     }
 
     Ok(())

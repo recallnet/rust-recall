@@ -1,0 +1,34 @@
+[package]
+name = "adm_faucet"
+description = "A faucet service for registering new subnet accounts and sending testnet funds."
+authors.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+keywords.workspace = true
+version.workspace = true
+
+[[bin]]
+name = "adm_faucet"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+ethers = { workspace = true }
+fvm_shared = { workspace = true }
+log = { workspace = true }
+fendermint_crypto = { workspace = true }
+ipc-api = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true, features = ["preserve_order"] }
+stderrlog = { workspace = true }
+tokio = { workspace = true }
+warp = { workspace = true }
+
+adm_sdk = { path = "../sdk" }
+adm_signer = { path = "../signer" }
+adm_provider = { path = "../provider" }

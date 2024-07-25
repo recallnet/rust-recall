@@ -1,5 +1,5 @@
 [workspace]
-members = ["cli", "provider", "sdk", "signer"]
+members = ["cli", "provider", "sdk", "signer", "faucet"]
 resolver = "2"
 
 [workspace.package]
@@ -43,6 +43,7 @@ humantime = "2.1.0"
 hex = "0.4.3"
 indicatif = "0.17.8"
 lazy_static = "1.4.0"
+log = "0.4.22"
 num-traits = "0.2.18"
 prost = "0.11.9"
 reqwest = { version = "0.11.27", features = ["json", "stream", "multipart"] }
@@ -54,6 +55,7 @@ tokio-util = "0.7.1"
 tokio-stream = "0.1.0"
 tracing = "0.1.40"
 rand = "0.8.4"
+warp = "0.3.7"
 
 # Using the same tendermint-rs dependency as tower-abci. From both we are interested in v037 modules.
 tendermint = { version = "0.31.1", features = ["secp256k1"] }
