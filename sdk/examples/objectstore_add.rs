@@ -60,7 +60,7 @@ async fn main() -> anyhow::Result<()> {
     // Add a file to the object store
     let key = "foo/my_file";
     let tx = machine
-        .add(&provider, &mut signer, key, file, Default::default())
+        .add_reader(&provider, &mut signer, key, file, Default::default())
         .await?;
     println!(
         "Added 1MiB file to object store {} with key {}",

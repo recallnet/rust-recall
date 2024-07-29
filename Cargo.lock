@@ -2631,6 +2631,7 @@ dependencies = [
  "fvm_ipld_encoding",
  "fvm_shared",
  "ipc-api",
+ "iroh",
  "lazy_static",
  "num-traits",
  "serde",

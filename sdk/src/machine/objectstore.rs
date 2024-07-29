@@ -1,6 +1,7 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::path::{Path, PathBuf};
 use std::{cmp::min, collections::HashMap};
 
 use anyhow::anyhow;
@@ -18,8 +19,10 @@ use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use indicatif::HumanDuration;
 use iroh::blobs::{provider::AddProgress, util::SetTagOption};
+use iroh::client::blobs::WrapOption;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
+use tokio::fs::File;
 use tokio::{
     io::{AsyncRead, AsyncSeek, AsyncWrite, AsyncWriteExt},
     time::Instant,
@@ -154,8 +157,8 @@ impl Machine for ObjectStore {
 }
 
 impl ObjectStore {
-    /// Add an object into the object store.
-    pub async fn add<C, R>(
+    /// Add an object into the object store with a reader.
+    pub async fn add_reader<C, R>(
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
@@ -177,6 +180,147 @@ impl ObjectStore {
             .iroh
             .blobs()
             .add_reader(reader, SetTagOption::Auto)
+            .await?;
+
+        // Iroh ingest
+        msg_bar.set_prefix("[1/3]");
+        msg_bar.set_message("Injesting data ...");
+
+        let mut pro_bar = None;
+        let mut object_size = 0;
+        let object_hash = loop {
+            let Some(event) = progress.next().await else {
+                anyhow::bail!("Unexpected end while ingesting data");
+            };
+            match event? {
+                AddProgress::Found {
+                    id: _,
+                    name: _,
+                    size,
+                } => {
+                    object_size = size as usize;
+                    pro_bar = Some(bars.add(new_progress_bar(size as _)));
+                }
+                AddProgress::Done { id: _, hash: _ } => {
+                    pro_bar.take().unwrap().finish_and_clear();
+                }
+                AddProgress::AllDone { hash, .. } => {
+                    break hash;
+                }
+                AddProgress::Progress { id: _, offset } => {
+                    pro_bar.as_mut().unwrap().set_position(offset);
+                }
+                AddProgress::Abort(err) => {
+                    return Err(err.into());
+                }
+            }
+        };
+
+        let object_cid = Cid(cid::Cid::new_v1(
+            0x55,
+            cid::multihash::Multihash::wrap(
+                cid::multihash::Code::Blake3_256.into(),
+                object_hash.as_ref(),
+            )?,
+        ));
+
+        // Upload
+        msg_bar.set_prefix("[2/3]");
+        msg_bar.set_message(format!("Uploading {} to network...", object_cid));
+
+        // TODO: progress bar
+        self.upload(
+            provider,
+            signer,
+            key,
+            object_cid,
+            object_size,
+            options.metadata.clone(),
+            options.overwrite,
+        )
+        .await?;
+
+        // Broadcast transaction with Object's CID
+        msg_bar.set_prefix("[3/3]");
+        msg_bar.set_message("Broadcasting transaction...");
+        let params = AddParams {
+            key: key.into(),
+            cid: object_cid.0,
+            overwrite: options.overwrite,
+            metadata: options.metadata,
+            size: object_size,
+        };
+        let serialized_params = RawBytes::serialize(params.clone())?;
+        let object = Some(MessageObject::new(
+            params.key.clone(),
+            object_cid.0,
+            self.address,
+        ));
+        let message = signer
+            .transaction(
+                self.address,
+                Default::default(),
+                AddObject as u64,
+                serialized_params,
+                object,
+                options.gas_params,
+            )
+            .await?;
+
+        let tx = provider
+            .perform(message, options.broadcast_mode, decode_cid)
+            .await?;
+
+        msg_bar.println(format!(
+            "{} Added detached object in {} (cid={}; size={})",
+            SPARKLE,
+            HumanDuration(started.elapsed()),
+            object_cid,
+            object_size
+        ));
+
+        msg_bar.finish_and_clear();
+        Ok(tx)
+    }
+
+    /// Add an object into the object store from a path.
+    pub async fn add_from_path<C>(
+        &self,
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        key: &str,
+        path: impl AsRef<Path>,
+        options: AddOptions,
+    ) -> anyhow::Result<TxReceipt<Cid>>
+    where
+        C: Client + Send + Sync,
+    {
+        // TODO: Maybe duplicative of an Iroh check in `add_from_path` below
+        // TODO: We could enable adding directories at some point
+        // TODO: with a change to the on-chain object store actor
+        let file = File::open(path).await?;
+        let md = file.metadata().await?;
+        if !md.is_file() {
+            return Err(anyhow!("input must be a file"));
+        }
+        // TODO: Is this needed? not sure if having a ref will mess up the iroh method below
+        drop(file);
+
+        let started = Instant::now();
+        let bars = new_multi_bar(!options.show_progress);
+        let msg_bar = bars.add(new_message_bar());
+
+        // TODO: This will blow up your memory, as we store the data in memory currently..
+
+        let mut progress = self
+            .iroh
+            .blobs()
+            .add_from_path(
+                PathBuf::from(path.as_ref()),
+                true,
+                SetTagOption::Auto,
+                WrapOption::NoWrap,
+            )
             .await?;
 
         // Iroh ingest

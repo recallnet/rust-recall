@@ -240,19 +240,13 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let file = File::open(&args.input).await?;
-            let md = file.metadata().await?;
-            if !md.is_file() {
-                return Err(anyhow!("input must be a file"));
-            }
-
             let machine = ObjectStore::attach(args.address).await?;
             let tx = machine
-                .add(
+                .add_from_path(
                     &provider,
                     &mut signer,
                     &args.key,
-                    file,
+                    &args.input,
                     AddOptions {
                         overwrite: args.overwrite,
                         broadcast_mode,
