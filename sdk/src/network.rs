@@ -195,6 +195,11 @@ impl Network {
             Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
+
+    /// Returns the network iroh details.
+    pub fn iroh(&self) -> anyhow::Result<iroh::net::NodeAddr> {
+        todo!()
+    }
 }
 
 impl FromStr for Network {

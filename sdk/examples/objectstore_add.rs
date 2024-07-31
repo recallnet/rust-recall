@@ -6,7 +6,7 @@ use std::env;
 use anyhow::anyhow;
 use fendermint_actor_machine::WriteAccess;
 use rand::{thread_rng, Rng};
-use tokio::io::{AsyncSeekExt, AsyncWriteExt};
+use tokio::io::AsyncWriteExt;
 use tokio::time::{sleep, Duration};
 
 use adm_provider::json_rpc::JsonRpcProvider;
@@ -55,12 +55,18 @@ async fn main() -> anyhow::Result<()> {
     rng.fill(&mut random_data[..]);
     file.write_all(&random_data).await?;
     file.flush().await?;
-    file.rewind().await?;
 
     // Add a file to the object store
     let key = "foo/my_file";
     let tx = machine
-        .add_reader(&provider, &mut signer, key, file, Default::default())
+        .add_from_path(
+            &provider,
+            &mut signer,
+            key,
+            file.file_path(),
+            Default::default(),
+            network.iroh()?,
+        )
         .await?;
     println!(
         "Added 1MiB file to object store {} with key {}",
