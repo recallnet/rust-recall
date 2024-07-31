@@ -74,6 +74,12 @@ pub async fn send(
     let private_key = private_key.serialize();
     let wallet = LocalWallet::from_bytes(private_key.as_slice())?.with_chain_id(chain_id);
 
+    // get balance of the given address
+    let balance = provider.get_balance(address, None).await?;
+    if balance.is_zero() {
+        return Err("make sure the address has nonzero FIL balance".into());
+    }
+
     let client = SignerMiddleware::new(provider, wallet);
     let contract = tHoku::new(token_address, Arc::new(client));
     let receipt = contract
