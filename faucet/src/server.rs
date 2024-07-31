@@ -6,6 +6,7 @@ use crate::Cli;
 use util::log_request_details;
 
 mod register;
+mod send;
 mod shared;
 mod util;
 
@@ -13,12 +14,15 @@ mod util;
 pub async fn run(cli: Cli) -> anyhow::Result<()> {
     let faucet_pk = cli.private_key;
     let listen_addr = cli.listen;
+    let token_address = cli.token_address;
 
     let register_route = register::register_route(faucet_pk.clone());
+    let send_route = send::send_route(faucet_pk.clone(), token_address);
 
     let log_request_details = warp::log::custom(log_request_details);
 
     let router = register_route
+        .or(send_route)
         .with(
             warp::cors()
                 .allow_any_origin()

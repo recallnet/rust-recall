@@ -2,6 +2,7 @@ use std::net::{SocketAddr, ToSocketAddrs};
 
 use anyhow::anyhow;
 use clap::Parser;
+use ethers::prelude::Address;
 use fendermint_crypto::SecretKey;
 use stderrlog::Timestamp;
 
@@ -20,6 +21,9 @@ struct Cli {
     /// Faucet `host:port` string for running the HTTP server.
     #[arg(long, env, value_parser = parse_faucet_url)]
     listen: SocketAddr,
+    /// Faucet token address.
+    #[arg(long, env)]
+    token_address: Address,
     /// Logging verbosity (repeat for more verbose logging).
     #[arg(short, long, env, action = clap::ArgAction::Count)]
     verbosity: u8,

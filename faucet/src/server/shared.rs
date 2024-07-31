@@ -1,5 +1,6 @@
 use std::convert::Infallible;
 
+use ethers::prelude::Address as EthAddress;
 use fendermint_crypto::SecretKey;
 use fvm_shared::address::Address;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -84,6 +85,13 @@ pub fn with_private_key(
     private_key: SecretKey,
 ) -> impl Filter<Extract = (SecretKey,), Error = Infallible> + Clone {
     warp::any().map(move || private_key.clone())
+}
+
+/// Filter to pass the token address to the request handler.
+pub fn with_token_address(
+    token_address: EthAddress,
+) -> impl Filter<Extract = (EthAddress,), Error = Infallible> + Clone {
+    warp::any().map(move || token_address.clone())
 }
 
 /// Get the faucet wallet that will send transactions on the subnet.
