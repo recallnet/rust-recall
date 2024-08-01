@@ -196,9 +196,13 @@ impl Network {
         }
     }
 
-    /// Returns the network iroh details.
-    pub fn iroh(&self) -> anyhow::Result<iroh::net::NodeAddr> {
-        todo!()
+    /// Returns the network provider iroh details.
+    pub fn iroh(&self) -> anyhow::Result<iroh::net::NodeId> {
+        match self {
+            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
+            Network::Testnet => todo!(),
+            Network::Localnet | Network::Devnet => todo!(),
+        }
     }
 }
 

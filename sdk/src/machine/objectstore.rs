@@ -21,7 +21,7 @@ use fvm_shared::address::Address;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use iroh::blobs::{provider::AddProgress, util::SetTagOption};
 use iroh::client::blobs::WrapOption;
-use iroh::net::NodeAddr;
+use iroh::net::NodeId;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
 use tokio::{
@@ -166,7 +166,7 @@ impl ObjectStore {
         key: &str,
         reader: R,
         options: AddOptions,
-        remote_iroh_addr: NodeAddr,
+        remote_iroh_node: NodeId,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
         C: Client + Send + Sync,
@@ -192,7 +192,7 @@ impl ObjectStore {
             bars,
             msg_bar,
             progress,
-            remote_iroh_addr,
+            remote_iroh_node,
         )
         .await
     }
@@ -205,7 +205,7 @@ impl ObjectStore {
         key: &str,
         path: impl AsRef<Path>,
         options: AddOptions,
-        remote_iroh_addr: NodeAddr,
+        remote_iroh_node: NodeId,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
         C: Client + Send + Sync,
@@ -239,7 +239,7 @@ impl ObjectStore {
             bars,
             msg_bar,
             progress,
-            remote_iroh_addr,
+            remote_iroh_node,
         )
         .await
     }
@@ -254,7 +254,7 @@ impl ObjectStore {
         bars: Arc<MultiProgress>,
         msg_bar: ProgressBar,
         mut progress: iroh::client::blobs::AddProgress,
-        remote_iroh_addr: NodeAddr,
+        remote_iroh_node: NodeId,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
         C: Client + Send + Sync,
@@ -314,7 +314,7 @@ impl ObjectStore {
             object_size,
             options.metadata.clone(),
             options.overwrite,
-            &remote_iroh_addr,
+            remote_iroh_node,
         )
         .await?;
 
@@ -333,13 +333,7 @@ impl ObjectStore {
             params.key.clone(),
             object_cid.0,
             self.address,
-            remote_iroh_addr.node_id,
-            *remote_iroh_addr
-                .info
-                .direct_addresses
-                .iter()
-                .next()
-                .unwrap(), // TODO: make messageobject actually take NodeAddr
+            remote_iroh_node,
         ));
         let message = signer
             .transaction(
@@ -379,7 +373,7 @@ impl ObjectStore {
         size: usize,
         metadata: HashMap<String, String>,
         overwrite: bool,
-        remote_iroh_addr: &NodeAddr,
+        remote_iroh_node: NodeId,
     ) -> anyhow::Result<()> {
         let from = signer.address();
         let params = AddParams {
@@ -399,13 +393,7 @@ impl ObjectStore {
                 key.into(),
                 cid.0,
                 self.address,
-                remote_iroh_addr.node_id,
-                *remote_iroh_addr
-                    .info
-                    .direct_addresses
-                    .iter()
-                    .next()
-                    .unwrap(), // TODO: make messageobject actually take NodeAddr)
+                remote_iroh_node,
             )),
         )?;
         let serialized_signed_message = fvm_ipld_encoding::to_vec(&singed_message)?;
