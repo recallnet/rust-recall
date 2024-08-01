@@ -3,7 +3,6 @@
 
 use std::path::PathBuf;
 
-use anyhow::anyhow;
 use clap::{Args, Parser, Subcommand};
 use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
@@ -12,7 +11,6 @@ use fvm_shared::address::Address;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use tendermint_rpc::Url;
-use tokio::fs::File;
 use tokio::io::{self};
 
 use adm_provider::{
@@ -95,6 +93,8 @@ struct ObjectstorePutArgs {
     tx_args: TxArgs,
     #[arg(short, long, value_parser = parse_metadata)]
     metadata: Vec<(String, String)>,
+    #[arg(long)]
+    remote_iroh_node: iroh::net::NodeId,
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -254,6 +254,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                         show_progress: !cli.quiet,
                         metadata,
                     },
+                    args.remote_iroh_node,
                 )
                 .await?;
 
