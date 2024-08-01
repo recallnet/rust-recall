@@ -86,6 +86,7 @@ async fn main() -> anyhow::Result<()> {
         prefix: "foo/".into(),
         ..Default::default()
     };
+    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
     let list = machine.query(&provider, options).await?;
     for (key_bytes, object) in list.objects {
         let key = core::str::from_utf8(&key_bytes).unwrap_or_default();
