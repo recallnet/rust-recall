@@ -20,10 +20,13 @@ use adm_signer::{key::parse_secret_key, AccountKind, Wallet};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        return Err(anyhow!("missing hex-encoded private key"));
+    if args.len() != 3 {
+        return Err(anyhow!("Usage: [iroh id] [private key]"));
     }
-    let pk_kex = &args[1];
+
+    let iroh_node_id: iroh::net::NodeId = args[1].parse()?;
+
+    let pk_kex = &args[2];
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
@@ -65,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
             key,
             file.file_path(),
             Default::default(),
-            network.iroh()?,
+            iroh_node_id,
         )
         .await?;
     println!(
