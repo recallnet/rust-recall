@@ -1,6 +1,7 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand};
@@ -9,8 +10,8 @@ use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
 use serde_json::{json, Value};
-use std::collections::HashMap;
 use tendermint_rpc::Url;
+use tokio::fs::File;
 use tokio::io::{self};
 
 use adm_provider::{
@@ -62,6 +63,9 @@ struct ObjectstoreCreateArgs {
     /// Allow public write access to the object store.
     #[arg(long, default_value_t = false)]
     public_write: bool,
+    /// User-defined metadata.
+    #[arg(short, long, value_parser = parse_metadata)]
+    metadata: Vec<(String, String)>,
     #[command(flatten)]
     tx_args: TxArgs,
 }
@@ -200,8 +204,11 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                 Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
             signer.set_sequence(sequence, &provider).await?;
 
+            let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
+
             let (store, tx) =
-                ObjectStore::new(&provider, &mut signer, write_access, gas_params).await?;
+                ObjectStore::new(&provider, &mut signer, write_access, metadata, gas_params)
+                    .await?;
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }
@@ -213,7 +220,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             let metadata = metadata
                 .iter()
-                .map(|m| json!({"address": m.address.to_string(), "kind": m.kind}))
+                .map(|m| json!({"address": m.address.to_string(), "kind": m.kind, "metadata" : m.metadata}))
                 .collect::<Vec<Value>>();
 
             print_json(&metadata)
@@ -334,7 +341,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                 .objects
                 .iter()
                 .map(|(key_bytes, object)| {
-                    let key = core::str::from_utf8(&key_bytes).unwrap_or_default().to_string();
+                    let key = core::str::from_utf8(key_bytes).unwrap_or_default().to_string();
                     let cid = cid::Cid::try_from(object.cid.clone().0).unwrap_or_default();
                     let value = json!({"cid": cid.to_string(), "resolved": object.resolved, "size": object.size, "metadata": object.metadata});
                     json!({"key": key, "value": value})

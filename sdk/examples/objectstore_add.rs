@@ -1,16 +1,17 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashMap;
 use std::env;
 
 use anyhow::anyhow;
 use fendermint_actor_machine::WriteAccess;
 use rand::{thread_rng, Rng};
-use tokio::io::AsyncWriteExt;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 use adm_provider::json_rpc::JsonRpcProvider;
-use adm_sdk::machine::objectstore::QueryOptions;
+use adm_sdk::machine::objectstore::{AddOptions, GetOptions, QueryOptions};
 use adm_sdk::{
     machine::{objectstore::ObjectStore, Machine},
     network::Network,
@@ -45,6 +46,7 @@ async fn main() -> anyhow::Result<()> {
         &provider,
         &mut signer,
         WriteAccess::OnlyOwner,
+        HashMap::new(),
         Default::default(),
     )
     .await?;
@@ -61,13 +63,20 @@ async fn main() -> anyhow::Result<()> {
 
     // Add a file to the object store
     let key = "foo/my_file";
+    let mut metadata = HashMap::new();
+    metadata.insert("foo".to_string(), "bar".to_string());
+    let options = AddOptions {
+        overwrite: true,
+        metadata,
+        ..Default::default()
+    };
     let tx = machine
         .add_from_path(
             &provider,
             &mut signer,
             key,
             file.file_path(),
-            Default::default(),
+            options,
             iroh_node_id,
         )
         .await?;
@@ -86,7 +95,7 @@ async fn main() -> anyhow::Result<()> {
         prefix: "foo/".into(),
         ..Default::default()
     };
-    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+    tokio::time::sleep(Duration::from_secs(2)).await;
     let list = machine.query(&provider, options).await?;
     for (key_bytes, object) in list.objects {
         let key = core::str::from_utf8(&key_bytes).unwrap_or_default();
@@ -97,6 +106,30 @@ async fn main() -> anyhow::Result<()> {
             cid, key, object.resolved
         );
     }
+
+    // Download the actual object at `foo/my_file`
+    let obj_file = async_tempfile::TempFile::new().await?;
+    let obj_path = obj_file.file_path().to_owned();
+    println!("Downloading object to {}", obj_path.display());
+    let options = GetOptions {
+        range: Some("0-99".to_string()), // Get the first 100 bytes
+        ..Default::default()
+    };
+    {
+        let open_file = obj_file.open_rw().await?;
+        machine.get(&provider, &key, open_file, options).await?;
+    }
+    // Read the first 10 bytes of your downloaded 100 bytes
+    let mut read_file = tokio::fs::File::open(&obj_path).await?;
+    let mut contents = vec![0; 10];
+    read_file.read(&mut contents).await?;
+    println!("Successfully read first 10 bytes of {}", obj_path.display());
+
+    // Now, delete the object
+    let tx = machine
+        .delete(&provider, &mut signer, &key, Default::default())
+        .await?;
+    println!("Deleted object with key {} at tx 0x{}", key, tx.hash);
 
     Ok(())
 }

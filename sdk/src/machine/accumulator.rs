@@ -1,6 +1,8 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashMap;
+
 use anyhow::anyhow;
 use async_trait::async_trait;
 use bytes::Bytes;
@@ -67,6 +69,7 @@ impl Machine for Accumulator {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         write_access: WriteAccess,
+        metadata: HashMap<String, String>,
         gas_params: GasParams,
     ) -> anyhow::Result<(Self, DeployTxReceipt)>
     where
@@ -77,6 +80,7 @@ impl Machine for Accumulator {
             signer,
             Kind::Accumulator,
             write_access,
+            metadata,
             gas_params,
         )
         .await?;
@@ -136,7 +140,7 @@ impl Accumulator {
     ) -> anyhow::Result<Vec<u8>> {
         let params = RawBytes::serialize(index)?;
         let message = local_message(self.address, Get as u64, params);
-        let response = provider.call(message, height, |tx| decode_leaf(tx)).await?;
+        let response = provider.call(message, height, decode_leaf).await?;
         let leaf = response
             .value
             .ok_or_else(|| anyhow!("leaf not found for index '{}'", index))?;

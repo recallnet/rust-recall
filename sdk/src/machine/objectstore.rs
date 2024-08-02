@@ -126,6 +126,7 @@ impl Machine for ObjectStore {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         write_access: WriteAccess,
+        metadata: HashMap<String, String>,
         gas_params: GasParams,
     ) -> anyhow::Result<(Self, DeployTxReceipt)>
     where
@@ -136,6 +137,7 @@ impl Machine for ObjectStore {
             signer,
             Kind::ObjectStore,
             write_access,
+            metadata,
             gas_params,
         )
         .await?;

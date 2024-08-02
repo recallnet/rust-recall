@@ -52,7 +52,9 @@ pub async fn handle_machine(cli: Cli, args: &MachineArgs) -> anyhow::Result<()> 
             let metadata = info(&provider, args.address, args.height).await?;
             let owner = get_delegated_address(metadata.owner)?.encode_hex_with_prefix();
 
-            print_json(&json!({"kind": metadata.kind, "owner": owner}))
+            print_json(
+                &json!({"kind": metadata.kind, "owner": owner, "metadata": metadata.metadata}),
+            )
         }
     }
 }

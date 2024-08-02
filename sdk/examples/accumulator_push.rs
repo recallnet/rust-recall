@@ -1,6 +1,7 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashMap;
 use std::env;
 
 use anyhow::anyhow;
@@ -39,6 +40,7 @@ async fn main() -> anyhow::Result<()> {
         &provider,
         &mut signer,
         WriteAccess::OnlyOwner,
+        HashMap::new(),
         Default::default(),
     )
     .await?;

@@ -1,6 +1,8 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashMap;
+
 use anyhow::anyhow;
 use async_trait::async_trait;
 use fendermint_actor_machine::{Metadata, WriteAccess, GET_METADATA_METHOD};
@@ -49,6 +51,7 @@ pub trait Machine: Send + Sync + Sized {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         write_access: WriteAccess,
+        metadata: HashMap<String, String>,
         gas_params: GasParams,
     ) -> anyhow::Result<(Self, DeployTxReceipt)>
     where
@@ -103,12 +106,18 @@ async fn deploy_machine<C>(
     signer: &mut impl Signer,
     kind: Kind,
     write_access: WriteAccess,
+    metadata: HashMap<String, String>,
     gas_params: GasParams,
 ) -> anyhow::Result<(Address, DeployTxReceipt)>
 where
     C: Client + Send + Sync,
 {
-    let params = CreateExternalParams { kind, write_access };
+    let params = CreateExternalParams {
+        kind,
+        write_access,
+        metadata,
+    };
+
     let params = RawBytes::serialize(params)?;
     let message = signer
         .transaction(
