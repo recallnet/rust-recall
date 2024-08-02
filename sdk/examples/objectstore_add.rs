@@ -21,11 +21,9 @@ use adm_signer::{key::parse_secret_key, AccountKind, Wallet};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 3 {
-        return Err(anyhow!("Usage: [iroh id] [private key]"));
+    if args.len() != 2 {
+        return Err(anyhow!("Usage: [private key]"));
     }
-
-    let iroh_node_id: iroh::net::NodeId = args[1].parse()?;
 
     let pk_kex = &args[2];
     let pk = parse_secret_key(pk_kex)?;
@@ -71,14 +69,7 @@ async fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
     let tx = machine
-        .add_from_path(
-            &provider,
-            &mut signer,
-            key,
-            file.file_path(),
-            options,
-            iroh_node_id,
-        )
+        .add_from_path(&provider, &mut signer, key, file.file_path(), options)
         .await?;
     println!(
         "Added 1MiB file to object store {} with key {}",

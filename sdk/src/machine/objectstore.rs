@@ -161,6 +161,8 @@ impl Machine for ObjectStore {
 
 impl ObjectStore {
     /// Add an object into the object store with a reader.
+    /// Copies object to memory.
+    /// Use [`ObjectStore::add_from_path`] for large objects.
     pub async fn add_reader<C, R>(
         &self,
         provider: &impl Provider<C>,
@@ -168,7 +170,6 @@ impl ObjectStore {
         key: &str,
         reader: R,
         options: AddOptions,
-        remote_iroh_node: NodeId,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
         C: Client + Send + Sync,
@@ -178,7 +179,6 @@ impl ObjectStore {
         let bars = new_multi_bar(!options.show_progress);
         let msg_bar = bars.add(new_message_bar());
 
-        // This will blow up your memory for large objects, as we store the data in memory currently..
         let progress = self
             .iroh
             .blobs()
@@ -186,15 +186,7 @@ impl ObjectStore {
             .await?;
 
         self.add_inner(
-            provider,
-            signer,
-            key,
-            options,
-            started,
-            bars,
-            msg_bar,
-            progress,
-            remote_iroh_node,
+            provider, signer, key, options, started, bars, msg_bar, progress,
         )
         .await
     }
@@ -207,17 +199,11 @@ impl ObjectStore {
         key: &str,
         path: impl AsRef<Path>,
         options: AddOptions,
-        remote_iroh_node: NodeId,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
         C: Client + Send + Sync,
     {
         let path = path.as_ref();
-
-        // TODO: Maybe duplicative of an Iroh check in `add_from_path` below
-        // TODO: We could enable adding directories at some point
-        // TODO: with a change to the on-chain object store actor
-
         let md = tokio::fs::metadata(path).await?;
         if !md.is_file() {
             return Err(anyhow!("input must be a file"));
@@ -232,16 +218,9 @@ impl ObjectStore {
             .blobs()
             .add_from_path(path.into(), true, SetTagOption::Auto, WrapOption::NoWrap)
             .await?;
+
         self.add_inner(
-            provider,
-            signer,
-            key,
-            options,
-            started,
-            bars,
-            msg_bar,
-            progress,
-            remote_iroh_node,
+            provider, signer, key, options, started, bars, msg_bar, progress,
         )
         .await
     }
@@ -257,7 +236,6 @@ impl ObjectStore {
         bars: Arc<MultiProgress>,
         msg_bar: ProgressBar,
         mut progress: iroh::client::blobs::AddProgress,
-        remote_iroh_node: NodeId,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
         C: Client + Send + Sync,
@@ -308,16 +286,18 @@ impl ObjectStore {
         msg_bar.set_prefix("[2/3]");
         msg_bar.set_message(format!("Uploading {} to network...", object_cid));
 
+        let node_addr = provider.node_addr().await?;
+
         // TODO: progress bar
         self.upload(
             provider,
+            node_addr.node_id,
             signer,
             key,
             object_cid,
             object_size,
             options.metadata.clone(),
             options.overwrite,
-            remote_iroh_node,
         )
         .await?;
 
@@ -336,7 +316,7 @@ impl ObjectStore {
             params.key.clone(),
             object_cid.0,
             self.address,
-            remote_iroh_node,
+            node_addr.node_id,
         ));
         let message = signer
             .transaction(
@@ -370,13 +350,13 @@ impl ObjectStore {
     async fn upload(
         &self,
         provider: &impl ObjectProvider,
+        provider_node_id: NodeId,
         signer: &mut impl Signer,
         key: &str,
         cid: Cid,
         size: usize,
         metadata: HashMap<String, String>,
         overwrite: bool,
-        remote_iroh_node: NodeId,
     ) -> anyhow::Result<()> {
         let from = signer.address();
         let params = AddParams {
@@ -396,7 +376,7 @@ impl ObjectStore {
                 key.into(),
                 cid.0,
                 self.address,
-                remote_iroh_node,
+                provider_node_id,
             )),
         )?;
         let serialized_signed_message = fvm_ipld_encoding::to_vec(&singed_message)?;

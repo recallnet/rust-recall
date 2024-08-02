@@ -10,6 +10,9 @@ use crate::response::Cid;
 /// Provider for object interactions.
 #[async_trait]
 pub trait ObjectProvider: Send + Sync {
+    /// Get Iroh [`NodeAddr`].
+    async fn node_addr(&self) -> anyhow::Result<NodeAddr>;
+
     /// Upload an object.
     async fn upload(
         &self,

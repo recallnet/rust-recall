@@ -96,8 +96,6 @@ struct ObjectstorePutArgs {
     tx_args: TxArgs,
     #[arg(short, long, value_parser = parse_metadata)]
     metadata: Vec<(String, String)>,
-    #[arg(long)]
-    remote_iroh_node: iroh::net::NodeId,
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -260,7 +258,6 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                         show_progress: !cli.quiet,
                         metadata,
                     },
-                    args.remote_iroh_node,
                 )
                 .await?;
 

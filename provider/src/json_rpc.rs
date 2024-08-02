@@ -146,6 +146,25 @@ impl<C> ObjectProvider for JsonRpcProvider<C>
 where
     C: Client + Sync + Send,
 {
+    async fn node_addr(&self) -> anyhow::Result<NodeAddr> {
+        let client = self
+            .objects
+            .clone()
+            .ok_or_else(|| anyhow!("object provider is required"))?;
+
+        let url = format!("{}v1/node", client.url);
+        let response = client.inner.get(url).send().await?;
+        if !response.status().is_success() {
+            return Err(anyhow!(format!(
+                "failed to get node address info: {}",
+                response.text().await?
+            )));
+        }
+
+        let addr = response.json::<NodeAddr>().await?;
+        Ok(addr)
+    }
+
     async fn upload(
         &self,
         cid: Cid,
