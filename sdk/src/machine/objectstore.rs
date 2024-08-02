@@ -246,6 +246,7 @@ impl ObjectStore {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn add_inner<C>(
         &self,
         provider: &impl Provider<C>,

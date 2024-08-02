@@ -11,7 +11,6 @@ use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
 use serde_json::{json, Value};
 use tendermint_rpc::Url;
-use tokio::fs::File;
 use tokio::io::{self};
 
 use adm_provider::{
