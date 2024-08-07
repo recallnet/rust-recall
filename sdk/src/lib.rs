@@ -8,7 +8,7 @@
 use adm_provider::message::GasParams;
 
 pub mod account;
-pub mod blobs;
+pub mod credits;
 pub mod ipc;
 pub mod machine;
 pub mod network;

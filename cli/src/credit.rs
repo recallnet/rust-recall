@@ -11,33 +11,43 @@ use adm_provider::{
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_token_amount},
 };
-use adm_sdk::blobs::{Blobs, FundOptions};
+use adm_sdk::credits::{Credits, FundOptions};
 use adm_sdk::TxParams;
 use adm_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
 use crate::{get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs};
 
 #[derive(Clone, Debug, Args)]
-pub struct BlobArgs {
+pub struct CreditArgs {
     #[command(subcommand)]
-    command: BlobCommands,
+    command: CreditCommands,
 }
 
 #[derive(Clone, Debug, Subcommand)]
-enum BlobCommands {
-    /// Get the status of blobs.
-    Status(StatusArgs),
-    Fund(FundArgs),
+enum CreditCommands {
+    /// Get subnet-wide credit usage statistics.
+    Stats(StatsArgs),
+    /// Get credit balance for an account.
+    Balance(BalanceArgs),
+    /// Buy credits for an account.
+    /// Use the `stats` command to see the subnet byte-blocks per atto token rate.
+    Buy(BuyArgs),
 }
 
 #[derive(Clone, Debug, Args)]
-struct StatusArgs {
+struct StatsArgs {
     #[command(flatten)]
     address: AddressArgs,
 }
 
 #[derive(Clone, Debug, Args)]
-struct FundArgs {
+struct BalanceArgs {
+    #[command(flatten)]
+    address: AddressArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct BuyArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
@@ -54,18 +64,21 @@ struct FundArgs {
     tx_args: TxArgs,
 }
 
-/// Blob commands handler.
-pub async fn handle_blob(cli: Cli, args: &BlobArgs) -> anyhow::Result<()> {
+/// Credit commands handler.
+pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
     let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
     let subnet_id = get_subnet_id(&cli)?;
 
     match &args.command {
-        BlobCommands::Status(args) => {
-            let status = Blobs::query(&provider, args.address.height).await?;
-
-            print_json(&json!({"status": status}))
+        CreditCommands::Stats(args) => {
+            let stats = Credits::stats(&provider, args.address.height).await?;
+            print_json(&json!(stats))
         }
-        BlobCommands::Fund(args) => {
+        CreditCommands::Balance(args) => {
+            let account = Credits::balance(&provider, args.address.height).await?;
+            print_json(&json!(account))
+        }
+        CreditCommands::Buy(args) => {
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
                 gas_params,
@@ -77,7 +90,7 @@ pub async fn handle_blob(cli: Cli, args: &BlobArgs) -> anyhow::Result<()> {
             signer.set_sequence(sequence, &provider).await?;
 
             let to = args.to.unwrap_or(signer.address());
-            let tx = Blobs::fund(
+            let tx = Credits::buy(
                 &provider,
                 &mut signer,
                 to,
