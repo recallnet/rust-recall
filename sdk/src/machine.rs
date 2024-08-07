@@ -125,7 +125,6 @@ where
             Default::default(),
             CreateExternal as u64,
             params,
-            None,
             gas_params,
         )
         .await?;

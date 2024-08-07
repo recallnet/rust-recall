@@ -9,12 +9,12 @@ use base64::{engine::general_purpose, Engine};
 use bytes::Bytes;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{
-    AddParams, DeleteParams, GetParams,
+    AddParams, DeleteParams, GetParams, ListParams,
     Method::{AddObject, DeleteObject, GetObject, ListObjects},
     Object, ObjectList,
 };
 use fendermint_vm_actor_interface::adm::Kind;
-use fendermint_vm_message::{query::FvmQueryHeight, signed::Object as MessageObject};
+use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use indicatif::HumanDuration;
@@ -231,6 +231,7 @@ impl ObjectStore {
         msg_bar.set_prefix("[3/3]");
         msg_bar.set_message("Broadcasting transaction...");
         let params = AddParams {
+            store: self.address,
             key: key.into(),
             cid: object_cid.0,
             overwrite: options.overwrite,
@@ -238,18 +239,12 @@ impl ObjectStore {
             size: object_size,
         };
         let serialized_params = RawBytes::serialize(params.clone())?;
-        let object = Some(MessageObject::new(
-            params.key.clone(),
-            object_cid.0,
-            self.address,
-        ));
         let message = signer
             .transaction(
                 self.address,
                 Default::default(),
                 AddObject as u64,
                 serialized_params,
-                object,
                 options.gas_params,
             )
             .await?;
@@ -287,6 +282,7 @@ impl ObjectStore {
     {
         let from = signer.address();
         let params = AddParams {
+            store: self.address,
             key: key.into(),
             cid: cid.0,
             overwrite,
@@ -297,10 +293,7 @@ impl ObjectStore {
 
         let message =
             object_upload_message(from, self.address, AddObject as u64, serialized_params);
-        let singed_message = signer.sign_message(
-            message,
-            Some(MessageObject::new(key.into(), cid.0, self.address)),
-        )?;
+        let singed_message = signer.sign_message(message)?;
         let serialized_signed_message = fvm_ipld_encoding::to_vec(&singed_message)?;
 
         let chain_id = match signer.subnet_id() {
@@ -342,7 +335,6 @@ impl ObjectStore {
                 Default::default(),
                 DeleteObject as u64,
                 params,
-                None,
                 options.gas_params,
             )
             .await?;
@@ -425,7 +417,7 @@ impl ObjectStore {
         provider: &impl QueryProvider,
         options: QueryOptions,
     ) -> anyhow::Result<ObjectList> {
-        let params = fendermint_actor_objectstore::ListParams {
+        let params = ListParams {
             prefix: options.prefix.into(),
             delimiter: options.delimiter.into(),
             offset: options.offset,

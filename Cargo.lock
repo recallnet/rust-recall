@@ -128,6 +128,7 @@ dependencies = [
  "ethers",
  "ethers-contract",
  "fendermint_actor_accumulator",
+ "fendermint_actor_blobs",
  "fendermint_actor_machine",
  "fendermint_actor_objectstore",
  "fendermint_crypto",
@@ -567,6 +568,19 @@ checksum = "94230421e395b9920d23df13ea5d77a20e1725331f90fbbf6df6040b33f756ae"
 dependencies = [
  "arrayref",
  "arrayvec 0.7.4",
+ "constant_time_eq 0.3.0",
+]
+
+[[package]]
+name = "blake3"
+version = "1.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9ec96fe9a81b5e365f9db71fe00edc4fe4ca2cc7dcb7861f0603012a7caa210"
+dependencies = [
+ "arrayref",
+ "arrayvec 0.7.4",
+ "cc",
+ "cfg-if",
  "constant_time_eq 0.3.0",
 ]
 
@@ -1914,6 +1928,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "fendermint_actor_blobs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cid 0.10.1",
+ "fil_actors_runtime",
+ "frc42_dispatch",
+ "fvm_ipld_blockstore",
+ "fvm_ipld_encoding",
+ "fvm_shared",
+ "log",
+ "multihash 0.18.1",
+ "num-derive 0.3.3",
+ "num-traits",
+ "serde",
+ "serde_tuple",
+]
+
+[[package]]
 name = "fendermint_actor_eam"
 version = "0.1.0"
 dependencies = [
@@ -1954,11 +1987,13 @@ dependencies = [
  "anyhow",
  "cid 0.10.1",
  "fendermint_actor_machine",
+ "fil_actors_runtime",
  "frc42_dispatch",
  "fvm_ipld_blockstore",
  "fvm_ipld_encoding",
  "fvm_ipld_hamt 0.9.0",
  "fvm_shared",
+ "log",
  "num-derive 0.3.3",
  "num-traits",
  "serde",
@@ -3670,6 +3705,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfd8a792c1694c6da4f68db0a9d707c72bd260994da179e6030a5dcee00bb815"
 dependencies = [
  "blake2b_simd",
+ "blake3",
  "core2",
  "digest 0.10.7",
  "multihash-derive",

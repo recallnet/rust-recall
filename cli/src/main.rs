@@ -18,6 +18,7 @@ use adm_sdk::{network::Network as SdkNetwork, TxParams};
 use adm_signer::{key::parse_secret_key, AccountKind, Signer, SubnetID, Wallet};
 
 use crate::account::{handle_account, AccountArgs};
+use crate::blob::{handle_blob, BlobArgs};
 use crate::machine::{
     accumulator::{handle_accumulator, AccumulatorArgs},
     handle_machine,
@@ -26,6 +27,7 @@ use crate::machine::{
 };
 
 mod account;
+mod blob;
 mod machine;
 
 #[derive(Clone, Debug, Parser)]
@@ -56,6 +58,9 @@ enum Commands {
     /// Account related commands.
     #[clap(alias = "accounts")]
     Account(AccountArgs),
+    // Blobs related commands.
+    #[clap(alias = "blobs")]
+    Blob(BlobArgs),
     /// Machine related commands.
     #[clap(alias = "machines")]
     Machine(MachineArgs),
@@ -175,6 +180,7 @@ async fn main() -> anyhow::Result<()> {
 
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cli, args).await,
+        Commands::Blob(args) => handle_blob(cli, args).await,
         Commands::Objectstore(args) => handle_objectstore(cli, args).await,
         Commands::Accumulator(args) => handle_accumulator(cli, args).await,
         Commands::Machine(args) => handle_machine(cli, args).await,

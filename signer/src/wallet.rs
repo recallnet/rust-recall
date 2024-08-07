@@ -5,9 +5,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_actor_interface::eam::EthAddress;
-use fendermint_vm_message::{
-    chain::ChainMessage, query::FvmQueryHeight, signed::Object, signed::SignedMessage,
-};
+use fendermint_vm_message::{chain::ChainMessage, query::FvmQueryHeight, signed::SignedMessage};
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::{
     address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
@@ -62,7 +60,6 @@ impl Signer for Wallet {
         value: TokenAmount,
         method_num: MethodNum,
         params: RawBytes,
-        object: Option<Object>,
         gas_params: GasParams,
     ) -> anyhow::Result<ChainMessage> {
         let mut sequence_guard = self.sequence.lock().await;
@@ -80,28 +77,17 @@ impl Signer for Wallet {
             gas_premium: gas_params.gas_premium,
         };
         *sequence_guard += 1;
-        let signed =
-            SignedMessage::new_secp256k1(message, object, &self.sk, &self.subnet_id.chain_id())?;
+        let signed = SignedMessage::new_secp256k1(message, &self.sk, &self.subnet_id.chain_id())?;
         Ok(ChainMessage::Signed(signed))
     }
 
-    fn sign_message(
-        &self,
-        message: Message,
-        object: Option<Object>,
-    ) -> anyhow::Result<SignedMessage> {
-        let signed =
-            SignedMessage::new_secp256k1(message, object, &self.sk, &self.subnet_id.chain_id())?;
+    fn sign_message(&self, message: Message) -> anyhow::Result<SignedMessage> {
+        let signed = SignedMessage::new_secp256k1(message, &self.sk, &self.subnet_id.chain_id())?;
         Ok(signed)
     }
 
-    fn verify_message(
-        &self,
-        message: &Message,
-        object: &Option<Object>,
-        signature: &Signature,
-    ) -> anyhow::Result<()> {
-        SignedMessage::verify_signature(message, object, signature, &self.subnet_id.chain_id())?;
+    fn verify_message(&self, message: &Message, signature: &Signature) -> anyhow::Result<()> {
+        SignedMessage::verify_signature(message, signature, &self.subnet_id.chain_id())?;
         Ok(())
     }
 }

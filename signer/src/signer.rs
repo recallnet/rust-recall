@@ -4,7 +4,7 @@
 use async_trait::async_trait;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_actor_interface::eam::EthAddress;
-use fendermint_vm_message::{chain::ChainMessage, signed::Object, signed::SignedMessage};
+use fendermint_vm_message::{chain::ChainMessage, signed::SignedMessage};
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::{
     address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
@@ -44,22 +44,12 @@ pub trait Signer: Clone + Send + Sync {
         value: TokenAmount,
         method_num: MethodNum,
         params: RawBytes,
-        object: Option<Object>,
         gas_params: GasParams,
     ) -> anyhow::Result<ChainMessage>;
 
     /// Returns a raw [`SignedMessage`].  
-    fn sign_message(
-        &self,
-        message: Message,
-        object: Option<Object>,
-    ) -> anyhow::Result<SignedMessage>;
+    fn sign_message(&self, message: Message) -> anyhow::Result<SignedMessage>;
 
     /// Verifies a raw [`SignedMessage`].
-    fn verify_message(
-        &self,
-        message: &Message,
-        object: &Option<Object>,
-        signature: &Signature,
-    ) -> anyhow::Result<()>;
+    fn verify_message(&self, message: &Message, signature: &Signature) -> anyhow::Result<()>;
 }
