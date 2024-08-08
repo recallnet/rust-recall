@@ -11,11 +11,13 @@ use adm_provider::{
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_token_amount},
 };
-use adm_sdk::credits::{Credits, FundOptions};
+use adm_sdk::credits::{BuyOptions, Credits};
 use adm_sdk::TxParams;
 use adm_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
-use crate::{get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs};
+use crate::{
+    get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,
+};
 
 #[derive(Clone, Debug, Args)]
 pub struct CreditArgs {
@@ -75,8 +77,9 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
             print_json(&json!(stats))
         }
         CreditCommands::Balance(args) => {
-            let account = Credits::balance(&provider, args.address.height).await?;
-            print_json(&json!(account))
+            let address = get_address(args.address.clone(), &subnet_id)?;
+            let balance = Credits::balance(&provider, address, args.address.height).await?;
+            print_json(&json!(balance))
         }
         CreditCommands::Buy(args) => {
             let broadcast_mode = args.broadcast_mode.get();
@@ -95,7 +98,7 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 &mut signer,
                 to,
                 args.amount.clone(),
-                FundOptions {
+                BuyOptions {
                     broadcast_mode,
                     gas_params,
                 },

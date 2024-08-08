@@ -10,6 +10,7 @@ use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
+use fvm_shared::econ::TokenAmount;
 use serde_json::{json, Value};
 use tendermint_rpc::Url;
 use tokio::fs::File;
@@ -17,8 +18,9 @@ use tokio::io::{self};
 
 use adm_provider::{
     json_rpc::JsonRpcProvider,
-    util::{parse_address, parse_metadata, parse_query_height},
+    util::{parse_address, parse_metadata, parse_query_height, parse_token_amount},
 };
+use adm_sdk::credits::{BuyOptions, Credits};
 use adm_sdk::machine::objectstore::{AddOptions, DeleteOptions, GetOptions};
 use adm_sdk::{
     machine::{
@@ -64,6 +66,11 @@ struct ObjectstoreCreateArgs {
     /// Allow public write access to the object store.
     #[arg(long, default_value_t = false)]
     public_write: bool,
+    /// The amount of FIL to spend on credit for the object store.
+    /// If you don't buy credits when creating the object store,
+    /// you can buy them later with the `credit buy --to <objectstore address>` command.
+    #[arg(long, value_parser = parse_token_amount)]
+    buy_credit: Option<TokenAmount>,
     #[command(flatten)]
     tx_args: TxArgs,
     #[arg(short, long, value_parser = parse_metadata)]
@@ -204,9 +211,30 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
 
-            let (store, tx) =
-                ObjectStore::new(&provider, &mut signer, write_access, metadata, gas_params)
+            let (store, tx) = ObjectStore::new(
+                &provider,
+                &mut signer,
+                write_access,
+                metadata,
+                gas_params.clone(),
+            )
+            .await?;
+
+            if let Some(buy_credit) = args.buy_credit.clone() {
+                if buy_credit.is_positive() {
+                    Credits::buy(
+                        &provider,
+                        &mut signer,
+                        store.address(),
+                        buy_credit,
+                        BuyOptions {
+                            broadcast_mode: Default::default(),
+                            gas_params,
+                        },
+                    )
                     .await?;
+                }
+            }
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }

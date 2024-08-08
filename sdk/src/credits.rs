@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
-use fendermint_actor_blobs::BuyCreditParams;
 use fendermint_actor_blobs::Method::{BuyCredit, GetAccount, GetStats};
+use fendermint_actor_blobs::{BuyCreditParams, GetAccountParams};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
@@ -21,33 +21,23 @@ use adm_provider::tx::{BroadcastMode, TxReceipt};
 use adm_provider::Provider;
 use adm_signer::Signer;
 
-/*
-*adm credit stats (subnet-wide summary)
-*adm credit fund --to (buy credits by account)
-adm credit balance --address (show credit summary by account)
+// Commands to support:
+//  ✓ adm credit stats (subnet-wide summary)
+//  ✓ adm credit balance --address (show credit summary by account)
+//  ✓ adm credit fund --to (buy credits by account)
 
-adm storage stats (subnet-wide summary)
-adm storage usage --address (see usage by account)
-adm storage add --address (add a blob directly)
-adm storage get [hash] (get a blob info directly)
-adm storage cat [hash] (get a blob directly)
-adm storage ls --address (list blobs by account)
- */
-
-/// Options for funding an account.
+/// Options for buying credit.
 #[derive(Clone, Default, Debug)]
-pub struct FundOptions {
+pub struct BuyOptions {
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
     pub gas_params: GasParams,
 }
 
-/// JSON serialization friendly version of [`fendermint_actor_blobs::Account`].
+/// Credit balance for an account.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct Account {
-    // Total size of all blobs managed by the account.
-    // pub capacity_used: String,
+pub struct Balance {
     /// Current free credit in byte-blocks that can be used for new commitments.
     pub credit_free: String,
     /// Current committed credit in byte-blocks that will be used for debits.
@@ -56,7 +46,7 @@ pub struct Account {
     pub last_debit_epoch: Option<ChainEpoch>,
 }
 
-impl From<fendermint_actor_blobs::Account> for Account {
+impl From<fendermint_actor_blobs::Account> for Balance {
     fn from(v: fendermint_actor_blobs::Account) -> Self {
         let last_debit_epoch = if v.last_debit_epoch != 0 {
             Some(v.last_debit_epoch)
@@ -64,7 +54,6 @@ impl From<fendermint_actor_blobs::Account> for Account {
             None
         };
         Self {
-            // capacity_used: v.capacity_used.to_string(),
             credit_free: v.credit_free.to_string(),
             credit_committed: v.credit_committed.to_string(),
             last_debit_epoch,
@@ -72,15 +61,11 @@ impl From<fendermint_actor_blobs::Account> for Account {
     }
 }
 
-/// JSON serialization friendly version of [`fendermint_actor_blobs::GetSummaryReturn`].
+/// Subnet-wide credit statistics.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GetStatsReturn {
+pub struct CreditStats {
     /// The current token balance earned by the subnet.
     pub balance: String,
-    // The total free storage capacity of the subnet.
-    // pub capacity_free: String,
-    // The total used storage capacity of the subnet.
-    // pub capacity_used: String,
     /// The total number of credits sold in the subnet.
     pub credit_sold: String,
     /// The total number of credits committed to active storage in the subnet.
@@ -91,25 +76,17 @@ pub struct GetStatsReturn {
     pub credit_debit_rate: u64,
     /// Total number of debit accounts.
     pub num_accounts: u64,
-    // Total number of actively stored blobs.
-    // pub num_blobs: u64,
-    // Total number of currently resolving blobs.
-    // pub num_resolving: u64,
 }
 
-impl From<fendermint_actor_blobs::GetStatsReturn> for GetStatsReturn {
+impl From<fendermint_actor_blobs::GetStatsReturn> for CreditStats {
     fn from(v: fendermint_actor_blobs::GetStatsReturn) -> Self {
         Self {
             balance: v.balance.to_string(),
-            // capacity_free: v.capacity_free.to_string(),
-            // capacity_used: v.capacity_used.to_string(),
             credit_sold: v.credit_sold.to_string(),
             credit_committed: v.credit_committed.to_string(),
             credit_debited: v.credit_debited.to_string(),
             credit_debit_rate: v.credit_debit_rate,
             num_accounts: v.num_accounts,
-            // num_blobs: v.num_blobs,
-            // num_resolving: v.num_resolving,
         }
     }
 }
@@ -121,7 +98,7 @@ impl Credits {
     pub async fn stats(
         provider: &impl QueryProvider,
         height: FvmQueryHeight,
-    ) -> anyhow::Result<GetStatsReturn> {
+    ) -> anyhow::Result<CreditStats> {
         let message = local_message(BLOBS_ACTOR_ADDR, GetStats as u64, Default::default());
         let response = provider.call(message, height, decode_stats).await?;
         Ok(response.value)
@@ -129,28 +106,31 @@ impl Credits {
 
     pub async fn balance(
         provider: &impl QueryProvider,
+        address: Address,
         height: FvmQueryHeight,
-    ) -> anyhow::Result<Account> {
-        let message = local_message(BLOBS_ACTOR_ADDR, GetAccount as u64, Default::default());
-        let response = provider.call(message, height, decode_account).await?;
+    ) -> anyhow::Result<Balance> {
+        let params = GetAccountParams(address);
+        let params = RawBytes::serialize(params)?;
+        let message = local_message(BLOBS_ACTOR_ADDR, GetAccount as u64, params);
+        let response = provider.call(message, height, decode_balance).await?;
         if let Some(account) = response.value {
             Ok(account)
         } else {
-            Ok(Account::default())
+            Ok(Balance::default())
         }
     }
 
     pub async fn buy<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        address: Address,
+        to: Address,
         amount: TokenAmount,
-        options: FundOptions,
-    ) -> anyhow::Result<TxReceipt<Account>>
+        options: BuyOptions,
+    ) -> anyhow::Result<TxReceipt<Balance>>
     where
         C: Client + Send + Sync,
     {
-        let params = BuyCreditParams(address);
+        let params = BuyCreditParams(to);
         let params = RawBytes::serialize(params)?;
         let message = signer
             .transaction(
@@ -167,23 +147,23 @@ impl Credits {
     }
 }
 
-fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<GetStatsReturn> {
+fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<CreditStats> {
     let data = decode_bytes(deliver_tx)?;
     fvm_ipld_encoding::from_slice::<fendermint_actor_blobs::GetStatsReturn>(&data)
         .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as GetSummaryReturn: {e}"))
+        .map_err(|e| anyhow!("error parsing as CreditStats: {e}"))
 }
 
-fn decode_account(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Account>> {
+fn decode_balance(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Balance>> {
     let data = decode_bytes(deliver_tx)?;
     fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs::Account>>(&data)
         .map(|v| v.map(|v| v.into()))
-        .map_err(|e| anyhow!("error parsing as Option<Account>: {e}"))
+        .map_err(|e| anyhow!("error parsing as Option<Balance>: {e}"))
 }
 
-fn decode_buy(deliver_tx: &DeliverTx) -> anyhow::Result<Account> {
+fn decode_buy(deliver_tx: &DeliverTx) -> anyhow::Result<Balance> {
     let data = decode_bytes(deliver_tx)?;
     fvm_ipld_encoding::from_slice::<fendermint_actor_blobs::Account>(&data)
         .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as Account: {e}"))
+        .map_err(|e| anyhow!("error parsing as Balance: {e}"))
 }
