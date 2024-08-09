@@ -195,6 +195,15 @@ impl Network {
             Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
+
+    /// Returns the network provider iroh details.
+    pub fn iroh(&self) -> anyhow::Result<iroh::net::NodeId> {
+        match self {
+            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
+            Network::Testnet => todo!(),
+            Network::Localnet | Network::Devnet => todo!(),
+        }
+    }
 }
 
 impl FromStr for Network {

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::fmt::Display;
-use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
@@ -12,7 +11,8 @@ use fendermint_vm_message::{
     query::{FvmQuery, FvmQueryHeight},
 };
 use fvm_shared::address::Address;
-use reqwest::multipart::{Form, Part};
+use iroh::net::NodeAddr;
+use reqwest::multipart::Form;
 use tendermint::abci::response::DeliverTx;
 use tendermint::block::Height;
 use tendermint_rpc::{
@@ -146,26 +146,43 @@ impl<C> ObjectProvider for JsonRpcProvider<C>
 where
     C: Client + Sync + Send,
 {
-    async fn upload(
-        &self,
-        body: reqwest::Body,
-        total_bytes: usize,
-        msg: String,
-        chain_id: u64,
-    ) -> anyhow::Result<Cid> {
+    async fn node_addr(&self) -> anyhow::Result<NodeAddr> {
         let client = self
             .objects
             .clone()
             .ok_or_else(|| anyhow!("object provider is required"))?;
 
-        let part = Part::stream_with_length(body, total_bytes as u64)
-            .file_name("upload")
-            .mime_str("application/octet-stream")?;
+        let url = format!("{}v1/node", client.url);
+        let response = client.inner.get(url).send().await?;
+        if !response.status().is_success() {
+            return Err(anyhow!(format!(
+                "failed to get node address info: {}",
+                response.text().await?
+            )));
+        }
+
+        let addr = response.json::<NodeAddr>().await?;
+        Ok(addr)
+    }
+
+    async fn upload(
+        &self,
+        cid: Cid,
+        source: NodeAddr,
+        _total_bytes: usize,
+        msg: String,
+        chain_id: u64,
+    ) -> anyhow::Result<()> {
+        let client = self
+            .objects
+            .clone()
+            .ok_or_else(|| anyhow!("object provider is required"))?;
 
         let form = Form::new()
             .text("chain_id", chain_id.to_string())
             .text("msg", msg)
-            .part("object", part);
+            .text("cid", cid.to_string())
+            .text("source", serde_json::to_string(&source)?);
 
         let url = format!("{}v1/objects", client.url);
         let response = client.inner.post(url).multipart(form).send().await?;
@@ -176,10 +193,7 @@ where
             )));
         }
 
-        let cid_str = response.text().await?;
-        let cid = Cid::from_str(&cid_str)?;
-
-        Ok(cid)
+        Ok(())
     }
 
     async fn download(

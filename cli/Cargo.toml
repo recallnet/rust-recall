@@ -22,6 +22,7 @@ clap = { workspace = true }
 clap-stdin = { workspace = true }
 ethers = { workspace = true }
 hex = { workspace = true }
+iroh = { workspace = true }
 humantime = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }

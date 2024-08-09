@@ -7,7 +7,7 @@ use std::env;
 use anyhow::anyhow;
 use fendermint_actor_machine::WriteAccess;
 use rand::{thread_rng, Rng};
-use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 use adm_provider::json_rpc::JsonRpcProvider;
@@ -21,14 +21,15 @@ use adm_signer::{key::parse_secret_key, AccountKind, Wallet};
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        return Err(anyhow!("missing hex-encoded private key"));
+    if args.len() != 2 {
+        return Err(anyhow!("Usage: [private key]"));
     }
-    let pk_kex = &args[1];
+
+    let pk_kex = &args[2];
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    let network = Network::Testnet.init();
+    let network = Network::Localnet.init();
 
     // Setup network provider
     let provider =
@@ -57,11 +58,10 @@ async fn main() -> anyhow::Result<()> {
     rng.fill(&mut random_data[..]);
     file.write_all(&random_data).await?;
     file.flush().await?;
-    file.rewind().await?;
 
     // Add a file to the object store
     let key = "foo/my_file";
-    let mut metadata = std::collections::HashMap::new();
+    let mut metadata = HashMap::new();
     metadata.insert("foo".to_string(), "bar".to_string());
     let options = AddOptions {
         overwrite: true,
@@ -69,7 +69,7 @@ async fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
     let tx = machine
-        .add(&provider, &mut signer, key, file, options)
+        .add_from_path(&provider, &mut signer, key, file.file_path(), options)
         .await?;
     println!(
         "Added 1MiB file to object store {} with key {}",
@@ -86,6 +86,7 @@ async fn main() -> anyhow::Result<()> {
         prefix: "foo/".into(),
         ..Default::default()
     };
+    tokio::time::sleep(Duration::from_secs(2)).await;
     let list = machine.query(&provider, options).await?;
     for (key_bytes, object) in list.objects {
         let key = core::str::from_utf8(&key_bytes).unwrap_or_default();

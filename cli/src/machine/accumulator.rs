@@ -64,10 +64,11 @@ struct AccumulatorCreateArgs {
     /// Allow public write access to the accumulator.
     #[arg(long, default_value_t = false)]
     public_write: bool,
-    #[command(flatten)]
-    tx_args: TxArgs,
+    /// User-defined metadata.
     #[arg(short, long, value_parser = parse_metadata)]
     metadata: Vec<(String, String)>,
+    #[command(flatten)]
+    tx_args: TxArgs,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -174,7 +175,7 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
             reader.read_to_end(&mut buf).await?;
             let payload = Bytes::from(buf);
 
-            let machine = Accumulator::attach(args.address);
+            let machine = Accumulator::attach(args.address).await?;
             let tx = machine
                 .push(
                     &provider,
@@ -190,7 +191,7 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
             print_json(&tx)
         }
         AccumulatorCommands::Leaf(args) => {
-            let machine = Accumulator::attach(args.address);
+            let machine = Accumulator::attach(args.address).await?;
             let leaf = machine.leaf(&provider, args.index, args.height).await?;
 
             let mut stdout = io::stdout();
@@ -198,19 +199,19 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
             Ok(())
         }
         AccumulatorCommands::Count(args) => {
-            let machine = Accumulator::attach(args.address);
+            let machine = Accumulator::attach(args.address).await?;
             let count = machine.count(&provider, args.height).await?;
 
             print_json(&json!({"count": count}))
         }
         AccumulatorCommands::Peaks(args) => {
-            let machine = Accumulator::attach(args.address);
+            let machine = Accumulator::attach(args.address).await?;
             let peaks = machine.peaks(&provider, args.height).await?;
 
             print_json(&json!({"peaks": peaks}))
         }
         AccumulatorCommands::Root(args) => {
-            let machine = Accumulator::attach(args.address);
+            let machine = Accumulator::attach(args.address).await?;
             let root = machine.root(&provider, args.height).await?;
 
             print_json(&json!({"root": root.to_string()}))

@@ -1,12 +1,13 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::path::Path;
+use std::sync::Arc;
 use std::{cmp::min, collections::HashMap};
 
 use anyhow::anyhow;
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine};
-use bytes::Bytes;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{
     AddParams, DeleteParams, GetParams,
@@ -17,16 +18,17 @@ use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::{query::FvmQueryHeight, signed::Object as MessageObject};
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
-use indicatif::HumanDuration;
+use indicatif::{HumanDuration, MultiProgress, ProgressBar};
+use iroh::blobs::{provider::AddProgress, util::SetTagOption};
+use iroh::client::blobs::WrapOption;
+use iroh::net::NodeId;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
 use tokio::{
-    io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt},
+    io::{AsyncRead, AsyncSeek, AsyncWrite, AsyncWriteExt},
     time::Instant,
 };
 use tokio_stream::StreamExt;
-use tokio_util::io::ReaderStream;
-use unixfs_v1::file::adder::{Chunker, FileAdder};
 
 use adm_provider::{
     message::{local_message, object_upload_message, GasParams},
@@ -113,6 +115,7 @@ impl Default for QueryOptions {
 /// A machine for S3-like object storage.
 pub struct ObjectStore {
     address: Address,
+    iroh: iroh::node::MemNode,
 }
 
 #[async_trait]
@@ -138,11 +141,17 @@ impl Machine for ObjectStore {
             gas_params,
         )
         .await?;
-        Ok((Self::attach(address), tx))
+        let this = Self::attach(address).await?;
+        Ok((this, tx))
     }
 
-    fn attach(address: Address) -> Self {
-        ObjectStore { address }
+    async fn attach(address: Address) -> anyhow::Result<Self> {
+        let node = iroh::node::Node::memory().spawn().await?;
+
+        Ok(ObjectStore {
+            address,
+            iroh: node,
+        })
     }
 
     fn address(&self) -> Address {
@@ -151,13 +160,15 @@ impl Machine for ObjectStore {
 }
 
 impl ObjectStore {
-    /// Add an object into the object store.
-    pub async fn add<C, R>(
+    /// Add an object into the object store with a reader.
+    /// Copies object to memory.
+    /// Use [`ObjectStore::add_from_path`] for large objects.
+    pub async fn add_reader<C, R>(
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         key: &str,
-        mut reader: R,
+        reader: R,
         options: AddOptions,
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
@@ -167,65 +178,128 @@ impl ObjectStore {
         let started = Instant::now();
         let bars = new_multi_bar(!options.show_progress);
         let msg_bar = bars.add(new_message_bar());
-        // Generate object Cid
-        // We do this here to avoid moving the reader
-        let chunk_size = 1024 * 1024; // size-1048576
-        let adder = FileAdder::builder()
-            .with_chunker(Chunker::Size(chunk_size))
-            .build();
-        let buffer = vec![0; chunk_size];
-        let mut reader_size: usize = 0;
-        let mut object_size: usize = 0;
 
-        msg_bar.set_prefix("[1/3]");
-        let chunk = Cid::from(cid::Cid::default());
-        let object_cid = generate_cid(
-            &mut reader,
-            buffer,
-            &mut reader_size,
-            adder,
-            chunk,
-            &msg_bar,
-            &mut object_size,
-        )
-        .await?;
-
-        // Rewind and stream for uploading
-        msg_bar.set_prefix("[2/3]");
-        msg_bar.set_message(format!("Uploading {} to network...", object_cid));
-        let pro_bar = bars.add(new_progress_bar(reader_size));
-        reader.rewind().await?;
-        let mut stream = ReaderStream::new(reader);
-        let async_stream = async_stream::stream! {
-            let mut progress: usize = 0;
-            while let Some(chunk) = stream.next().await {
-                if let Ok(chunk) = &chunk {
-                    progress = min(progress + chunk.len(), reader_size);
-                    pro_bar.set_position(progress as u64);
-                }
-                yield chunk;
-            }
-            pro_bar.finish_and_clear();
-        };
-
-        // Upload Object to Object API
-        let response_cid = self
-            .upload(
-                provider,
-                signer,
-                key,
-                async_stream,
-                object_cid,
-                object_size,
-                options.metadata.clone(),
-                options.overwrite,
-            )
+        let progress = self
+            .iroh
+            .blobs()
+            .add_reader(reader, SetTagOption::Auto)
             .await?;
 
-        // Verify uploaded CID with locally computed CID
-        if response_cid != object_cid {
-            return Err(anyhow!("cannot verify object; cid does not match remote"));
+        self.add_inner(
+            provider, signer, key, options, started, bars, msg_bar, progress,
+        )
+        .await
+    }
+
+    /// Add an object into the object store from a path.
+    pub async fn add_from_path<C>(
+        &self,
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        key: &str,
+        path: impl AsRef<Path>,
+        options: AddOptions,
+    ) -> anyhow::Result<TxReceipt<Cid>>
+    where
+        C: Client + Send + Sync,
+    {
+        let path = path.as_ref();
+        let md = tokio::fs::metadata(path).await?;
+        if !md.is_file() {
+            return Err(anyhow!("input must be a file"));
         }
+
+        let started = Instant::now();
+        let bars = new_multi_bar(!options.show_progress);
+        let msg_bar = bars.add(new_message_bar());
+
+        let progress = self
+            .iroh
+            .blobs()
+            .add_from_path(path.into(), true, SetTagOption::Auto, WrapOption::NoWrap)
+            .await?;
+
+        self.add_inner(
+            provider, signer, key, options, started, bars, msg_bar, progress,
+        )
+        .await
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    async fn add_inner<C>(
+        &self,
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        key: &str,
+        options: AddOptions,
+        started: Instant,
+        bars: Arc<MultiProgress>,
+        msg_bar: ProgressBar,
+        mut progress: iroh::client::blobs::AddProgress,
+    ) -> anyhow::Result<TxReceipt<Cid>>
+    where
+        C: Client + Send + Sync,
+    {
+        // Iroh ingest
+        msg_bar.set_prefix("[1/3]");
+        msg_bar.set_message("Injesting data ...");
+
+        let mut pro_bar = None;
+        let mut object_size = 0;
+        let object_hash = loop {
+            let Some(event) = progress.next().await else {
+                anyhow::bail!("Unexpected end while ingesting data");
+            };
+            match event? {
+                AddProgress::Found {
+                    id: _,
+                    name: _,
+                    size,
+                } => {
+                    object_size = size as usize;
+                    pro_bar = Some(bars.add(new_progress_bar(size as _)));
+                }
+                AddProgress::Done { id: _, hash: _ } => {
+                    pro_bar.take().unwrap().finish_and_clear();
+                }
+                AddProgress::AllDone { hash, .. } => {
+                    break hash;
+                }
+                AddProgress::Progress { id: _, offset } => {
+                    pro_bar.as_mut().unwrap().set_position(offset);
+                }
+                AddProgress::Abort(err) => {
+                    return Err(err.into());
+                }
+            }
+        };
+
+        let object_cid = Cid(cid::Cid::new_v1(
+            0x55,
+            cid::multihash::Multihash::wrap(
+                cid::multihash::Code::Blake3_256.into(),
+                object_hash.as_ref(),
+            )?,
+        ));
+
+        // Upload
+        msg_bar.set_prefix("[2/3]");
+        msg_bar.set_message(format!("Uploading {} to network...", object_cid));
+
+        let node_addr = provider.node_addr().await?;
+
+        // TODO: progress bar
+        self.upload(
+            provider,
+            node_addr.node_id,
+            signer,
+            key,
+            object_cid,
+            object_size,
+            options.metadata.clone(),
+            options.overwrite,
+        )
+        .await?;
 
         // Broadcast transaction with Object's CID
         msg_bar.set_prefix("[3/3]");
@@ -242,6 +316,7 @@ impl ObjectStore {
             params.key.clone(),
             object_cid.0,
             self.address,
+            node_addr.node_id,
         ));
         let message = signer
             .transaction(
@@ -253,38 +328,36 @@ impl ObjectStore {
                 options.gas_params,
             )
             .await?;
+
         let tx = provider
             .perform(message, options.broadcast_mode, decode_cid)
             .await?;
+
         msg_bar.println(format!(
-            "{} Added object in {} (cid={}; size={})",
+            "{} Added detached object in {} (cid={}; size={})",
             SPARKLE,
             HumanDuration(started.elapsed()),
             object_cid,
             object_size
         ));
+
         msg_bar.finish_and_clear();
         Ok(tx)
     }
 
     /// Uploads an object to the Object API for staging.
     #[allow(clippy::too_many_arguments)]
-    async fn upload<S>(
+    async fn upload(
         &self,
         provider: &impl ObjectProvider,
+        provider_node_id: NodeId,
         signer: &mut impl Signer,
         key: &str,
-        stream: S,
         cid: Cid,
         size: usize,
         metadata: HashMap<String, String>,
         overwrite: bool,
-    ) -> anyhow::Result<Cid>
-    where
-        S: futures_core::stream::TryStream + Send + 'static,
-        S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
-        Bytes: From<S::Ok>,
-    {
+    ) -> anyhow::Result<()> {
         let from = signer.address();
         let params = AddParams {
             key: key.into(),
@@ -299,7 +372,12 @@ impl ObjectStore {
             object_upload_message(from, self.address, AddObject as u64, serialized_params);
         let singed_message = signer.sign_message(
             message,
-            Some(MessageObject::new(key.into(), cid.0, self.address)),
+            Some(MessageObject::new(
+                key.into(),
+                cid.0,
+                self.address,
+                provider_node_id,
+            )),
         )?;
         let serialized_signed_message = fvm_ipld_encoding::to_vec(&singed_message)?;
 
@@ -310,17 +388,18 @@ impl ObjectStore {
             }
         };
 
-        let body = reqwest::Body::wrap_stream(stream);
-        let response = provider
+        let node_addr = self.iroh.node_addr().await?;
+        provider
             .upload(
-                body,
+                cid,
+                node_addr,
                 size,
                 general_purpose::URL_SAFE.encode(&serialized_signed_message),
                 chain_id.into(),
             )
             .await?;
 
-        Ok(response)
+        Ok(())
     }
 
     /// Delete an object.
@@ -436,43 +515,6 @@ impl ObjectStore {
         let response = provider.call(message, options.height, decode_list).await?;
         Ok(response.value)
     }
-}
-
-async fn generate_cid<R: AsyncRead + Unpin>(
-    reader: &mut R,
-    mut buffer: Vec<u8>,
-    reader_size: &mut usize,
-    mut adder: FileAdder,
-    mut chunk: Cid,
-    msg_bar: &indicatif::ProgressBar,
-    object_size: &mut usize,
-) -> Result<Cid, anyhow::Error> {
-    loop {
-        match reader.read(&mut buffer).await {
-            Ok(0) => {
-                break;
-            }
-            Ok(n) => {
-                *reader_size += n;
-                let (leaf, n) = adder.push(&buffer[..n]);
-                for (c, _) in leaf {
-                    chunk = Cid::from(cid::Cid::try_from(c.to_bytes())?);
-                    msg_bar.set_message(format!("Processed chunk: {}", c));
-                }
-                *object_size += n;
-            }
-            Err(e) => {
-                return Err(e.into());
-            }
-        }
-    }
-    let unixfs_iterator = adder.finish();
-    let last = unixfs_iterator.last();
-    let object_cid = match last {
-        Some((c, _)) => Cid::from(cid::Cid::try_from(c.to_bytes())?),
-        None => chunk,
-    };
-    Ok(object_cid)
 }
 
 fn decode_get(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Object>> {

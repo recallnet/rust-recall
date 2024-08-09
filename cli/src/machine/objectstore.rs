@@ -4,7 +4,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use anyhow::anyhow;
 use clap::{Args, Parser, Subcommand};
 use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
@@ -12,7 +11,6 @@ use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
 use serde_json::{json, Value};
 use tendermint_rpc::Url;
-use tokio::fs::File;
 use tokio::io::{self};
 
 use adm_provider::{
@@ -64,10 +62,11 @@ struct ObjectstoreCreateArgs {
     /// Allow public write access to the object store.
     #[arg(long, default_value_t = false)]
     public_write: bool,
-    #[command(flatten)]
-    tx_args: TxArgs,
+    /// User-defined metadata.
     #[arg(short, long, value_parser = parse_metadata)]
     metadata: Vec<(String, String)>,
+    #[command(flatten)]
+    tx_args: TxArgs,
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -245,19 +244,13 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let file = File::open(&args.input).await?;
-            let md = file.metadata().await?;
-            if !md.is_file() {
-                return Err(anyhow!("input must be a file"));
-            }
-
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             let tx = machine
-                .add(
+                .add_from_path(
                     &provider,
                     &mut signer,
                     &args.key,
-                    file,
+                    &args.input,
                     AddOptions {
                         overwrite: args.overwrite,
                         broadcast_mode,
@@ -286,7 +279,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             let tx = machine
                 .delete(
                     &provider,
@@ -309,7 +302,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             let provider =
                 JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, Some(object_api_url))?;
 
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             machine
                 .get(
                     &provider,
@@ -326,7 +319,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
         ObjectstoreCommands::Query(args) => {
             let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
 
-            let machine = ObjectStore::attach(args.address);
+            let machine = ObjectStore::attach(args.address).await?;
             let list = machine
                 .query(
                     &provider,
