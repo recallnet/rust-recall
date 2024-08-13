@@ -321,7 +321,7 @@ impl ObjectStore {
                     pro_bar.set_length(size);
                 }
                 AddProgress::Done { id: _, hash: _ } => {
-                    pro_bar.finish();
+                    pro_bar.finish_and_clear();
                 }
                 AddProgress::AllDone { hash, .. } => {
                     break hash;
@@ -355,47 +355,56 @@ impl ObjectStore {
             .collect_events
             .store(true, Ordering::Relaxed);
         let r = self.node_events_handle.receiver.clone();
-        let progress_handle = tokio::task::spawn(async move {
+        let (cancel_s, mut cancel_r) = tokio::sync::oneshot::channel();
+
+        tokio::task::spawn(async move {
             let mut r = r.lock().await;
             let mut current_req = None;
             up_bar.set_position(0);
 
-            while let Some(event) = r.recv().await {
-                match event {
-                    iroh::blobs::provider::Event::GetRequestReceived {
-                        request_id, hash, ..
-                    } => {
-                        if hash == object_hash {
-                            current_req.replace(request_id);
+            loop {
+                tokio::select! {
+                    _ = &mut cancel_r => {
+                        // finished
+                        break;
+                    }
+                    Some(event) = r.recv() => {
+                        match event {
+                            iroh::blobs::provider::Event::GetRequestReceived {
+                                request_id, hash, ..
+                            } => {
+                                if hash == object_hash {
+                                    current_req.replace(request_id);
+                                }
+                            }
+                            iroh::blobs::provider::Event::TransferProgress {
+                                request_id,
+                                hash,
+                                end_offset,
+                                ..
+                            } => {
+                                if hash == object_hash && Some(request_id) == current_req {
+                                    // progress
+                                    up_bar.set_position(end_offset);
+                                }
+                            }
+                            iroh::blobs::provider::Event::TransferCompleted { request_id, .. } => {
+                                if Some(request_id) == current_req {
+                                    break;
+                                }
+                            }
+                            iroh::blobs::provider::Event::TransferAborted { request_id, .. } => {
+                                if Some(request_id) == current_req {
+                                    break;
+                                }
+                            }
+                            _ => {}
                         }
                     }
-                    iroh::blobs::provider::Event::TransferProgress {
-                        request_id,
-                        hash,
-                        end_offset,
-                        ..
-                    } => {
-                        if hash == object_hash && Some(request_id) == current_req {
-                            // progress
-                            up_bar.set_position(end_offset);
-                        }
-                    }
-                    iroh::blobs::provider::Event::TransferCompleted { request_id, .. } => {
-                        if Some(request_id) == current_req {
-                            up_bar.finish();
-                            return true;
-                        }
-                    }
-                    iroh::blobs::provider::Event::TransferAborted { request_id, .. } => {
-                        if Some(request_id) == current_req {
-                            up_bar.finish();
-                            return false;
-                        }
-                    }
-                    _ => {}
                 }
             }
-            false
+
+            up_bar.finish_and_clear();
         });
 
         self.upload(
@@ -410,11 +419,7 @@ impl ObjectStore {
         )
         .await?;
 
-        let transfer_success = progress_handle.await?;
-        if !transfer_success {
-            anyhow::bail!("Failed to upload");
-        }
-
+        cancel_s.send(()).ok();
         self.node_events_handle
             .collect_events
             .store(false, Ordering::Relaxed);
