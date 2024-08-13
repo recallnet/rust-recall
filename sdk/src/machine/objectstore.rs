@@ -1,7 +1,10 @@
 // Copyright 2024 ADM Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::future::Future;
 use std::path::Path;
+use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{cmp::min, collections::HashMap};
 
@@ -24,6 +27,7 @@ use iroh::client::blobs::WrapOption;
 use iroh::net::NodeId;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
+use tokio::sync::{mpsc, Mutex};
 use tokio::{
     io::{AsyncRead, AsyncSeek, AsyncWrite, AsyncWriteExt},
     time::Instant,
@@ -116,6 +120,7 @@ impl Default for QueryOptions {
 pub struct ObjectStore {
     address: Address,
     iroh: iroh::node::MemNode,
+    node_events_handle: BlobEventsHandle,
 }
 
 #[async_trait]
@@ -146,16 +151,70 @@ impl Machine for ObjectStore {
     }
 
     async fn attach(address: Address) -> anyhow::Result<Self> {
-        let node = iroh::node::Node::memory().spawn().await?;
+        let (node_events, node_events_handle) = BlobEvents::new(16);
+        let node = iroh::node::Node::memory()
+            .blobs_events(node_events)
+            .spawn()
+            .await?;
 
         Ok(ObjectStore {
             address,
             iroh: node,
+            node_events_handle,
         })
     }
 
     fn address(&self) -> Address {
         self.address
+    }
+}
+
+#[derive(Debug, Clone)]
+struct BlobEvents {
+    sender: mpsc::Sender<iroh::blobs::provider::Event>,
+    collect_events: Arc<AtomicBool>,
+}
+
+struct BlobEventsHandle {
+    receiver: Arc<Mutex<mpsc::Receiver<iroh::blobs::provider::Event>>>,
+    collect_events: Arc<AtomicBool>,
+}
+
+impl BlobEvents {
+    fn new(cap: usize) -> (Self, BlobEventsHandle) {
+        let (s, r) = mpsc::channel(cap);
+        let collect_events = Arc::new(AtomicBool::new(false));
+        (
+            Self {
+                sender: s,
+                collect_events: collect_events.clone(),
+            },
+            BlobEventsHandle {
+                receiver: Arc::new(Mutex::new(r)),
+                collect_events,
+            },
+        )
+    }
+}
+
+impl iroh::blobs::provider::CustomEventSender for BlobEvents {
+    fn send(
+        &self,
+        event: iroh::blobs::provider::Event,
+    ) -> Pin<Box<dyn Future<Output = ()> + 'static + Send>> {
+        let sender = self.sender.clone();
+        let collect_events = self.collect_events.clone();
+        Box::pin(async move {
+            if collect_events.load(Ordering::Relaxed) {
+                sender.send(event).await.ok();
+            }
+        })
+    }
+
+    fn try_send(&self, event: iroh::blobs::provider::Event) {
+        if self.collect_events.load(Ordering::Relaxed) {
+            self.sender.try_send(event).ok();
+        }
     }
 }
 
@@ -244,8 +303,10 @@ impl ObjectStore {
         msg_bar.set_prefix("[1/3]");
         msg_bar.set_message("Injesting data ...");
 
-        let mut pro_bar = None;
+        let pro_bar = bars.add(new_progress_bar(0));
         let mut object_size = 0;
+        pro_bar.set_position(0);
+
         let object_hash = loop {
             let Some(event) = progress.next().await else {
                 anyhow::bail!("Unexpected end while ingesting data");
@@ -257,16 +318,16 @@ impl ObjectStore {
                     size,
                 } => {
                     object_size = size as usize;
-                    pro_bar = Some(bars.add(new_progress_bar(size as _)));
+                    pro_bar.set_length(size);
                 }
                 AddProgress::Done { id: _, hash: _ } => {
-                    pro_bar.take().unwrap().finish_and_clear();
+                    pro_bar.finish();
                 }
                 AddProgress::AllDone { hash, .. } => {
                     break hash;
                 }
                 AddProgress::Progress { id: _, offset } => {
-                    pro_bar.as_mut().unwrap().set_position(offset);
+                    pro_bar.set_position(offset);
                 }
                 AddProgress::Abort(err) => {
                     return Err(err.into());
@@ -287,8 +348,56 @@ impl ObjectStore {
         msg_bar.set_message(format!("Uploading {} to network...", object_cid));
 
         let node_addr = provider.node_addr().await?;
+        let up_bar = bars.add(new_progress_bar(object_size));
 
-        // TODO: progress bar
+        // Start collecting events for progress
+        self.node_events_handle
+            .collect_events
+            .store(true, Ordering::Relaxed);
+        let r = self.node_events_handle.receiver.clone();
+        let progress_handle = tokio::task::spawn(async move {
+            let mut r = r.lock().await;
+            let mut current_req = None;
+            up_bar.set_position(0);
+
+            while let Some(event) = r.recv().await {
+                match event {
+                    iroh::blobs::provider::Event::GetRequestReceived {
+                        request_id, hash, ..
+                    } => {
+                        if hash == object_hash {
+                            current_req.replace(request_id);
+                        }
+                    }
+                    iroh::blobs::provider::Event::TransferProgress {
+                        request_id,
+                        hash,
+                        end_offset,
+                        ..
+                    } => {
+                        if hash == object_hash && Some(request_id) == current_req {
+                            // progress
+                            up_bar.set_position(end_offset);
+                        }
+                    }
+                    iroh::blobs::provider::Event::TransferCompleted { request_id, .. } => {
+                        if Some(request_id) == current_req {
+                            up_bar.finish();
+                            return true;
+                        }
+                    }
+                    iroh::blobs::provider::Event::TransferAborted { request_id, .. } => {
+                        if Some(request_id) == current_req {
+                            up_bar.finish();
+                            return false;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            false
+        });
+
         self.upload(
             provider,
             node_addr.node_id,
@@ -300,6 +409,15 @@ impl ObjectStore {
             options.overwrite,
         )
         .await?;
+
+        let transfer_success = progress_handle.await?;
+        if !transfer_success {
+            anyhow::bail!("Failed to upload");
+        }
+
+        self.node_events_handle
+            .collect_events
+            .store(false, Ordering::Relaxed);
 
         // Broadcast transaction with Object's CID
         msg_bar.set_prefix("[3/3]");
