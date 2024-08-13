@@ -92,3 +92,6 @@ fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
 
 ipc_actors_abis = { path = "../ipc/contracts/binding" }
 ipc-api = { path = "../ipc/ipc/api" }
+
+[patch.crates-io]
+iroh = { git = "https://github.com/n0-computer/iroh", branch = "main" }
