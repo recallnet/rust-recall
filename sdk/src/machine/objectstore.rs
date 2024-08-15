@@ -119,8 +119,14 @@ impl Default for QueryOptions {
 /// A machine for S3-like object storage.
 pub struct ObjectStore {
     address: Address,
-    iroh: iroh::node::MemNode,
-    node_events_handle: BlobEventsHandle,
+    /// The temporary root dir for the iroh node.
+    /// Kept around so it is only deleted when the store gets removed.
+    #[allow(dead_code)]
+    iroh_dir: async_tempfile::TempDir,
+    /// The iroh node, used to transfer data.
+    iroh: iroh::node::FsNode,
+    /// Handle to blob transfer related events from the iroh node.
+    iroh_blob_events_handle: BlobEventsHandle,
 }
 
 #[async_trait]
@@ -151,16 +157,20 @@ impl Machine for ObjectStore {
     }
 
     async fn attach(address: Address) -> anyhow::Result<Self> {
-        let (node_events, node_events_handle) = BlobEvents::new(16);
-        let node = iroh::node::Node::memory()
+        let (node_events, iroh_blob_events_handle) = BlobEvents::new(16);
+        let iroh_dir = async_tempfile::TempDir::new().await?;
+
+        let node = iroh::node::Node::persistent(iroh_dir.dir_path())
+            .await?
             .blobs_events(node_events)
             .spawn()
             .await?;
 
         Ok(ObjectStore {
             address,
+            iroh_dir,
             iroh: node,
-            node_events_handle,
+            iroh_blob_events_handle,
         })
     }
 
@@ -220,8 +230,8 @@ impl iroh::blobs::provider::CustomEventSender for BlobEvents {
 
 impl ObjectStore {
     /// Add an object into the object store with a reader.
-    /// Copies object to memory.
-    /// Use [`ObjectStore::add_from_path`] for large objects.
+    ///
+    /// Use [`ObjectStore::add_from_path`] for files.
     pub async fn add_reader<C, R>(
         &self,
         provider: &impl Provider<C>,
@@ -351,10 +361,10 @@ impl ObjectStore {
         let up_bar = bars.add(new_progress_bar(object_size));
 
         // Start collecting events for progress
-        self.node_events_handle
+        self.iroh_blob_events_handle
             .collect_events
             .store(true, Ordering::Relaxed);
-        let r = self.node_events_handle.receiver.clone();
+        let r = self.iroh_blob_events_handle.receiver.clone();
         let (cancel_s, mut cancel_r) = tokio::sync::oneshot::channel();
 
         tokio::task::spawn(async move {
@@ -420,7 +430,7 @@ impl ObjectStore {
         .await?;
 
         cancel_s.send(()).ok();
-        self.node_events_handle
+        self.iroh_blob_events_handle
             .collect_events
             .store(false, Ordering::Relaxed);
 
