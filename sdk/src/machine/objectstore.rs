@@ -521,7 +521,7 @@ impl ObjectStore {
             }
         };
 
-        let node_addr = self.iroh.node_addr().await?;
+        let node_addr = self.iroh.net().node_addr().await?;
         provider
             .upload(
                 cid,
