@@ -43,9 +43,9 @@ const ETH_PROVIDER_POLLING_TIME: Duration = Duration::from_secs(1);
 /// roots (like Calibration and mainnet).
 const TRANSACTION_RECEIPT_RETRIES: usize = 200;
 
-// Generate ABI for `approval` method on SupplySource
+// Generate ABI for `approval` method on ERC20
 abigen!(
-    SupplySource,
+    IERC20,
     r#"[{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}]"#
 );
 
@@ -113,12 +113,12 @@ fn get_gateway(
     )))
 }
 
-/// Returns an interface to the [`SupplySource`] contract
+/// Returns an interface to the [`IERC20`] contract
 /// using [`Signer`] for the given subnet configuration.
 fn get_supply_source(
     signer: &impl Signer,
     subnet: &EVMSubnet,
-) -> anyhow::Result<Box<SupplySource<DefaultSignerMiddleware>>> {
+) -> anyhow::Result<Box<IERC20<DefaultSignerMiddleware>>> {
     let supply_source = match subnet.supply_source {
         Some(addr) => addr,
         None => return Err(anyhow!("supply source is not configured for parent subnet")),
@@ -126,7 +126,7 @@ fn get_supply_source(
     let address = payload_to_evm_address(supply_source.payload())?;
     let signer = get_eth_signer(signer, subnet)?;
 
-    Ok(Box::new(SupplySource::new(address, Arc::new(signer))))
+    Ok(Box::new(IERC20::new(address, Arc::new(signer))))
 }
 
 /// A static wrapper around common EVM subnet methods.
@@ -142,6 +142,25 @@ impl EvmManager {
         Ok(TokenAmount::from_atto(balance.as_u128()))
     }
 
+    /// Approve the gateway to spend funds on behalf of the user.
+    /// This is required to [`deposit`] work.
+    pub async fn approve_gateway(
+        signer: &impl Signer,
+        subnet: EVMSubnet,
+        amount: TokenAmount,
+    ) -> anyhow::Result<TransactionReceipt> {
+        let gateway = get_gateway(signer, &subnet)?;
+        let supply_source = get_supply_source(signer, &subnet)?;
+        let value = amount
+            .atto()
+            .to_u128()
+            .ok_or_else(|| anyhow!("invalid value to fund"))?;
+
+        let call = supply_source.approve(gateway.address(), value.into());
+
+        client_send(supply_source.client(), call).await
+    }
+
     /// Deposit funds into a subnet.
     pub async fn deposit(
         signer: &impl Signer,
@@ -150,7 +169,6 @@ impl EvmManager {
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
         let gateway = get_gateway(signer, &subnet)?;
-        let supply_source = get_supply_source(signer, &subnet)?;
         let subnet_id = GatewaySubnetID::try_from(&subnet.id.inner())?;
 
         let value = amount
@@ -158,11 +176,9 @@ impl EvmManager {
             .to_u128()
             .ok_or_else(|| anyhow!("invalid value to fund"))?;
 
-        let approve_call = supply_source.approve(gateway.address(), value.into());
-        client_send(supply_source.client(), approve_call).await?;
+        let call = gateway.fund_with_token(subnet_id, FvmAddress::try_from(to)?, value.into());
 
-        let fund_call = gateway.fund_with_token(subnet_id, FvmAddress::try_from(to)?, value.into());
-        client_send(gateway.client(), fund_call).await
+        client_send(gateway.client(), call).await
     }
 
     /// Withdraw funds from a subnet.
