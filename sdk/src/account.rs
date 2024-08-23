@@ -44,6 +44,10 @@ impl Account {
         subnet: EVMSubnet,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
+        // Approve the gateway to spend funds on behalf of the user.
+        // This is required to when subnet use a custom ERC20 token as
+        // the gateway's supply source.
+        EvmManager::approve_gateway(signer, subnet.clone(), amount.clone()).await?;
         EvmManager::deposit(signer, to, subnet, amount).await
     }
 
