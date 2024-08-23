@@ -269,10 +269,9 @@ fn get_parent_subnet_config(
         auth_token: args.evm_rpc_auth_token,
         registry_addr: args.evm_registry.unwrap_or(network.parent_evm_registry()?),
         gateway_addr: args.evm_gateway.unwrap_or(network.parent_evm_gateway()?),
-        supply_source: match args.evm_supply_source {
-            Some(addr) => Some(addr),
-            None => network.parent_evm_supply_source().ok(),
-        },
+        supply_source: args
+            .evm_supply_source
+            .or_else(|| network.parent_evm_supply_source().ok()),
     })
 }
 
