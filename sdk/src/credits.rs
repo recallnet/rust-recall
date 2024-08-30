@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
-use fendermint_actor_blobs::Method::{BuyCredit, GetAccount, GetStats};
-use fendermint_actor_blobs::{BuyCreditParams, GetAccountParams};
+use fendermint_actor_blobs_shared::params::{BuyCreditParams, GetAccountParams};
+use fendermint_actor_blobs_shared::Method::{BuyCredit, GetAccount, GetStats};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
@@ -21,11 +21,6 @@ use adm_provider::tx::{BroadcastMode, TxReceipt};
 use adm_provider::Provider;
 use adm_signer::Signer;
 
-// Commands to support:
-//  ✓ adm credit stats (subnet-wide summary)
-//  ✓ adm credit balance --address (show credit summary by account)
-//  ✓ adm credit fund --to (buy credits by account)
-
 /// Options for buying credit.
 #[derive(Clone, Default, Debug)]
 pub struct BuyOptions {
@@ -36,7 +31,7 @@ pub struct BuyOptions {
 }
 
 /// Credit balance for an account.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Balance {
     /// Current free credit in byte-blocks that can be used for new commitments.
     pub credit_free: String,
@@ -46,8 +41,18 @@ pub struct Balance {
     pub last_debit_epoch: Option<ChainEpoch>,
 }
 
-impl From<fendermint_actor_blobs::Account> for Balance {
-    fn from(v: fendermint_actor_blobs::Account) -> Self {
+impl Default for Balance {
+    fn default() -> Self {
+        Self {
+            credit_free: "0".into(),
+            credit_committed: "0".into(),
+            last_debit_epoch: Some(0),
+        }
+    }
+}
+
+impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
+    fn from(v: fendermint_actor_blobs_shared::state::Account) -> Self {
         let last_debit_epoch = if v.last_debit_epoch != 0 {
             Some(v.last_debit_epoch)
         } else {
@@ -78,8 +83,8 @@ pub struct CreditStats {
     pub num_accounts: u64,
 }
 
-impl From<fendermint_actor_blobs::GetStatsReturn> for CreditStats {
-    fn from(v: fendermint_actor_blobs::GetStatsReturn) -> Self {
+impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats {
+    fn from(v: fendermint_actor_blobs_shared::params::GetStatsReturn) -> Self {
         Self {
             balance: v.balance.to_string(),
             credit_sold: v.credit_sold.to_string(),
@@ -149,21 +154,21 @@ impl Credits {
 
 fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<CreditStats> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs::GetStatsReturn>(&data)
+    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::params::GetStatsReturn>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as CreditStats: {e}"))
 }
 
 fn decode_balance(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Balance>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs::Account>>(&data)
+    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::Account>>(&data)
         .map(|v| v.map(|v| v.into()))
         .map_err(|e| anyhow!("error parsing as Option<Balance>: {e}"))
 }
 
 fn decode_buy(deliver_tx: &DeliverTx) -> anyhow::Result<Balance> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs::Account>(&data)
+    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::Account>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as Balance: {e}"))
 }

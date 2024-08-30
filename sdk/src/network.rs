@@ -33,7 +33,7 @@ const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/r
 const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x141Ef571Fd6C9e7f51FAf697f4796A557C6BB663";
 const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x89D8029d5cF4bAEbd0b43E39B547c34eAa8c5C54";
 
-const TESTNET_OBJECT_API_URL: &str = "object-api-testnet-validator-0.3box.io";
+const TESTNET_OBJECT_API_URL: &str = "https://object-api-testnet-validator-0.3box.io";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 
 pub const TESTNET_FAUCET_API_URL: &str = "https://faucet.testnet.basin.storage";

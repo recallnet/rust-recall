@@ -31,7 +31,7 @@ fn hash(bytes: &[u8]) -> u64 {
 /// working with networks that may not have a parent.
 #[derive(Clone, Debug)]
 pub struct SubnetID {
-    /// Value that is not a valid [`ipc_api::subnet_id::SubnetID`], which is convenient for networks
+    /// Value that is not valid [`ipc_api::subnet_id::SubnetID`], which is convenient for networks
     /// without a real parent.
     faux: String,
     /// A valid [`ipc_api::subnet_id::SubnetID`].

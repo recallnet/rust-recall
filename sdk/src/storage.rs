@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
-use fendermint_actor_blobs::GetAccountParams;
-use fendermint_actor_blobs::Method::{GetAccount, GetStats};
+use fendermint_actor_blobs_shared::params::GetAccountParams;
+use fendermint_actor_blobs_shared::Method::{GetAccount, GetStats};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
@@ -34,14 +34,22 @@ pub struct FundOptions {
 }
 
 /// Storage usage stats for an account.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Usage {
     // Total size of all blobs managed by the account.
     pub capacity_used: String,
 }
 
-impl From<fendermint_actor_blobs::Account> for Usage {
-    fn from(v: fendermint_actor_blobs::Account) -> Self {
+impl Default for Usage {
+    fn default() -> Self {
+        Self {
+            capacity_used: "0".into(),
+        }
+    }
+}
+
+impl From<fendermint_actor_blobs_shared::state::Account> for Usage {
+    fn from(v: fendermint_actor_blobs_shared::state::Account) -> Self {
         Self {
             capacity_used: v.capacity_used.to_string(),
         }
@@ -61,8 +69,8 @@ pub struct StorageStats {
     pub num_resolving: u64,
 }
 
-impl From<fendermint_actor_blobs::GetStatsReturn> for StorageStats {
-    fn from(v: fendermint_actor_blobs::GetStatsReturn) -> Self {
+impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for StorageStats {
+    fn from(v: fendermint_actor_blobs_shared::params::GetStatsReturn) -> Self {
         Self {
             capacity_free: v.capacity_free.to_string(),
             capacity_used: v.capacity_used.to_string(),
@@ -104,14 +112,14 @@ impl Storage {
 
 fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<StorageStats> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs::GetStatsReturn>(&data)
+    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::params::GetStatsReturn>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as StorageStats: {e}"))
 }
 
 fn decode_usage(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Usage>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs::Account>>(&data)
+    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::Account>>(&data)
         .map(|v| v.map(|v| v.into()))
         .map_err(|e| anyhow!("error parsing as Option<Usage>: {e}"))
 }

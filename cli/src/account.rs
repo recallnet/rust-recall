@@ -156,7 +156,7 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
                 Err(_) => {
                     let network = cli.network.get();
                     let base_url = get_faucet_url(network, args.faucet_url.clone())?;
-                    let url = base_url.join("register").unwrap();
+                    let url = base_url.join("register")?;
                     let body = json!({
                         "network": network.to_string(),
                         "address": eth_addr_str

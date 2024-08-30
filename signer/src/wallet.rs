@@ -170,7 +170,7 @@ mod tests {
             _query: FvmQuery,
             _height: FvmQueryHeight,
         ) -> anyhow::Result<AbciQuery> {
-            // mocked query response with sequence == 65
+            // mocked query response with a sequence == 65
             let response = r#"{
                 "code": 0,
                 "log": "",
@@ -182,7 +182,7 @@ mod tests {
                 "height": "580876",
                 "codespace": ""
               }"#;
-            let parsed: AbciQuery = serde_json::from_str(response).unwrap();
+            let parsed: AbciQuery = serde_json::from_str(response)?;
             Ok(parsed)
         }
     }

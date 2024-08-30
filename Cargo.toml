@@ -71,7 +71,7 @@ fvm_shared = "4.1.0"
 fvm_ipld_encoding = "0.4.0"
 
 fendermint_actor_accumulator = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_actor_blobs = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
+fendermint_actor_blobs_shared = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
 fendermint_actor_machine = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
 fendermint_actor_objectstore = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
 fendermint_crypto = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
@@ -85,7 +85,7 @@ ipc-api = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
 # Assumes the ipc checkout is in a sibling directory with the same name.
 [patch."ssh://git@github.com/amazingdatamachine/ipc.git"]
 fendermint_actor_accumulator = { path = "../ipc/fendermint/actors/accumulator" }
-fendermint_actor_blobs = { path = "../ipc/fendermint/actors/blobs" }
+fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
 fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
 fendermint_actor_objectstore = { path = "../ipc/fendermint/actors/objectstore" }
 fendermint_crypto = { path = "../ipc/fendermint/crypto" }

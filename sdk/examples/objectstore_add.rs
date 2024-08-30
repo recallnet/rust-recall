@@ -90,12 +90,7 @@ async fn main() -> anyhow::Result<()> {
     let list = machine.query(&provider, options).await?;
     for (key_bytes, object) in list.objects {
         let key = core::str::from_utf8(&key_bytes).unwrap_or_default();
-        // `resolved` indicates the validators were able to fetch and verify the file
-        let cid = cid::Cid::try_from(object.cid.0)?;
-        println!(
-            "Query result cid: {} (key={}; detached; resolved={})",
-            cid, key, object.resolved
-        );
+        println!("Query result for key {}: {}", key, object.hash);
     }
 
     // Download the actual object at `foo/my_file`

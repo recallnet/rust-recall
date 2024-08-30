@@ -177,8 +177,7 @@ async fn main() -> anyhow::Result<()> {
         .quiet(cli.quiet)
         .verbosity(cli.verbosity as usize)
         .timestamp(Timestamp::Millisecond)
-        .init()
-        .unwrap();
+        .init()?;
 
     cli.network.get().init();
 

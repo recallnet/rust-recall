@@ -9,6 +9,7 @@ use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
+use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
 use serde_json::{json, Value};
 use tendermint_rpc::Url;
@@ -90,19 +91,22 @@ struct ObjectstorePutArgs {
     /// Key of the object to upload.
     #[arg(short, long)]
     key: String,
+    /// Object time-to-live (TTL) duration. Credits will be reserved for this duration.
+    #[arg(long, default_value = "2592000")]
+    ttl: ChainEpoch,
     /// Overwrite the object if it already exists.
     #[arg(short, long)]
     overwrite: bool,
+    /// User-defined metadata.
+    #[arg(short, long, value_parser = parse_metadata)]
+    metadata: Vec<(String, String)>,
     /// Input file (or stdin) containing the object to upload.
-    //#[clap(default_value = "-")]
     input: PathBuf,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
-    #[arg(short, long, value_parser = parse_metadata)]
-    metadata: Vec<(String, String)>,
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -280,11 +284,12 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                     &args.key,
                     &args.input,
                     AddOptions {
+                        ttl: args.ttl,
+                        metadata,
                         overwrite: args.overwrite,
                         broadcast_mode,
                         gas_params,
                         show_progress: !cli.quiet,
-                        metadata,
                     },
                 )
                 .await?;
@@ -366,8 +371,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                 .iter()
                 .map(|(key_bytes, object)| {
                     let key = core::str::from_utf8(key_bytes).unwrap_or_default().to_string();
-                    let cid = cid::Cid::try_from(object.cid.clone().0).unwrap_or_default();
-                    let value = json!({"cid": cid.to_string(), "resolved": object.resolved, "size": object.size, "metadata": object.metadata});
+                    let value = json!({"hash": object.hash.to_string(), "size": object.size, "expiry": object.expiry, "metadata": object.metadata});
                     json!({"key": key, "value": value})
                 })
                 .collect::<Vec<Value>>();
