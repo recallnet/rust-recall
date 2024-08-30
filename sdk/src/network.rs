@@ -15,24 +15,25 @@ use adm_signer::SubnetID;
 
 use crate::ipc::subnet::EVMSubnet;
 
-const TESTNET_SUBNET_ID: &str = "/r314159/t410fbslswn3rqrpdjoozbuoll6mnnfsolbp2wi3vbmi"; // chain ID: 649564385343980
+const TESTNET_SUBNET_ID: &str = "/r314159/t410f26ejh7sqkimbhw5ojbeyvvkqnequ7ktxy5gyxyq"; // chain ID: 1717203960113192
 const LOCALNET_SUBNET_ID: &str = "/r314159/t410f726d2jv6uj4mpkcbgg5ndlpp3l7dd5rlcpgzkoi";
 const DEVNET_SUBNET_ID: &str = "test";
 
-const TESTNET_RPC_URL: &str = "https://api.n1.testnet.basin.storage";
+const TESTNET_RPC_URL: &str = "https://rpc-testnet-validator-0.3box.io";
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
 
 const RPC_TIMEOUT: Duration = Duration::from_secs(60);
 
-const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.testnet.basin.storage";
+const TESTNET_EVM_RPC_URL: &str = "https://evm-testnet-validator-0.3box.io";
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
+const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xD4e09E3EeF4F5d177e130F22d5BAD25E5028F125";
 
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
-const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x129682c2ae89d8157Ad46Ea402E13f81C1C2e2d0";
-const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x7Eb0a3511BB5DB2b5f945e6EB801Cb3Be9238c42";
+const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x141Ef571Fd6C9e7f51FAf697f4796A557C6BB663";
+const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x89D8029d5cF4bAEbd0b43E39B547c34eAa8c5C54";
 
-const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.testnet.basin.storage";
+const TESTNET_OBJECT_API_URL: &str = "object-api-testnet-validator-0.3box.io";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 
 pub const TESTNET_FAUCET_API_URL: &str = "https://faucet.testnet.basin.storage";
@@ -100,6 +101,7 @@ impl Network {
             auth_token: options.evm_rpc_auth_token,
             registry_addr: self.evm_registry()?,
             gateway_addr: self.evm_gateway()?,
+            supply_source: None,
         })
     }
 
@@ -157,6 +159,7 @@ impl Network {
             auth_token: options.evm_rpc_auth_token,
             registry_addr: self.parent_evm_registry()?,
             gateway_addr: self.parent_evm_gateway()?,
+            supply_source: Some(self.parent_evm_supply_source()?),
         })
     }
 
@@ -187,12 +190,30 @@ impl Network {
         }
     }
 
+    /// Returns the network [`Address`] of the EVM Supply Source contract.
+    pub fn parent_evm_supply_source(&self) -> anyhow::Result<Address> {
+        match self {
+            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
+            Network::Testnet => Ok(parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
+            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+        }
+    }
+
     /// Returns the network [`reqwest::Url`] of the Faucet API.
     pub fn faucet_api_url(&self) -> anyhow::Result<reqwest::Url> {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(reqwest::Url::from_str(TESTNET_FAUCET_API_URL)?),
             Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+        }
+    }
+
+    /// Returns the network provider iroh details.
+    pub fn iroh(&self) -> anyhow::Result<iroh::net::NodeId> {
+        match self {
+            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
+            Network::Testnet => todo!(),
+            Network::Localnet | Network::Devnet => todo!(),
         }
     }
 }

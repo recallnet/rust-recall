@@ -6,6 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use anyhow::anyhow;
+use ethers::prelude::abigen;
 use ethers::{
     core::k256::ecdsa::SigningKey,
     middleware::{Middleware, SignerMiddleware},
@@ -41,6 +42,12 @@ const ETH_PROVIDER_POLLING_TIME: Duration = Duration::from_secs(1);
 /// retries so these numbers accommodate fast subnets with slow
 /// roots (like Calibration and mainnet).
 const TRANSACTION_RECEIPT_RETRIES: usize = 200;
+
+// Generate ABI for `approval` method on ERC20
+abigen!(
+    IERC20,
+    r#"[{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}]"#
+);
 
 /// Returns an Ethereum provider for the given subnet configuration.
 fn get_eth_provider(subnet: &EVMSubnet) -> anyhow::Result<Provider<Http>> {
@@ -106,6 +113,22 @@ fn get_gateway(
     )))
 }
 
+/// Returns an interface to the [`IERC20`] contract
+/// using [`Signer`] for the given subnet configuration.
+fn get_supply_source(
+    signer: &impl Signer,
+    subnet: &EVMSubnet,
+) -> anyhow::Result<Box<IERC20<DefaultSignerMiddleware>>> {
+    let supply_source = match subnet.supply_source {
+        Some(addr) => addr,
+        None => return Err(anyhow!("supply source is not configured for parent subnet")),
+    };
+    let address = payload_to_evm_address(supply_source.payload())?;
+    let signer = get_eth_signer(signer, subnet)?;
+
+    Ok(Box::new(IERC20::new(address, Arc::new(signer))))
+}
+
 /// A static wrapper around common EVM subnet methods.
 pub struct EvmManager {}
 
@@ -117,6 +140,25 @@ impl EvmManager {
             .get_balance(payload_to_evm_address(address.payload())?, None)
             .await?;
         Ok(TokenAmount::from_atto(balance.as_u128()))
+    }
+
+    /// Approve the gateway to spend funds on behalf of the user.
+    /// This is required to [`deposit`] work.
+    pub async fn approve_gateway(
+        signer: &impl Signer,
+        subnet: EVMSubnet,
+        amount: TokenAmount,
+    ) -> anyhow::Result<TransactionReceipt> {
+        let gateway = get_gateway(signer, &subnet)?;
+        let supply_source = get_supply_source(signer, &subnet)?;
+        let value = amount
+            .atto()
+            .to_u128()
+            .ok_or_else(|| anyhow!("invalid value to fund"))?;
+
+        let call = supply_source.approve(gateway.address(), value.into());
+
+        client_send(supply_source.client(), call).await
     }
 
     /// Deposit funds into a subnet.
@@ -134,8 +176,7 @@ impl EvmManager {
             .to_u128()
             .ok_or_else(|| anyhow!("invalid value to fund"))?;
 
-        let mut call = gateway.fund(subnet_id, FvmAddress::try_from(to)?);
-        call.tx.set_value(value);
+        let call = gateway.fund_with_token(subnet_id, FvmAddress::try_from(to)?, value.into());
 
         client_send(gateway.client(), call).await
     }
@@ -184,9 +225,9 @@ impl EvmManager {
 }
 
 /// Sends a contract call with configured retries using the provided client.
-async fn client_send(
+async fn client_send<T: ethers::abi::Detokenize>(
     client: Arc<DefaultSignerMiddleware>,
-    call: ContractCall<DefaultSignerMiddleware, ()>,
+    call: ContractCall<DefaultSignerMiddleware, T>,
 ) -> anyhow::Result<TransactionReceipt> {
     let call = call_with_premium_estimation(client, call).await?;
     let tx = call.send().await?;

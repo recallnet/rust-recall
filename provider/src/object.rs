@@ -3,20 +3,25 @@
 
 use async_trait::async_trait;
 use fvm_shared::address::Address;
+use iroh::net::NodeAddr;
 
 use crate::response::Cid;
 
 /// Provider for object interactions.
 #[async_trait]
 pub trait ObjectProvider: Send + Sync {
+    /// Get Iroh [`NodeAddr`].
+    async fn node_addr(&self) -> anyhow::Result<NodeAddr>;
+
     /// Upload an object.
     async fn upload(
         &self,
-        body: reqwest::Body,
+        cid: Cid,
+        source: NodeAddr,
         size: usize,
         msg: String,
         chain_id: u64,
-    ) -> anyhow::Result<Cid>;
+    ) -> anyhow::Result<()>;
 
     /// Download an object.
     async fn download(

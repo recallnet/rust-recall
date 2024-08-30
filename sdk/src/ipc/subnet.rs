@@ -23,4 +23,6 @@ pub struct EVMSubnet {
     pub registry_addr: Address,
     /// The EVM gateway contract address.
     pub gateway_addr: Address,
+    /// The EVM supply source contract address.
+    pub supply_source: Option<Address>,
 }

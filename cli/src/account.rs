@@ -61,6 +61,9 @@ struct SubnetArgs {
     /// The registry contract address.
     #[arg(long, value_parser = parse_address)]
     evm_registry: Option<Address>,
+    /// The supply source contract address.
+    #[arg(long, value_parser = parse_address)]
+    evm_supply_source: Option<Address>,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -248,6 +251,7 @@ fn get_subnet_config(cli: &Cli, id: &SubnetID, args: SubnetArgs) -> anyhow::Resu
         auth_token: args.evm_rpc_auth_token,
         registry_addr: args.evm_registry.unwrap_or(network.evm_registry()?),
         gateway_addr: args.evm_gateway.unwrap_or(network.evm_gateway()?),
+        supply_source: None, // supply source is not used in child subnet
     })
 }
 
@@ -265,6 +269,9 @@ fn get_parent_subnet_config(
         auth_token: args.evm_rpc_auth_token,
         registry_addr: args.evm_registry.unwrap_or(network.parent_evm_registry()?),
         gateway_addr: args.evm_gateway.unwrap_or(network.parent_evm_gateway()?),
+        supply_source: args
+            .evm_supply_source
+            .or_else(|| network.parent_evm_supply_source().ok()),
     })
 }
 

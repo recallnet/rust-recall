@@ -83,7 +83,7 @@ pub trait Machine: Send + Sync + Sized {
     }
 
     /// Create a machine instance from an existing machine [`Address`].
-    fn attach(address: Address) -> Self;
+    async fn attach(address: Address) -> anyhow::Result<Self>;
 
     /// Returns the machine [`Address`].
     fn address(&self) -> Address;

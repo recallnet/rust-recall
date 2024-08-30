@@ -34,7 +34,6 @@ tendermint-rpc = { workspace = true }
 tokio = { workspace = true }
 tokio-stream = { workspace = true }
 tokio-util = { workspace = true }
-unixfs-v1 = { workspace = true }
 
 fvm_ipld_encoding = { workspace = true }
 fvm_shared = { workspace = true }
@@ -52,6 +51,8 @@ ipc-api = { workspace = true }
 
 adm_provider = { path = "../provider" }
 adm_signer = { path = "../signer" }
+
+iroh = { workspace = true }
 
 [dev-dependencies]
 hex = { workspace = true }
