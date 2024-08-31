@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::future::Future;
@@ -34,7 +34,7 @@ use tokio::{
 };
 use tokio_stream::StreamExt;
 
-use adm_provider::{
+use hoku_provider::{
     message::{local_message, object_upload_message, GasParams},
     object::ObjectProvider,
     query::QueryProvider,
@@ -42,7 +42,7 @@ use adm_provider::{
     tx::{BroadcastMode, TxReceipt},
     Provider,
 };
-use adm_signer::Signer;
+use hoku_signer::Signer;
 
 use crate::progress::{new_message_bar, new_multi_bar, SPARKLE};
 use crate::{

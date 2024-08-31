@@ -1,12 +1,12 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use ethers::utils::hex::ToHexExt;
 use fendermint_vm_actor_interface::eam::EthAddress;
 use fvm_shared::address::Address;
 
-use adm_sdk::network::Network;
-use adm_signer::key::random_secretkey;
+use hoku_sdk::network::Network;
+use hoku_signer::key::random_secretkey;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

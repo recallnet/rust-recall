@@ -1,9 +1,9 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-//! # ADM Signer
+//! # Hoku Signer
 //!
-//! A transaction signer for the ADM.
+//! A transaction signer for Hoku.
 
 pub mod key;
 mod signer;

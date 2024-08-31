@@ -1,8 +1,8 @@
 # SDK Examples
 
-Explore ADM's functionalities through these practical examples.
+Explore Hoku's functionalities through these practical examples.
 
-All the examples target an `adm` testnet subnet anchored to the Filecoin Calibration network.
+All the examples target an `hoku` testnet subnet anchored to the Filecoin Calibration network.
 You can run them with `cargo run --example [example name] - [ARG]`.
 
 ## Accounts
@@ -25,7 +25,7 @@ FVM address: t410ftqeuusqto3jezobwm5lh33bnnmv2jfcoijdi44q
 
 ### Deposit funds
 
-To create transactions in the `adm` testnet, you need to first deposit some Calibration tFIL in the `adm` subnet.
+To create transactions in the `hoku` testnet, you need to first deposit some Calibration tFIL in the `hoku` subnet.
 
 1. Go to the [Calibration faucet](https://faucet.calibnet.chainsafe-fil.io/) and click "Send Funds".
 2. Enter an Ethereum address.
@@ -33,7 +33,7 @@ To create transactions in the `adm` testnet, you need to first deposit some Cali
    like the one given by running the [`account_create.rs`](account_create.rs) example.
 3. Look up the address you used on the [Calibration explorer](https://calibration.filfox.info/en).
    After about a minute, you should have 100 tFIL.
-4. Now you're ready to make a deposit to the `adm` testnet subnet.
+4. Now you're ready to make a deposit to the `hoku` testnet subnet.
 
 Run the [`account_deposit.rs`](account_deposit.rs) example using the private key for the address you used above.
 
@@ -50,7 +50,7 @@ Transaction hash: 0x03d40fc3e8d629b2b52805e4fd1fb93f2d31bb06feaa3da55408091cbde6
 
 ### Check account balance
 
-[`account_balance.rs`](account_balance.rs) shows the balance of an account in the `adm` testnet subnet.
+[`account_balance.rs`](account_balance.rs) shows the balance of an account in the `hoku` testnet subnet.
 If you ran the [`account_deposit.rs`](account_deposit.rs), this should show a non-zero balance after a few minutes.
 
 ```shell
@@ -68,7 +68,7 @@ Read the docs (run `make doc` from the repo root) for more account methods.
 ### Object storage
 
 [`objectstore_add.rs`](objectstore_add.rs) creates a new object store, adds an object, and then queries for it by key.
-To run this example, you must deposit some funds into the `adm` testnet subnet.
+To run this example, you must deposit some funds into the `hoku` testnet subnet.
 
 ```shell
 cargo run --example objectstore_add -- [YOUR_HEX_ENCODED_PRIVATE_KEY]
@@ -90,7 +90,7 @@ Read the docs (run `make doc` from the repo root) for more object store methods.
 
 [`accumulator_push.rs`](accumulator_push.rs) creates a new accumulator for state updates, pushes a new value,
 gets it back, and then qeuries for the accumulator's count and state root.
-To run this example, you must deposit some funds into the `adm` testnet subnet.
+To run this example, you must deposit some funds into the `hoku` testnet subnet.
 
 ```shell
 cargo run --example accumulator_push -- [YOUR_HEX_ENCODED_PRIVATE_KEY]

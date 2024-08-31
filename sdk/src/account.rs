@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
@@ -6,12 +6,12 @@ use ethers::prelude::TransactionReceipt;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::{address::Address, econ::TokenAmount};
 
-use adm_provider::query::QueryProvider;
-use adm_signer::Signer;
+use hoku_provider::query::QueryProvider;
+use hoku_signer::Signer;
 
 use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
 
-/// A static wrapper around ADM account methods.
+/// A static wrapper around Hoku account methods.
 pub struct Account {}
 
 impl Account {

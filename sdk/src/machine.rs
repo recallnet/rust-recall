@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -17,14 +17,14 @@ use serde::Serialize;
 use tendermint::{abci::response::DeliverTx, block::Height, Hash};
 use tendermint_rpc::Client;
 
-use adm_provider::{
+use hoku_provider::{
     message::{local_message, GasParams},
     query::QueryProvider,
     response::decode_bytes,
     tx::BroadcastMode,
     Provider,
 };
-use adm_signer::Signer;
+use hoku_signer::Signer;
 
 pub mod accumulator;
 pub mod objectstore;
