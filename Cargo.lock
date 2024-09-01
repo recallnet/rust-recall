@@ -42,156 +42,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
-name = "adm_cli"
-version = "0.1.0"
-dependencies = [
- "adm_provider",
- "adm_sdk",
- "adm_signer",
- "anyhow",
- "bytes",
- "cid",
- "clap",
- "clap-stdin",
- "ethers",
- "fendermint_actor_accumulator",
- "fendermint_actor_machine",
- "fendermint_actor_objectstore",
- "fendermint_crypto",
- "fendermint_vm_actor_interface",
- "fendermint_vm_message",
- "fvm_ipld_encoding",
- "fvm_shared",
- "hex",
- "humantime",
- "iroh",
- "reqwest 0.11.27",
- "serde",
- "serde_json",
- "stderrlog",
- "tendermint-rpc",
- "tokio",
- "tokio-util",
- "tracing",
-]
-
-[[package]]
-name = "adm_faucet"
-version = "0.1.0"
-dependencies = [
- "adm_provider",
- "adm_sdk",
- "adm_signer",
- "anyhow",
- "clap",
- "ethers",
- "fendermint_crypto",
- "fvm_shared",
- "ipc-api",
- "log",
- "reqwest 0.11.27",
- "serde",
- "serde_json",
- "stderrlog",
- "tokio",
- "warp",
-]
-
-[[package]]
-name = "adm_provider"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "base64 0.22.1",
- "bytes",
- "cid",
- "ethers",
- "fendermint_vm_actor_interface",
- "fendermint_vm_message",
- "futures-util",
- "fvm_ipld_encoding",
- "fvm_shared",
- "ipc-api",
- "iroh",
- "num-traits",
- "prost",
- "reqwest 0.11.27",
- "serde",
- "serde_json",
- "tendermint",
- "tendermint-proto",
- "tendermint-rpc",
- "tokio",
- "tokio-stream",
- "tracing",
-]
-
-[[package]]
-name = "adm_sdk"
-version = "0.1.0"
-dependencies = [
- "adm_provider",
- "adm_signer",
- "anyhow",
- "async-stream",
- "async-tempfile",
- "async-trait",
- "base64 0.22.1",
- "bytes",
- "cid",
- "console",
- "ethers",
- "ethers-contract",
- "fendermint_actor_accumulator",
- "fendermint_actor_blobs_shared",
- "fendermint_actor_machine",
- "fendermint_actor_objectstore",
- "fendermint_crypto",
- "fendermint_vm_actor_interface",
- "fendermint_vm_message",
- "futures-core",
- "fvm_ipld_encoding",
- "fvm_shared",
- "hex",
- "indicatif",
- "ipc-api",
- "ipc_actors_abis",
- "iroh",
- "lazy_static",
- "num-traits",
- "rand",
- "reqwest 0.11.27",
- "serde",
- "tendermint",
- "tendermint-rpc",
- "tokio",
- "tokio-stream",
- "tokio-util",
-]
-
-[[package]]
-name = "adm_signer"
-version = "0.1.0"
-dependencies = [
- "adm_provider",
- "anyhow",
- "async-trait",
- "fendermint_crypto",
- "fendermint_vm_actor_interface",
- "fendermint_vm_message",
- "fnv",
- "fvm_ipld_encoding",
- "fvm_shared",
- "hex",
- "ipc-api",
- "rand",
- "serde_json",
- "tendermint-rpc",
- "tokio",
-]
-
-[[package]]
 name = "aead"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2403,6 +2253,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_accumulator"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -2421,6 +2272,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_blobs_shared"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "data-encoding",
  "fil_actors_runtime",
@@ -2436,6 +2288,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_eam"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -2456,6 +2309,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_machine"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "fil_actor_adm",
@@ -2470,6 +2324,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_objectstore"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -2491,6 +2346,7 @@ dependencies = [
 [[package]]
 name = "fendermint_crypto"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -2502,6 +2358,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_actor_interface"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -2529,6 +2386,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_core"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "cid",
  "fnv",
@@ -2542,6 +2400,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_encoding"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "cid",
  "fvm_shared",
@@ -2554,6 +2413,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_genesis"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "fendermint_actor_eam",
@@ -2571,6 +2431,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_message"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "blake2b_simd",
@@ -2611,6 +2472,7 @@ checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 [[package]]
 name = "fil_actor_adm"
 version = "12.0.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -2630,6 +2492,7 @@ dependencies = [
 [[package]]
 name = "fil_actor_eam"
 version = "12.0.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -2650,6 +2513,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_evm_shared"
 version = "12.0.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "fil_actors_runtime",
  "fvm_ipld_encoding",
@@ -2662,6 +2526,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_runtime"
 version = "12.0.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -3571,6 +3436,156 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3688e69b38018fec1557254f64c8dc2cc8ec502890182f395dbb0aa997aa5735"
 
 [[package]]
+name = "hoku_cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "cid",
+ "clap",
+ "clap-stdin",
+ "ethers",
+ "fendermint_actor_accumulator",
+ "fendermint_actor_machine",
+ "fendermint_actor_objectstore",
+ "fendermint_crypto",
+ "fendermint_vm_actor_interface",
+ "fendermint_vm_message",
+ "fvm_ipld_encoding",
+ "fvm_shared",
+ "hex",
+ "hoku_provider",
+ "hoku_sdk",
+ "hoku_signer",
+ "humantime",
+ "iroh",
+ "reqwest 0.11.27",
+ "serde",
+ "serde_json",
+ "stderrlog",
+ "tendermint-rpc",
+ "tokio",
+ "tokio-util",
+ "tracing",
+]
+
+[[package]]
+name = "hoku_faucet"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "ethers",
+ "fendermint_crypto",
+ "fvm_shared",
+ "hoku_provider",
+ "hoku_sdk",
+ "hoku_signer",
+ "ipc-api",
+ "log",
+ "reqwest 0.11.27",
+ "serde",
+ "serde_json",
+ "stderrlog",
+ "tokio",
+ "warp",
+]
+
+[[package]]
+name = "hoku_provider"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "base64 0.22.1",
+ "bytes",
+ "cid",
+ "ethers",
+ "fendermint_vm_actor_interface",
+ "fendermint_vm_message",
+ "futures-util",
+ "fvm_ipld_encoding",
+ "fvm_shared",
+ "ipc-api",
+ "iroh",
+ "num-traits",
+ "prost",
+ "reqwest 0.11.27",
+ "serde",
+ "serde_json",
+ "tendermint",
+ "tendermint-proto",
+ "tendermint-rpc",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+]
+
+[[package]]
+name = "hoku_sdk"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-stream",
+ "async-tempfile",
+ "async-trait",
+ "base64 0.22.1",
+ "bytes",
+ "cid",
+ "console",
+ "ethers",
+ "ethers-contract",
+ "fendermint_actor_accumulator",
+ "fendermint_actor_blobs_shared",
+ "fendermint_actor_machine",
+ "fendermint_actor_objectstore",
+ "fendermint_crypto",
+ "fendermint_vm_actor_interface",
+ "fendermint_vm_message",
+ "futures-core",
+ "fvm_ipld_encoding",
+ "fvm_shared",
+ "hex",
+ "hoku_provider",
+ "hoku_signer",
+ "indicatif",
+ "ipc-api",
+ "ipc_actors_abis",
+ "iroh",
+ "lazy_static",
+ "num-traits",
+ "rand",
+ "reqwest 0.11.27",
+ "serde",
+ "tendermint",
+ "tendermint-rpc",
+ "tokio",
+ "tokio-stream",
+ "tokio-util",
+]
+
+[[package]]
+name = "hoku_signer"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "fendermint_crypto",
+ "fendermint_vm_actor_interface",
+ "fendermint_vm_message",
+ "fnv",
+ "fvm_ipld_encoding",
+ "fvm_shared",
+ "hex",
+ "hoku_provider",
+ "ipc-api",
+ "rand",
+ "serde_json",
+ "tendermint-rpc",
+ "tokio",
+]
+
+[[package]]
 name = "home"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4008,6 +4023,7 @@ dependencies = [
 [[package]]
 name = "ipc-api"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -4035,6 +4051,7 @@ dependencies = [
 [[package]]
 name = "ipc-types"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",
@@ -4058,6 +4075,7 @@ dependencies = [
 [[package]]
 name = "ipc_actors_abis"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "ethers",
@@ -4789,6 +4807,7 @@ dependencies = [
 [[package]]
 name = "merkle-tree-rs"
 version = "0.1.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "ethers",
@@ -8712,6 +8731,7 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 [[package]]
 name = "vm_api"
 version = "1.0.0"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e#a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e"
 dependencies = [
  "anyhow",
  "cid",

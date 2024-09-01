@@ -3,13 +3,13 @@ members = ["cli", "provider", "sdk", "signer", "faucet"]
 resolver = "2"
 
 [workspace.package]
-authors = ["ADM Contributors"]
-description = "The Amazing Data Machine (ADM)."
+authors = ["Hoku Contributors"]
+description = "Rust interfaces & tooling for Hoku."
 edition = "2021"
-homepage = "https://github.com/amazingdatamachine/adm/"
+homepage = "https://github.com/hokunet/rust-hoku/"
 license = "MIT OR Apache-2.0"
 readme = "./README.md"
-repository = "https://github.com/amazingdatamachine/adm/"
+repository = "https://github.com/hokunet/rust-hoku/"
 keywords = ["TODO"]
 version = "0.1.0"
 
@@ -58,7 +58,7 @@ tracing = "0.1.40"
 rand = "0.8.4"
 warp = "0.3.7"
 
-# Using the same tendermint-rs dependency as tower-abci. From both we are interested in v037 modules.
+# Using the same tendermint-rs dependency as tower-abci. For both, we are interested in v037 modules.
 tendermint = { version = "0.31.1", features = ["secp256k1"] }
 tendermint-proto = "0.31.1"
 tendermint-rpc = { version = "0.31.1", features = [
@@ -70,27 +70,27 @@ tendermint-rpc = { version = "0.31.1", features = [
 fvm_shared = "4.1.0"
 fvm_ipld_encoding = "0.4.0"
 
-fendermint_actor_accumulator = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_actor_blobs_shared = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_actor_machine = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_actor_objectstore = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_crypto = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_vm_actor_interface = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-fendermint_vm_message = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
+fendermint_actor_accumulator = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
+fendermint_actor_blobs_shared = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
+fendermint_actor_machine = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
+fendermint_actor_objectstore = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
+fendermint_crypto = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
+fendermint_vm_actor_interface = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
+fendermint_vm_message = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
 
-ipc_actors_abis = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
-ipc-api = { git = "ssh://git@github.com/amazingdatamachine/ipc.git" }
+ipc_actors_abis = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
+ipc-api = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "a7afa6b085e25f5435b9915abe5b6acbcb2dfc7e" }
 
-# Uncomment entries below when working locally on ipc and this repo simultaneously.
+# Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.
-[patch."ssh://git@github.com/amazingdatamachine/ipc.git"]
-fendermint_actor_accumulator = { path = "../ipc/fendermint/actors/accumulator" }
-fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
-fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
-fendermint_actor_objectstore = { path = "../ipc/fendermint/actors/objectstore" }
-fendermint_crypto = { path = "../ipc/fendermint/crypto" }
-fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
-fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
-
-ipc_actors_abis = { path = "../ipc/contracts/binding" }
-ipc-api = { path = "../ipc/ipc/api" }
+#[patch."ssh://git@github.com/hokunet/ipc.git"]
+#fendermint_actor_accumulator = { path = "../ipc/fendermint/actors/accumulator" }
+#fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
+#fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
+#fendermint_actor_objectstore = { path = "../ipc/fendermint/actors/objectstore" }
+#fendermint_crypto = { path = "../ipc/fendermint/crypto" }
+#fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
+#fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
+#
+#ipc_actors_abis = { path = "../ipc/contracts/binding" }
+#ipc-api = { path = "../ipc/ipc/api" }

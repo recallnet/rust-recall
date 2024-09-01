@@ -1,6 +1,6 @@
 [package]
-name = "adm_sdk"
-description = "The top-level user interface for managing ADM object storage and state accumulators."
+name = "hoku_sdk"
+description = "The top-level user interface for managing Hoku object storage and state accumulators."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -50,8 +50,8 @@ fendermint_vm_message = { workspace = true }
 ipc_actors_abis = { workspace = true }
 ipc-api = { workspace = true }
 
-adm_provider = { path = "../provider" }
-adm_signer = { path = "../signer" }
+hoku_provider = { path = "../provider" }
+hoku_signer = { path = "../signer" }
 
 [dev-dependencies]
 hex = { workspace = true }

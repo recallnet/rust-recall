@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
@@ -11,18 +11,18 @@ use fvm_shared::address::Address;
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
-use adm_provider::message::{local_message, GasParams};
-use adm_provider::query::QueryProvider;
-use adm_provider::response::decode_bytes;
-use adm_provider::tx::BroadcastMode;
+use hoku_provider::message::{local_message, GasParams};
+use hoku_provider::query::QueryProvider;
+use hoku_provider::response::decode_bytes;
+use hoku_provider::tx::BroadcastMode;
 
 // Commands to support:
-//   ✓ adm storage stats (subnet-wide summary)
-//   ✓ adm storage usage --address (see usage by account)
-//   adm storage add (add a blob directly)
-//   adm storage get [hash] (get a blob info directly)
-//   adm storage cat [hash] (get a blob directly)
-//   adm storage ls --address (list blobs by account)
+//   ✓ hoku storage stats (subnet-wide summary)
+//   ✓ hoku storage usage --address (see usage by account)
+//   hoku storage add (add a blob directly)
+//   hoku storage get [hash] (get a blob info directly)
+//   hoku storage cat [hash] (get a blob directly)
+//   hoku storage ls --address (list blobs by account)
 
 /// Options for funding an account.
 #[derive(Clone, Default, Debug)]
@@ -80,7 +80,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for StorageStat
     }
 }
 
-/// A static wrapper around ADM storage methods.
+/// A static wrapper around Hoku storage methods.
 pub struct Storage {}
 
 impl Storage {

@@ -1,13 +1,15 @@
-# ADM SDK
+# Hoku SDK
 
-[![License](https://img.shields.io/github/license/amazingdatamachine/adm.svg)](../LICENSE)
+[![License](https://img.shields.io/github/license/hokunet/rust-hoku.svg)](../LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
 
-> The Amazing Data Machine (ADM) SDK
+> Hoku SDK
 
 <!-- omit from toc -->
+
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Background](#background)
   - [Prerequisites](#prerequisites)
 - [Usage](#usage)
@@ -16,7 +18,7 @@
 
 ## Background
 
-The ADM SDK is a library for managing your account and data machines.
+Hoku SDK is a library for managing your account and data machines.
 
 - _Machine manager_:
   This singleton machine is responsible for creating new object stores and/or accumulators.
@@ -34,13 +36,13 @@ Read more about data machines [here](../README.md).
 
 The SDK consists of the following crates:
 
-- [`adm_provider`](../provider): A chain and object provider for the ADM.
-- [`adm_signer`](../signer): A transaction signer for the ADM.
+- [`hoku_provider`](../provider): A chain and object provider for Hoku.
+- [`hoku_signer`](../signer): A transaction signer for Hoku.
   This crate has a built-in [wallet](../signer/src/wallet.rs) signer implementation that relies on a local private key
   to sign messages.
-- [`adm_sdk`](.): The top-level user interface for managing ADM object storage and state accumulators.
+- [`hoku_sdk`](.): The top-level user interface for managing Hoku object storage and state accumulators.
 
-The `adm` crates haven't been published yet, but you can read the Cargo docs by building them locally from the repo
+The `hoku` crates haven't been published yet, but you can read the Cargo docs by building them locally from the repo
 root.
 
 ```shell
@@ -50,8 +52,7 @@ make doc
 
 ### Prerequisites
 
-All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use the ADM
-network.
+All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use Hoku network.
 For example, any EVM-compatible wallet will work, or you can run
 the [`account_deposit.rs`](./examples/account_deposit.rs) example to create a private key for you.
 
@@ -62,11 +63,11 @@ Follow the [examples](./examples) to get up and running.
 ## Usage
 
 Checkout the SDK [examples](./examples).
-The `adm` crates haven't been published yet, but you can use `adm_sdk` as a git dependencies.
+The `hoku` crates haven't been published yet, but you can use `hoku_sdk` as a git dependencies.
 
 ```toml
 [dependencies]
-adm_sdk = { git = "https://github.com/amazingdatamachine/adm.git" }
+hoku_sdk = { git = "https://github.com/hokunet/rust-hoku.git" }
 ```
 
 > [!NOTE]
@@ -79,7 +80,7 @@ adm_sdk = { git = "https://github.com/amazingdatamachine/adm.git" }
 > merkle-tree-rs = { git = "https://github.com/consensus-shipyard/merkle-tree-rs.git", branch = "dev" }
 > ```
 
-This issue will be fixed when the `adm` crates get published soon.
+This issue will be fixed when the `hoku` crates get published soon.
 
 ## Contributing
 
@@ -90,4 +91,4 @@ the [standard-readme](https://github.com/RichardLitt/standard-readme) specificat
 
 ## License
 
-MIT OR Apache-2.0, © 2024 ADM Contributors
+MIT OR Apache-2.0, © 2024 Hoku Contributors

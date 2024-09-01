@@ -1,3 +1,6 @@
+// Copyright 2024 Hoku Contributors
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use std::error::Error;
 use std::ops::Deref;
 
@@ -8,7 +11,7 @@ use serde::Deserialize;
 use serde_json::json;
 use warp::{Filter, Rejection, Reply};
 
-use adm_sdk::{account::Account, network::Network as SdkNetwork};
+use hoku_sdk::{account::Account, network::Network as SdkNetwork};
 
 use crate::server::{
     shared::{get_faucet_wallet, with_private_key, BadRequest, BaseRequest},

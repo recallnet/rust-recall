@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
@@ -24,7 +24,7 @@ use ipc_api::evm::{fil_to_eth_amount, payload_to_evm_address};
 use num_traits::ToPrimitive;
 use reqwest::{header::HeaderValue, Client};
 
-use adm_signer::Signer;
+use hoku_signer::Signer;
 
 use crate::ipc::subnet::EVMSubnet;
 

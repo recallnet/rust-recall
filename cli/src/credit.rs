@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
@@ -7,13 +7,13 @@ use fvm_shared::address::Address;
 use fvm_shared::econ::TokenAmount;
 use serde_json::json;
 
-use adm_provider::{
+use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_token_amount},
 };
-use adm_sdk::credits::{BuyOptions, Credits};
-use adm_sdk::TxParams;
-use adm_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
+use hoku_sdk::credits::{BuyOptions, Credits};
+use hoku_sdk::TxParams;
+use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
 use crate::{
     get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,

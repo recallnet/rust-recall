@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::time::Duration;
@@ -11,12 +11,12 @@ use fvm_shared::{address::Address, econ::TokenAmount};
 use reqwest::{Client, Url};
 use serde_json::json;
 
-use adm_provider::{
+use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{get_delegated_address, parse_address, parse_token_amount},
 };
-use adm_sdk::{account::Account, ipc::subnet::EVMSubnet, network::Network as SdkNetwork};
-use adm_signer::{
+use hoku_sdk::{account::Account, ipc::subnet::EVMSubnet, network::Network as SdkNetwork};
+use hoku_signer::{
     key::parse_secret_key, key::random_secretkey, AccountKind, Signer, SubnetID, Void, Wallet,
 };
 

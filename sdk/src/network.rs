@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::fmt::Display;
@@ -10,8 +10,8 @@ use fvm_shared::address::{set_current_network, Address, Error, Network as FvmNet
 use serde::{Deserialize, Deserializer};
 use tendermint_rpc::Url;
 
-use adm_provider::util::parse_address;
-use adm_signer::SubnetID;
+use hoku_provider::util::parse_address;
+use hoku_signer::SubnetID;
 
 use crate::ipc::subnet::EVMSubnet;
 

@@ -1,11 +1,11 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use adm_provider::json_rpc::JsonRpcProvider;
-use adm_sdk::storage::Storage;
+use hoku_provider::json_rpc::JsonRpcProvider;
+use hoku_sdk::storage::Storage;
 
 use crate::{get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, Cli};
 

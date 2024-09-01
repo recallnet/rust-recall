@@ -1,9 +1,8 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
 
-use adm_provider::util::parse_metadata;
 use bytes::Bytes;
 use clap::{Args, Subcommand};
 use clap_stdin::FileOrStdin;
@@ -11,21 +10,22 @@ use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
+use hoku_provider::util::parse_metadata;
 use serde_json::{json, Value};
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
 
-use adm_provider::{
+use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_query_height},
 };
-use adm_sdk::{
+use hoku_sdk::{
     machine::{
         accumulator::{Accumulator, PushOptions},
         Machine,
     },
     TxParams,
 };
-use adm_signer::{key::parse_secret_key, AccountKind, Void, Wallet};
+use hoku_signer::{key::parse_secret_key, AccountKind, Void, Wallet};
 
 use crate::{
     get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,

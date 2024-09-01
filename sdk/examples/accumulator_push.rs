@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -9,12 +9,12 @@ use bytes::Bytes;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_vm_message::query::FvmQueryHeight;
 
-use adm_provider::json_rpc::JsonRpcProvider;
-use adm_sdk::{
+use hoku_provider::json_rpc::JsonRpcProvider;
+use hoku_sdk::{
     machine::{accumulator::Accumulator, Machine},
     network::Network,
 };
-use adm_signer::{key::parse_secret_key, AccountKind, Wallet};
+use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

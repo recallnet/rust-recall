@@ -1,9 +1,9 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-//! # ADM Provider
+//! # Hoku Provider
 //!
-//! A chain and object provider for the ADM.
+//! A chain and object provider for Hoku.
 
 pub mod json_rpc;
 pub mod message;

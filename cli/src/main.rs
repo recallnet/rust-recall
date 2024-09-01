@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum};
@@ -9,13 +9,13 @@ use serde::Serialize;
 use stderrlog::Timestamp;
 use tendermint_rpc::Url;
 
-use adm_provider::{
+use hoku_provider::{
     message::GasParams,
     tx::BroadcastMode as SDKBroadcastMode,
     util::{parse_address, parse_query_height, parse_token_amount_from_atto},
 };
-use adm_sdk::{network::Network as SdkNetwork, TxParams};
-use adm_signer::{key::parse_secret_key, AccountKind, Signer, SubnetID, Wallet};
+use hoku_sdk::{network::Network as SdkNetwork, TxParams};
+use hoku_signer::{key::parse_secret_key, AccountKind, Signer, SubnetID, Wallet};
 
 use crate::account::{handle_account, AccountArgs};
 use crate::credit::{handle_credit, CreditArgs};
@@ -33,7 +33,7 @@ mod machine;
 mod storage;
 
 #[derive(Clone, Debug, Parser)]
-#[command(name = "adm", author, version, about, long_about = None)]
+#[command(name = "hoku", author, version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,

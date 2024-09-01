@@ -1,3 +1,6 @@
+// Copyright 2024 Hoku Contributors
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use std::convert::Infallible;
 
 use fendermint_crypto::SecretKey;
@@ -5,9 +8,9 @@ use fvm_shared::address::Address;
 use serde::{Deserialize, Deserializer, Serialize};
 use warp::{http::StatusCode, Filter, Rejection, Reply};
 
-use adm_provider::util::parse_address;
-use adm_sdk::network::Network as SdkNetwork;
-use adm_signer::{AccountKind, Wallet};
+use hoku_provider::util::parse_address;
+use hoku_sdk::network::Network as SdkNetwork;
+use hoku_signer::{AccountKind, Wallet};
 
 /// Generic base request for all routes.
 #[derive(Deserialize)]

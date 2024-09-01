@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -10,13 +10,13 @@ use rand::{thread_rng, Rng};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
-use adm_provider::json_rpc::JsonRpcProvider;
-use adm_sdk::machine::objectstore::{AddOptions, GetOptions, QueryOptions};
-use adm_sdk::{
+use hoku_provider::json_rpc::JsonRpcProvider;
+use hoku_sdk::machine::objectstore::{AddOptions, GetOptions, QueryOptions};
+use hoku_sdk::{
     machine::{objectstore::ObjectStore, Machine},
     network::Network,
 };
-use adm_signer::{key::parse_secret_key, AccountKind, Wallet};
+use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

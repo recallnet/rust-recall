@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
@@ -14,12 +14,12 @@ use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
 
-use adm_provider::message::{local_message, GasParams};
-use adm_provider::query::QueryProvider;
-use adm_provider::response::decode_bytes;
-use adm_provider::tx::{BroadcastMode, TxReceipt};
-use adm_provider::Provider;
-use adm_signer::Signer;
+use hoku_provider::message::{local_message, GasParams};
+use hoku_provider::query::QueryProvider;
+use hoku_provider::response::decode_bytes;
+use hoku_provider::tx::{BroadcastMode, TxReceipt};
+use hoku_provider::Provider;
+use hoku_signer::Signer;
 
 /// Options for buying credit.
 #[derive(Clone, Default, Debug)]
@@ -96,7 +96,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
     }
 }
 
-/// A static wrapper around ADM credit methods.
+/// A static wrapper around Hoku credit methods.
 pub struct Credits {}
 
 impl Credits {

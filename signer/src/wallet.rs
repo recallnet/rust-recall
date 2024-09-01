@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
@@ -13,7 +13,7 @@ use fvm_shared::{
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use adm_provider::{message::GasParams, query::QueryProvider};
+use hoku_provider::{message::GasParams, query::QueryProvider};
 
 use crate::signer::Signer;
 use crate::SubnetID;

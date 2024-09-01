@@ -1,3 +1,6 @@
+// Copyright 2024 Hoku Contributors
+// SPDX-License-Identifier: Apache-2.0, MIT
+
 use std::net::{SocketAddr, ToSocketAddrs};
 
 use anyhow::anyhow;
@@ -5,14 +8,14 @@ use clap::Parser;
 use fendermint_crypto::SecretKey;
 use stderrlog::Timestamp;
 
-use adm_signer::key::parse_secret_key;
+use hoku_signer::key::parse_secret_key;
 
 use crate::server::run;
 
 mod server;
 
 #[derive(Clone, Debug, Parser)]
-#[command(name = "adm_faucet", author, version, about, long_about = None)]
+#[command(name = "hoku_faucet", author, version, about, long_about = None)]
 struct Cli {
     /// Wallet private key (ECDSA, secp256k1) for sending faucet funds.
     #[arg(short, long, env, value_parser = parse_secret_key)]
