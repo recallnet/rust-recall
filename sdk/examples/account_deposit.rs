@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::env;
@@ -7,8 +7,8 @@ use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
 use fvm_shared::econ::TokenAmount;
 
-use adm_sdk::{account::Account, network::Network};
-use adm_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
+use hoku_sdk::{account::Account, network::Network};
+use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

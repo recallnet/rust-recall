@@ -1,6 +1,6 @@
 [package]
-name = "adm_provider"
-description = "A chain and object provider for the ADM."
+name = "hoku_provider"
+description = "A chain and object provider for Hoku."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true

@@ -1,5 +1,5 @@
 [package]
-name = "adm_faucet"
+name = "hoku_faucet"
 description = "A faucet service for registering new subnet accounts and sending testnet funds."
 authors.workspace = true
 edition.workspace = true
@@ -11,7 +11,7 @@ keywords.workspace = true
 version.workspace = true
 
 [[bin]]
-name = "adm_faucet"
+name = "hoku_faucet"
 path = "src/main.rs"
 
 [dependencies]
@@ -29,6 +29,6 @@ stderrlog = { workspace = true }
 tokio = { workspace = true }
 warp = { workspace = true }
 
-adm_sdk = { path = "../sdk" }
-adm_signer = { path = "../signer" }
-adm_provider = { path = "../provider" }
+hoku_sdk = { path = "../sdk" }
+hoku_signer = { path = "../signer" }
+hoku_provider = { path = "../provider" }

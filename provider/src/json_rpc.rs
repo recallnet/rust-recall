@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
@@ -26,7 +26,7 @@ use crate::response::Cid;
 use crate::tx::{BroadcastMode, TxProvider, TxReceipt};
 use crate::{Provider, TendermintClient};
 
-/// A JSON RPC ADM chain provider.
+/// A JSON RPC Hoku chain provider.
 #[derive(Clone)]
 pub struct JsonRpcProvider<C = HttpClient> {
     inner: C,

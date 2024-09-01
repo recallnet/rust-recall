@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::time::Duration;
@@ -6,7 +6,7 @@ use std::time::Duration;
 use fvm_shared::address::Address;
 use reqwest::Url;
 
-use adm_signer::SubnetID;
+use hoku_signer::SubnetID;
 
 /// The EVM subnet config parameters.
 #[derive(Debug, Clone)]

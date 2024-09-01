@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -13,19 +13,19 @@ use serde_json::{json, Value};
 use tendermint_rpc::Url;
 use tokio::io::{self};
 
-use adm_provider::{
+use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_metadata, parse_query_height},
 };
-use adm_sdk::machine::objectstore::{AddOptions, DeleteOptions, GetOptions};
-use adm_sdk::{
+use hoku_sdk::machine::objectstore::{AddOptions, DeleteOptions, GetOptions};
+use hoku_sdk::{
     machine::{
         objectstore::{ObjectStore, QueryOptions},
         Machine,
     },
     TxParams,
 };
-use adm_signer::{key::parse_secret_key, AccountKind, Void, Wallet};
+use hoku_signer::{key::parse_secret_key, AccountKind, Void, Wallet};
 
 use crate::{
     get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,

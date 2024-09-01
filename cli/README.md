@@ -1,13 +1,15 @@
-# ADM CLI
+# Hoku CLI
 
-[![License](https://img.shields.io/github/license/amazingdatamachine/adm.svg)](../LICENSE)
+[![License](https://img.shields.io/github/license/hokunet/rust-hoku.svg)](../LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
 
-> The Amazing Data Machine (ADM) CLI
+> Hoku CLI
 
 <!-- omit from toc -->
+
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Background](#background)
   - [Prerequisites](#prerequisites)
 - [Usage](#usage)
@@ -44,7 +46,7 @@
 
 ## Background
 
-The ADM CLI is a tool for managing your account and data machines.
+Hoku CLI is a tool for managing your account and data machines.
 
 - _Machine manager_:
   This singleton machine is responsible for creating new object stores and/or accumulators.
@@ -62,8 +64,8 @@ Read more about data machines [here](../README.md).
 
 ### Prerequisites
 
-All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use the ADM
-network. For example, any EVM-compatible wallet will work, or you can run the `adm account create` command to create a
+All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use Hoku
+network. For example, any EVM-compatible wallet will work, or you can run the `hoku account create` command to create a
 private key for you.
 
 Then, make sure your account is funded with FIL, so you can pay to execute a transaction (you can use the
@@ -79,20 +81,20 @@ to use the `transfer` command. These are described in more detail below.
 To install the CLI, you'll need to download it from source, build, and install it.
 
 ```sh
-git clone https://github.com/amazingdatamachine/adm
-cd adm
+git clone https://github.com/hokunet/rust-hoku
+cd rust-hoku
 make install
 ```
 
-Once installed, you can run the `adm` command from your terminal.
+Once installed, you can run the `hoku` command from your terminal.
 
 ```sh
-adm --help
+hoku --help
 ```
 
 ### Configuration
 
-There are two flags required for the majority of the `adm` subcommands:
+There are two flags required for the majority of the `hoku` subcommands:
 
 - `--network`: Specify the chain location with RPC presets and settings that map to either `mainnet`, `testnet`,
   or `devnet`.
@@ -137,15 +139,15 @@ All the global flags can also be passed as all-caps, snake case environment vari
 
 ### Account management
 
-Interaction with the ADM network requires an account (ECDSA, secp256k1). As with any blockchain system, an account can
+Interaction with Hoku network requires an account (ECDSA, secp256k1). As with any blockchain system, an account can
 be created at will, receive / transfer funds, and send transactions. Recall that on Filecoin, and EVM `0x` prefixed
 address is equivalent to a `t410...`/`f410...` address, which is a special namespace that enables for EVM-compatiablity
 in the FVM.
 
-The `account` command allows you to execute these actions within the ADM:
+The `account` command allows you to execute these actions within Hoku:
 
 ```
-adm account
+hoku account
 ```
 
 The following subcommands are available:
@@ -161,7 +163,7 @@ The following subcommands are available:
 Create a new account from a random seed.
 
 ```
-adm account create
+hoku account create
 ```
 
 This command logs a JSON object to stdout with three properties: the private key, public key, and its corresponding
@@ -172,7 +174,7 @@ FVM-converted address.
 Create a new private key:
 
 ```
-> adm account create
+> hoku account create
 
 {
   "private_key": "d5020dd0b12d4d8d8793ff0edbaa29bd7197879ddf82d475b7e9a6a34de765b0",
@@ -184,7 +186,7 @@ Create a new private key:
 - Optionally, pipe its output into a file to store the key and metadata:
 
 ```
-> adm account create > account.json
+> hoku account create > account.json
 ```
 
 #### Get account info
@@ -192,7 +194,7 @@ Create a new private key:
 Get account information.
 
 ```
-adm account info {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+hoku account info {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 This commands logs a JSON object to stdout: its public key, FVM address, current sequence (nonce), current subnet
@@ -214,7 +216,7 @@ balance, and its balance on the parent subnet.
 Get account info for a specific address:
 
 ```
-> adm account info \
+> hoku account info \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 {
@@ -231,15 +233,15 @@ Get account info for a specific address:
 Get an account sequence (i.e., nonce) in a subnet.
 
 ```
-adm account sequence {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+hoku account sequence {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `adm account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
+- `hoku account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
   (e.g., read from your `.env` file).
-- `adm account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `hoku account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -254,7 +256,7 @@ Get the sequence by:
 - Hex address:
 
 ```
-> adm objectstore list \
+> hoku objectstore list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 {
@@ -265,7 +267,7 @@ Get the sequence by:
 - Its equivalent `t410` address:
 
 ```
-> adm objectstore list \
+> hoku objectstore list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
@@ -274,14 +276,14 @@ Get the sequence by:
 Get an account balance within a specific subnet.
 
 ```
-adm account balance {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+hoku account balance {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `adm account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
-- `adm account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `hoku account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
+- `hoku account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 The `--parent` flag allows you to get the balance of the parent.
 If the `--network` flag is set, it will handle all the required `--evm-...` flag presets for you,
@@ -304,7 +306,7 @@ but you _can_ override them with your own values.
 - Get the signer's balance on the subnet:
 
 ```
-> adm account balance
+> hoku account balance
 
 {
   "balance": "0.2"
@@ -314,7 +316,7 @@ but you _can_ override them with your own values.
 - Get its balance on the parent subnet:
 
 ```
-> adm account balance --parent
+> hoku account balance --parent
 
 {
   "balance": "100.5"
@@ -324,7 +326,7 @@ but you _can_ override them with your own values.
 - Get the balance at a specific address on the subnet:
 
 ```
-> adm account balance \
+> hoku account balance \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 ```
 
@@ -333,7 +335,7 @@ but you _can_ override them with your own values.
 Deposit funds into a subnet from its parent.
 
 ```
-adm account deposit [--to <TO>] <AMOUNT>
+hoku account deposit [--to <TO>] <AMOUNT>
 ```
 
 Think of the `deposit` command as a typical transfer but _only_ from a parent to a child subnet. Both a transfer _out
@@ -363,7 +365,7 @@ values.
 - Deposit funds to the signer's address:
 
 ```
-> adm account deposit 0.1
+> hoku account deposit 0.1
 
 {
   "transactionHash": "0xcc7fdf8057dd9f024582b24fce2abe0f5e0c01f1e925fb52bd002c4456333bfc",
@@ -402,7 +404,7 @@ values.
 - Deposit funds to some other, non-signer address:
 
 ```
-> adm account deposit --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
+> hoku account deposit --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
 ```
 
 #### Withdraw funds
@@ -410,7 +412,7 @@ values.
 Withdraw funds from a subnet to its parent.
 
 ```
-adm account withdraw [--to <TO>] <AMOUNT>
+hoku account withdraw [--to <TO>] <AMOUNT>
 ```
 
 The `withdraw` command is the opposite of a `deposit`. It's somewhat like a typical transfer but _only_ from a child
@@ -439,7 +441,7 @@ will handle all the required `--evm-...` flag presets for you, but you _can_ ove
 - Withdraw funds to the signer's address:
 
 ```
-> adm account withdraw 0.1
+> hoku account withdraw 0.1
 
 {
   "transactionHash": "0xb098e39c4b358e5f55cd6f2db941092ff50b46d99db53c34101cac3f0f65f20d",
@@ -463,7 +465,7 @@ will handle all the required `--evm-...` flag presets for you, but you _can_ ove
 - Withdraw funds to some other, non-signer address:
 
 ```
-> adm account withdraw --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
+> hoku account withdraw --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
 ```
 
 #### Transfer funds
@@ -471,7 +473,7 @@ will handle all the required `--evm-...` flag presets for you, but you _can_ ove
 Transfer funds to another account in a subnet.
 
 ```
-adm account transfer --to <TO> <AMOUNT>
+hoku account transfer --to <TO> <AMOUNT>
 ```
 
 | Positionals | Description                      |
@@ -495,7 +497,7 @@ values.
 **Example:**
 
 ```
-> adm account transfer \
+> hoku account transfer \
 --to 0x4D5286d81317E284Cd377cB98b478552Bbe641ae \
 0.1
 
@@ -520,7 +522,7 @@ values.
 
 ### Machine
 
-Machines are the core building blocks of the ADM. The `machine` command allows you to retrieve machine information
+Machines are the core building blocks of Hoku. The `machine` command allows you to retrieve machine information
 relative to a specific address. This helps track which `ObjectStore` or `Accumulator` machines are tied to your account,
 which are later used in the `objectstore` and `accumulator` subcommands.
 
@@ -529,7 +531,7 @@ which are later used in the `objectstore` and `accumulator` subcommands.
 Get machine metadata at a specific address.
 
 ```
-adm machine info <ADDRESS>
+hoku machine info <ADDRESS>
 ```
 
 | Positionals | Description      |
@@ -543,7 +545,7 @@ adm machine info <ADDRESS>
 **Example:**
 
 ```
-> adm machine info t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
+> hoku machine info t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
 
 {
     "kind": "ObjectStore",
@@ -556,8 +558,8 @@ adm machine info <ADDRESS>
 Interact with an object store machine using either the `objectstore` or aliased `os` subcommand:
 
 ```
-adm objectstore <SUBCOMMAND>
-adm os <SUBCOMMAND>
+hoku objectstore <SUBCOMMAND>
+hoku os <SUBCOMMAND>
 ```
 
 The `objectstore` subcommand has the following subcommands:
@@ -580,7 +582,7 @@ the `query` subcommand).
 Create a new object store machine.
 
 ```
-adm objectstore create
+hoku objectstore create
 ```
 
 | Flag                | Required? | Description                                                               |
@@ -595,7 +597,7 @@ adm objectstore create
 **Example:**
 
 ```
-> adm objectstore create
+> hoku objectstore create
 
 {
   "address": "t2pefhfyobx2tdgznhcf2anr6p34z2rgso2ix7x5y",
@@ -612,14 +614,14 @@ adm objectstore create
 List object stores by owner in a subnet.
 
 ```
-adm objectstore list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+hoku objectstore list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `adm objectstore list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
-- `adm objectstore list --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `hoku objectstore list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
+- `hoku objectstore list --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -634,7 +636,7 @@ Query machines by:
 - A hex address:
 
 ```
-> adm objectstore list \
+> hoku objectstore list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 [
@@ -652,7 +654,7 @@ Query machines by:
 - Its equivalent `t410` address:
 
 ```
-> adm objectstore list \
+> hoku objectstore list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
@@ -660,7 +662,7 @@ Query machines by:
   recent `committed` height above):
 
 ```
-> adm objectstore list --height 114345
+> hoku objectstore list --height 114345
 [
   {
     "address": "t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa",
@@ -674,7 +676,7 @@ Query machines by:
 Add an object with a key prefix.
 
 ```
-adm objectstore add \
+hoku objectstore add \
 --address <ADDRESS> \
 --key <KEY> \
 [INPUT]
@@ -699,7 +701,7 @@ The `INPUT` can be a file path.
 - Push a file to the object store:
 
 ```
-> adm objectstore add \
+> hoku objectstore add \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --key "my/object" \
 ./hello.json
@@ -718,7 +720,7 @@ The `INPUT` can be a file path.
 Get an object from the object store machine.
 
 ```
-adm objectstore get --address <ADDRESS> <KEY>
+hoku objectstore get --address <ADDRESS> <KEY>
 ```
 
 | Positionals | Description               |
@@ -739,7 +741,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Get an object and write to stdout (default behavior):
 
 ```
-> adm objectstore get \
+> hoku objectstore get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object"
 
@@ -749,7 +751,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Download the output to a file by piping the output:
 
 ```
-> adm objectstore get \
+> hoku objectstore get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object" > downloaded.json
 ```
@@ -757,7 +759,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Range request for a subset of bytes:
 
 ```
-> adm objectstore get \
+> hoku objectstore get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --range "10-14" \
 "my/object"
@@ -770,7 +772,7 @@ world
 Delete an object from the object store.
 
 ```
-adm objectstore delete \
+hoku objectstore delete \
 --address <ADDRESS> \
 <KEY>
 ```
@@ -797,7 +799,7 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 - Delete an existing object:
 
 ```
-> adm objectstore delete \
+> hoku objectstore delete \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object"
 
@@ -815,7 +817,7 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 Query across all objects in the store.
 
 ```
-adm objectstore query --address <ADDRESS>
+hoku objectstore query --address <ADDRESS>
 ```
 
 Performing a `query` lists all keys that match a given prefix _up to and including the delimiter_.
@@ -843,7 +845,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   prefix `my/`, but no objects are listed since the "root" is the prefix:
 
 ```
-> adm objectstore query \
+> hoku objectstore query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
 
 {
@@ -859,7 +861,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   empty, so you know there are no more sub-objects to list:
 
 ```
-> adm objectstore query \
+> hoku objectstore query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --prefix "my/"
 
@@ -899,7 +901,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   as above.
 
 ```
-> adm objectstore query \
+> hoku objectstore query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --delimiter "*"
 ```
@@ -908,7 +910,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   _after_ `"my/object"`, so it will be the first object listed after offsetting by `1`:
 
 ```
-> adm objectstore query \
+> hoku objectstore query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --delimiter "/" \
 --prefix "my/" \
@@ -935,8 +937,8 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
 Interact with an accumulator machine type using either the `accumulator` or aliased `ac` subcommand:
 
 ```
-adm machine accumulator <SUBCOMMAND>
-adm machine ac <SUBCOMMAND>
+hoku machine accumulator <SUBCOMMAND>
+hoku machine ac <SUBCOMMAND>
 ```
 
 The `accumulator` subcommand has the following subcommands:
@@ -954,7 +956,7 @@ The `accumulator` subcommand has the following subcommands:
 Create a new accumulator machine.
 
 ```
-adm machine accumulator create
+hoku machine accumulator create
 ```
 
 | Flag                | Required? | Description                                                               |
@@ -969,7 +971,7 @@ adm machine accumulator create
 **Example:**
 
 ```
-> adm machine accumulator create
+> hoku machine accumulator create
 
 {
   "address": "t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia",
@@ -986,14 +988,14 @@ adm machine accumulator create
 List accumulators by owner in a subnet.
 
 ```
-adm accumulator list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+hoku accumulator list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `adm accumulator list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
-- `adm accumulator list --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `hoku accumulator list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
+- `hoku accumulator list --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -1008,7 +1010,7 @@ Query machines by:
 - A hex address:
 
 ```
-> adm accumulator list \
+> hoku accumulator list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 [
@@ -1022,14 +1024,14 @@ Query machines by:
 - Its equivalent `t410` address:
 
 ```
-> adm accumulator list \
+> hoku accumulator list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
 - At a specific block height:
 
 ```
-> adm accumulator list --height 339004
+> hoku accumulator list --height 339004
 ```
 
 #### Push
@@ -1037,7 +1039,7 @@ Query machines by:
 Push a value to the accumulator.
 
 ```
-adm machine accumulator push --address <ADDRESS> [INPUT]
+hoku machine accumulator push --address <ADDRESS> [INPUT]
 ```
 
 The `INPUT` can be a file path or piped from stdin.
@@ -1057,7 +1059,7 @@ The `INPUT` can be a file path or piped from stdin.
 - Push a file to the accumulator:
 
 ```
-> adm machine accumulator push \
+> hoku machine accumulator push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 ./hello.json
 
@@ -1076,7 +1078,7 @@ The `INPUT` can be a file path or piped from stdin.
 - Pipe from stdin:
 
 ```
-> echo '{"hello":"world"}' | adm machine accumulator push \
+> echo '{"hello":"world"}' | hoku machine accumulator push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 ```
 
@@ -1085,7 +1087,7 @@ The `INPUT` can be a file path or piped from stdin.
 Get leaf at a given index and height.
 
 ```
-adm machine accumulator leaf --address <ADDRESS> <INDEX>
+hoku machine accumulator leaf --address <ADDRESS> <INDEX>
 ```
 
 | Positionals | Description |
@@ -1102,7 +1104,7 @@ adm machine accumulator leaf --address <ADDRESS> <INDEX>
 - Get leaf at index `0` (the "hello world" object pushed above):
 
 ```
-> adm machine accumulator leaf \
+> hoku machine accumulator leaf \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 0
 
@@ -1114,7 +1116,7 @@ adm machine accumulator leaf --address <ADDRESS> <INDEX>
 Get the leaf counts at a given height.
 
 ```
-adm machine accumulator count --address <ADDRESS>
+hoku machine accumulator count --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                                                                                  |
@@ -1127,7 +1129,7 @@ adm machine accumulator count --address <ADDRESS>
 - Get the leaf count, which is just a single leaf at this point:
 
 ```
-> adm machine accumulator root \
+> hoku machine accumulator root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1138,10 +1140,10 @@ adm machine accumulator count --address <ADDRESS>
 - If you push another piece of data, the count will increase:
 
 ```
-> echo '{"hello":"again"}' | adm machine accumulator push \
+> echo '{"hello":"again"}' | hoku machine accumulator push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> adm machine accumulator root \
+> hoku machine accumulator root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1154,7 +1156,7 @@ adm machine accumulator count --address <ADDRESS>
 Get the peaks at a given height.
 
 ```
-adm machine accumulator peaks --address <ADDRESS>
+hoku machine accumulator peaks --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
@@ -1167,7 +1169,7 @@ adm machine accumulator peaks --address <ADDRESS>
 - Since there are only two leaves, there is only one peak since it's a balanced tree:
 
 ```
-> adm machine accumulator peaks \
+> hoku machine accumulator peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1180,10 +1182,10 @@ adm machine accumulator peaks --address <ADDRESS>
 - Pushing another piece of data (i.e., three total) leads to another peak:
 
 ```
-> echo '{"hello":"basin"}' | adm machine accumulator push \
+> echo '{"hello":"basin"}' | hoku machine accumulator push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> adm machine accumulator peaks \
+> hoku machine accumulator peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1199,7 +1201,7 @@ adm machine accumulator peaks --address <ADDRESS>
 Get the root at a given height.
 
 ```
-adm machine accumulator root --address <ADDRESS>
+hoku machine accumulator root --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
@@ -1210,7 +1212,7 @@ adm machine accumulator root --address <ADDRESS>
 **Example:**
 
 ```
-> adm machine accumulator root \
+> hoku machine accumulator root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1227,4 +1229,4 @@ the [standard-readme](https://github.com/RichardLitt/standard-readme) specificat
 
 ## License
 
-MIT OR Apache-2.0, © 2024 ADM Contributors
+MIT OR Apache-2.0, © 2024 Hoku Contributors

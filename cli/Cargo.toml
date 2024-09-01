@@ -1,6 +1,6 @@
 [package]
-name = "adm_cli"
-description = "A command line interface (CLI) for the ADM."
+name = "hoku_cli"
+description = "A command line interface (CLI) for Hoku."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -11,7 +11,7 @@ keywords.workspace = true
 version.workspace = true
 
 [[bin]]
-name = "adm"
+name = "hoku"
 path = "src/main.rs"
 
 [dependencies]
@@ -44,6 +44,6 @@ fendermint_crypto = { workspace = true }
 fendermint_vm_actor_interface = { workspace = true }
 fendermint_vm_message = { workspace = true }
 
-adm_provider = { path = "../provider" }
-adm_sdk = { path = "../sdk" }
-adm_signer = { path = "../signer" }
+hoku_provider = { path = "../provider" }
+hoku_sdk = { path = "../sdk" }
+hoku_signer = { path = "../signer" }

@@ -1,4 +1,4 @@
-// Copyright 2024 ADM Contributors
+// Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
@@ -7,11 +7,11 @@ use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
 use serde_json::json;
 
-use adm_provider::{
+use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{get_delegated_address, parse_address, parse_query_height},
 };
-use adm_sdk::machine::info;
+use hoku_sdk::machine::info;
 
 use crate::{get_rpc_url, print_json, Cli};
 
