@@ -36,8 +36,6 @@ const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x9BE5DB9771835c7Ebd693A53067
 const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.testnet.basin.storage";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 
-pub const TESTNET_FAUCET_API_URL: &str = "https://faucet.testnet.basin.storage";
-
 /// Options for [`EVMSubnet`] configurations.
 #[derive(Debug, Clone)]
 pub struct SubnetOptions {
@@ -196,24 +194,6 @@ impl Network {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
             Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
-        }
-    }
-
-    /// Returns the network [`reqwest::Url`] of the Faucet API.
-    pub fn faucet_api_url(&self) -> anyhow::Result<reqwest::Url> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(reqwest::Url::from_str(TESTNET_FAUCET_API_URL)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
-        }
-    }
-
-    /// Returns the network provider iroh details.
-    pub fn iroh(&self) -> anyhow::Result<iroh::net::NodeId> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => todo!(),
-            Network::Localnet | Network::Devnet => todo!(),
         }
     }
 }

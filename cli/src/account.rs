@@ -4,18 +4,17 @@
 use std::time::Duration;
 
 use clap::{Args, Subcommand};
-use ethers::prelude::TransactionReceipt;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_actor_interface::eam::EthAddress;
 use fvm_shared::{address::Address, econ::TokenAmount};
-use reqwest::{Client, Url};
+use reqwest::Url;
 use serde_json::json;
 
 use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{get_delegated_address, parse_address, parse_token_amount},
 };
-use hoku_sdk::{account::Account, ipc::subnet::EVMSubnet, network::Network as SdkNetwork};
+use hoku_sdk::{account::Account, ipc::subnet::EVMSubnet};
 use hoku_signer::{
     key::parse_secret_key, key::random_secretkey, AccountKind, Signer, SubnetID, Void, Wallet,
 };
@@ -30,10 +29,8 @@ pub struct AccountArgs {
 
 #[derive(Clone, Debug, Subcommand)]
 enum AccountCommands {
-    /// Create a new account from a random seed.
+    /// Create a new local wallet from a random seed (wallet details are NOT sent to the network).
     Create,
-    /// Register a new account on a subnet.
-    Register(RegisterArgs),
     /// Get account information.
     Info(InfoArgs),
     /// Deposit funds into a subnet from its parent.
@@ -104,22 +101,6 @@ struct TransferArgs {
     subnet: SubnetArgs,
 }
 
-#[derive(Clone, Debug, Args)]
-struct RegisterArgs {
-    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
-    private_key: Option<SecretKey>,
-    /// Account address. The signer address is used if no address is given.
-    #[arg(short, long, value_parser = parse_address)]
-    address: Option<Address>,
-    /// Wallet registration URL. This sends a subnet transaction from a
-    /// sponsoring wallet to new accounts, covering gas fees.
-    #[arg(long, env)]
-    faucet_url: Option<Url>,
-    #[command(flatten)]
-    subnet: SubnetArgs,
-}
-
 /// Account commands handler.
 pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> {
     let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
@@ -136,42 +117,6 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
             print_json(
                 &json!({"private_key": sk_hex, "address": eth_address, "fvm_address": address.to_string()}),
             )
-        }
-        AccountCommands::Register(args) => {
-            let addr_args = AddressArgs {
-                private_key: args.private_key.clone(),
-                address: args.address,
-                height: Default::default(),
-            };
-            let height = addr_args.height;
-            let address = get_address(addr_args, &subnet_id)?;
-            let eth_address = get_delegated_address(address)?;
-            let eth_addr_str = format!("{:?}", eth_address);
-
-            match Account::sequence(&provider, &Void::new(address), height).await {
-                Ok(_) => {
-                    println!("account already registered");
-                    Ok(())
-                }
-                Err(_) => {
-                    let network = cli.network.get();
-                    let base_url = get_faucet_url(network, args.faucet_url.clone())?;
-                    let url = base_url.join("register")?;
-                    let body = json!({
-                        "network": network.to_string(),
-                        "address": eth_addr_str
-                    });
-                    let req = Client::new()
-                        .post(url)
-                        .header("Content-Type", "application/json")
-                        .body(body.to_string())
-                        .send()
-                        .await?;
-                    let tx: TransactionReceipt = req.json().await?;
-
-                    print_json(&tx)
-                }
-            }
         }
         AccountCommands::Info(args) => {
             let address = get_address(args.address.clone(), &subnet_id)?;
@@ -273,13 +218,4 @@ fn get_parent_subnet_config(
             .evm_supply_source
             .or_else(|| network.parent_evm_supply_source().ok()),
     })
-}
-
-/// Returns url to register subnet accounts from a sponsoring wallet. Note: only
-/// `testnet` is supported.
-fn get_faucet_url(network: SdkNetwork, url: Option<Url>) -> anyhow::Result<Url> {
-    match url {
-        Some(u) => Ok(u),
-        None => network.faucet_api_url(),
-    }
 }
