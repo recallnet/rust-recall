@@ -12,9 +12,9 @@ use ethers::{
     middleware::{Middleware, SignerMiddleware},
     prelude::{
         Authorization, Eip1559TransactionRequest, Http, LocalWallet, Provider, Signer as EthSigner,
-        Wallet, I256, U256,
+        TransactionReceipt, Wallet, I256, U256,
     },
-    types::TransactionReceipt,
+    types::transaction::eip2718::TypedTransaction,
 };
 use ethers_contract::ContractCall;
 use fvm_shared::{address::Address, econ::TokenAmount};
@@ -249,8 +249,22 @@ where
     B: std::borrow::Borrow<D>,
     M: ethers::abi::Detokenize,
 {
-    let (max_priority_fee_per_gas, _) = premium_estimation(signer).await?;
-    Ok(call.gas_price(max_priority_fee_per_gas))
+    let (max_priority_fee_per_gas, max_fee_per_gas) = premium_estimation(signer).await?;
+    match call.tx.clone() {
+        TypedTransaction::Eip1559(mut tx) => {
+            tx.max_fee_per_gas = Some(max_fee_per_gas);
+            tx.max_priority_fee_per_gas = Some(max_priority_fee_per_gas);
+            Ok(call)
+        }
+        TypedTransaction::Legacy(mut tx) => {
+            tx.gas_price = Some(max_fee_per_gas);
+            Ok(call)
+        }
+        TypedTransaction::Eip2930(mut wrapped_tx) => {
+            wrapped_tx.tx.gas_price = Some(max_fee_per_gas);
+            Ok(call)
+        }
+    }
 }
 
 /// Returns an estimation of an optimal `gas_premium` and `gas_fee_cap`
