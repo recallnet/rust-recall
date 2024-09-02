@@ -16,14 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      #- uses: webfactory/ssh-agent@v0.5.0
-      #  with:
-      #    ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: ${{ secrets.BUILTIN_ACTORS_DEPLOY_KEY }}
 
-      # - name: Setup known_hosts
-      #   run: |
-      #     mkdir -p ~/.ssh
-      #   ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - name: Setup known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1
