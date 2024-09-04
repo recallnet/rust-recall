@@ -58,6 +58,3 @@ jobs:
 
       - name: Generate documentation
         run: make doc
-
-      - name: Install CLI
-        run: make install
