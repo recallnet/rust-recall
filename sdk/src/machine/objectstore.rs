@@ -435,11 +435,9 @@ impl ObjectStore {
         msg_bar.set_message("Broadcasting transaction...");
         let params = AddParams {
             to: self.address,
-            source: fendermint_actor_blobs_shared::state::PublicKey(
-                node_addr.node_id.as_bytes().clone(),
-            ),
+            source: fendermint_actor_blobs_shared::state::PublicKey(*node_addr.node_id.as_bytes()),
             key: key.into(),
-            hash: fendermint_actor_blobs_shared::state::Hash(object_hash.as_bytes().clone()),
+            hash: fendermint_actor_blobs_shared::state::Hash(*object_hash.as_bytes()),
             size: object_size,
             ttl: options.ttl,
             metadata: options.metadata,
@@ -489,11 +487,9 @@ impl ObjectStore {
         let from = signer.address();
         let params = AddParams {
             to: self.address,
-            source: fendermint_actor_blobs_shared::state::PublicKey(
-                provider_node_id.as_bytes().clone(),
-            ),
+            source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
             key: key.into(),
-            hash: fendermint_actor_blobs_shared::state::Hash(hash.as_bytes().clone()),
+            hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
             size,
             ttl,
             metadata,

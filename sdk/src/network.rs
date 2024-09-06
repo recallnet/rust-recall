@@ -19,12 +19,12 @@ const TESTNET_SUBNET_ID: &str = "/r314159/t410faeqn4d7svwomtyl4vf6z3oiasknsgwfa3
 const LOCALNET_SUBNET_ID: &str = "/r314159/t410f726d2jv6uj4mpkcbgg5ndlpp3l7dd5rlcpgzkoi";
 const DEVNET_SUBNET_ID: &str = "test";
 
-const TESTNET_RPC_URL: &str = "https://api.n1.testnet.basin.storage";
+const TESTNET_RPC_URL: &str = "https://api.n1.hoku.sh";
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
 
 const RPC_TIMEOUT: Duration = Duration::from_secs(60);
 
-const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.testnet.basin.storage";
+const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.hoku.sh";
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x8e3Fd2b47e564E7D636Fa80082f286eD038BE54b";
@@ -33,7 +33,7 @@ const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/r
 const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xC26b3909E826359E3AFcF0196921e4201a90766D";
 const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x9BE5DB9771835c7Ebd693A53067218A22f202a18";
 
-const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.testnet.basin.storage";
+const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.hoku.sh";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 
 /// Options for [`EVMSubnet`] configurations.
