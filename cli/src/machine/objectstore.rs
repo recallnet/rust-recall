@@ -92,9 +92,13 @@ struct ObjectstorePutArgs {
     /// Key of the object to upload.
     #[arg(short, long)]
     key: String,
-    /// Object time-to-live (TTL) duration. Credits will be reserved for this duration.
-    #[arg(long, default_value = "2592000")]
-    ttl: ChainEpoch,
+    /// Object time-to-live (TTL) duration.
+    /// If a TTL is specified, credits will be reserved for the duration,
+    /// after which the object will be deleted.
+    /// If a TTL is not specified, the object will be continuously renewed about every hour.
+    /// If the owner's free credit balance is exhuasted, the object will be deleted.
+    #[arg(long)]
+    ttl: Option<ChainEpoch>,
     /// Overwrite the object if it already exists.
     #[arg(short, long)]
     overwrite: bool,
@@ -372,7 +376,11 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                 .iter()
                 .map(|(key_bytes, object)| {
                     let key = core::str::from_utf8(key_bytes).unwrap_or_default().to_string();
-                    let value = json!({"hash": object.hash.to_string(), "size": object.size, "expiry": object.expiry, "metadata": object.metadata});
+                    let value = if let Some(object) = object {
+                        json!({"hash": object.hash.to_string(), "size": object.size, "expiry": object.expiry, "metadata": object.metadata})    
+                    } else {
+                        json!("deleted")
+                    };
                     json!({"key": key, "value": value})
                 })
                 .collect::<Vec<Value>>();
