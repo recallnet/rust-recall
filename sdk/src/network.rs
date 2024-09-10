@@ -15,25 +15,25 @@ use hoku_signer::SubnetID;
 
 use crate::ipc::subnet::EVMSubnet;
 
-const TESTNET_SUBNET_ID: &str = "/r314159/t410f26ejh7sqkimbhw5ojbeyvvkqnequ7ktxy5gyxyq"; // chain ID: 1717203960113192
+const TESTNET_SUBNET_ID: &str = "/r314159/t410fdt67sqg7fvju6z3y7jl3awvrvu445jihustvmwi"; // chain ID: 1717203960113192
 const LOCALNET_SUBNET_ID: &str = "/r314159/t410f726d2jv6uj4mpkcbgg5ndlpp3l7dd5rlcpgzkoi";
 const DEVNET_SUBNET_ID: &str = "test";
 
-const TESTNET_RPC_URL: &str = "https://rpc-testnet-validator-0.3box.io";
+const TESTNET_RPC_URL: &str = "https://rpc-testnet-v2-validator-0.3box.io";
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
 
 const RPC_TIMEOUT: Duration = Duration::from_secs(60);
 
-const TESTNET_EVM_RPC_URL: &str = "https://evm-testnet-validator-0.3box.io";
+const TESTNET_EVM_RPC_URL: &str = "https://evm-testnet-v2-validator-0.3box.io";
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
-const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xD4e09E3EeF4F5d177e130F22d5BAD25E5028F125";
+const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xd8a0E6BE60e799BC38E56D54c837af1876482B8A";
 
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
 const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x141Ef571Fd6C9e7f51FAf697f4796A557C6BB663";
 const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x89D8029d5cF4bAEbd0b43E39B547c34eAa8c5C54";
 
-const TESTNET_OBJECT_API_URL: &str = "object-api-testnet-validator-0.3box.io";
+const TESTNET_OBJECT_API_URL: &str = "object-api-testnet-v2-validator-0.3box.io";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 
 /// Options for [`EVMSubnet`] configurations.
