@@ -15,8 +15,8 @@ use hoku_signer::SubnetID;
 
 use crate::ipc::subnet::EVMSubnet;
 
-const TESTNET_SUBNET_ID: &str = "/r314159/t410fdt67sqg7fvju6z3y7jl3awvrvu445jihustvmwi"; // chain ID: 1717203960113192
-const LOCALNET_SUBNET_ID: &str = "/r314159/t410f726d2jv6uj4mpkcbgg5ndlpp3l7dd5rlcpgzkoi";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410fdt67sqg7fvju6z3y7jl3awvrvu445jihustvmwi"; // chain ID: 1419198968141193
+const LOCALNET_SUBNET_ID: &str = "/r314159/t410f726d2jv6uj4mpkcbgg5ndlpp3l7dd5rlcpgzkoi"; // chain ID: 2022913529944675
 const DEVNET_SUBNET_ID: &str = "test";
 
 const TESTNET_RPC_URL: &str = "https://rpc-testnet-v2-validator-0.3box.io";
