@@ -48,7 +48,10 @@ pub enum TxStatus {
 
 /// The receipt of a transaction.
 #[derive(Debug, Copy, Clone, Serialize)]
-pub struct TxReceipt<T> {
+pub struct TxReceipt<T>
+where
+    T: 'static,
+{
     /// The transaction's current status.
     pub status: TxStatus,
     /// The hash of the transaction.
@@ -60,8 +63,19 @@ pub struct TxReceipt<T> {
     #[serde(skip_serializing_if = "i64::is_zero")]
     pub gas_used: i64,
     /// Data returned by the transaction.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "is_data_empty")]
     pub data: Option<T>,
+}
+
+fn is_data_empty<T>(data: &Option<T>) -> bool
+where
+    T: 'static,
+{
+    match data {
+        None => true,
+        Some(_) if std::any::TypeId::of::<T>() == std::any::TypeId::of::<()>() => true,
+        _ => false,
+    }
 }
 
 impl<D> TxReceipt<D> {

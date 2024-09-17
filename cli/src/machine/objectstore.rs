@@ -63,6 +63,10 @@ struct ObjectstoreCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
+    /// Object store owner address.
+    /// The owner defaults to the signer if not specified.
+    #[arg(short, long, value_parser = parse_address)]
+    owner: Option<Address>,
     /// Allow public write access to the object store.
     #[arg(long, default_value_t = false)]
     public_write: bool,
@@ -222,6 +226,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             let (store, tx) = ObjectStore::new(
                 &provider,
                 &mut signer,
+                args.owner,
                 write_access,
                 metadata,
                 gas_params.clone(),

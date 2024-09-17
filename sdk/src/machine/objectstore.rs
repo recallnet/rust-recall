@@ -143,6 +143,7 @@ impl Machine for ObjectStore {
     async fn new<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
+        owner: Option<Address>,
         write_access: WriteAccess,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
@@ -153,6 +154,7 @@ impl Machine for ObjectStore {
         let (address, tx) = deploy_machine(
             provider,
             signer,
+            owner,
             Kind::ObjectStore,
             write_access,
             metadata,
@@ -438,7 +440,6 @@ impl ObjectStore {
         msg_bar.set_prefix("[3/3]");
         msg_bar.set_message("Broadcasting transaction...");
         let params = AddParams {
-            to: self.address,
             source: fendermint_actor_blobs_shared::state::PublicKey(*node_addr.node_id.as_bytes()),
             key: key.into(),
             hash: fendermint_actor_blobs_shared::state::Hash(*object_hash.as_bytes()),
@@ -490,7 +491,6 @@ impl ObjectStore {
     ) -> anyhow::Result<()> {
         let from = signer.address();
         let params = AddParams {
-            to: self.address,
             source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
             key: key.into(),
             hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
@@ -538,10 +538,7 @@ impl ObjectStore {
     where
         C: Client + Send + Sync,
     {
-        let params = DeleteParams {
-            to: self.address,
-            key: key.into(),
-        };
+        let params = DeleteParams(key.into());
         let params = RawBytes::serialize(params)?;
         let message = signer
             .transaction(

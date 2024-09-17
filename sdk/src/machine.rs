@@ -50,6 +50,7 @@ pub trait Machine: Send + Sync + Sized {
     async fn new<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
+        owner: Option<Address>,
         write_access: WriteAccess,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
@@ -104,6 +105,7 @@ pub async fn info(
 async fn deploy_machine<C>(
     provider: &impl Provider<C>,
     signer: &mut impl Signer,
+    owner: Option<Address>,
     kind: Kind,
     write_access: WriteAccess,
     metadata: HashMap<String, String>,
@@ -113,6 +115,7 @@ where
     C: Client + Send + Sync,
 {
     let params = CreateExternalParams {
+        owner: owner.unwrap_or(signer.address()),
         kind,
         write_access,
         metadata,
@@ -132,7 +135,7 @@ where
         .perform(message, BroadcastMode::Commit, decode_create)
         .await?;
 
-    // In commit broadcast mode, if the data or address do not exist, something fatal happened.
+    // In commit broadcast mode, if the data or address does not exist, something fatal happened.
     let address = tx
         .data
         .expect("data exists")
