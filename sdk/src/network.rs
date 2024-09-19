@@ -15,8 +15,8 @@ use hoku_signer::SubnetID;
 
 use crate::ipc::subnet::EVMSubnet;
 
-const TESTNET_SUBNET_ID: &str = "/r314159/t410faeqn4d7svwomtyl4vf6z3oiasknsgwfa3zl4t6a"; // chain ID: 701138386522996
-const LOCALNET_SUBNET_ID: &str = "/r314159/t410f726d2jv6uj4mpkcbgg5ndlpp3l7dd5rlcpgzkoi";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410f26ejh7sqkimbhw5ojbeyvvkqnequ7ktxy5gyxyq"; // chain ID: 1717203960113192
+const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6dl55afbyjbpupdtrmedyqrnmxdmpk7rxuduafq"; // chain ID: 3620398568294336
 const DEVNET_SUBNET_ID: &str = "test";
 
 const TESTNET_RPC_URL: &str = "https://api.n1.hoku.sh";
@@ -25,13 +25,21 @@ const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
 const RPC_TIMEOUT: Duration = Duration::from_secs(60);
 
 const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.hoku.sh";
+const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
+
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x8e3Fd2b47e564E7D636Fa80082f286eD038BE54b";
+const LOCALNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
+const LOCALNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
+const LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E";
 
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
 const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xC26b3909E826359E3AFcF0196921e4201a90766D";
 const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x9BE5DB9771835c7Ebd693A53067218A22f202a18";
+const LOCALNET_PARENT_EVM_RPC_URL: &str = "http://127.0.0.1:8545";
+const LOCALNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x9A676e781A523b5d0C0e43731313A708CB607508";
+const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0xc5a5C42992dECbae36851359345FE25997F5C42d";
 
 const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.hoku.sh";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
@@ -126,7 +134,8 @@ impl Network {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(reqwest::Url::from_str(TESTNET_EVM_RPC_URL)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Localnet => Ok(reqwest::Url::from_str(LOCALNET_EVM_RPC_URL)?),
+            Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
 
@@ -135,7 +144,8 @@ impl Network {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_EVM_GATEWAY_ADDRESS)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Localnet => Ok(parse_address(LOCALNET_EVM_GATEWAY_ADDRESS)?),
+            Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
 
@@ -144,7 +154,8 @@ impl Network {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_EVM_REGISTRY_ADDRESS)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Localnet => Ok(parse_address(LOCALNET_EVM_REGISTRY_ADDRESS)?),
+            Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
 
@@ -166,7 +177,8 @@ impl Network {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(reqwest::Url::from_str(TESTNET_PARENT_EVM_RPC_URL)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Localnet => Ok(reqwest::Url::from_str(LOCALNET_PARENT_EVM_RPC_URL)?),
+            Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
 
@@ -175,7 +187,8 @@ impl Network {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_PARENT_EVM_GATEWAY_ADDRESS)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Localnet => Ok(parse_address(LOCALNET_PARENT_EVM_GATEWAY_ADDRESS)?),
+            Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
 
@@ -184,7 +197,8 @@ impl Network {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_PARENT_EVM_REGISTRY_ADDRESS)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Localnet => Ok(parse_address(LOCALNET_PARENT_EVM_REGISTRY_ADDRESS)?),
+            Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
 
@@ -193,7 +207,8 @@ impl Network {
         match self {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
-            Network::Localnet | Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Localnet => Ok(parse_address(LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
+            Network::Devnet => Err(anyhow!("network has no parent")),
         }
     }
 }
