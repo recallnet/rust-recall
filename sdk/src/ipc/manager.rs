@@ -36,8 +36,8 @@ type DefaultSignerMiddleware = SignerMiddleware<Provider<Http>, Wallet<SigningKe
 const ETH_PROVIDER_POLLING_TIME: Duration = Duration::from_secs(1);
 /// Maximum number of retries to fetch a transaction receipt.
 /// The number of retries should ensure that for the block time
-/// of the network the number of retires considering the polling
-/// time above waits enough tie to get the transaction receipt.
+/// of the network the number of retries considering the polling
+/// time above waits enough time to get the transaction receipt.
 /// We currently support a low polling time and high number of
 /// retries so these numbers accommodate fast subnets with slow
 /// roots (like Calibration and mainnet).
@@ -333,7 +333,7 @@ fn estimate_priority_fee(rewards: Vec<Vec<U256>>) -> U256 {
     rewards.sort();
 
     // A copy of the same vector is created for convenience to calculate percentage change
-    // between subsequent fee values.
+    // between later fee values.
     let mut rewards_copy = rewards.clone();
     rewards_copy.rotate_left(1);
 

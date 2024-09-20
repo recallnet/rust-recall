@@ -32,10 +32,10 @@ pub fn get_delegated_address(a: Address) -> anyhow::Result<ethers::types::Addres
     payload_to_evm_address(a.payload())
 }
 
-/// We only support up to 9 decimal digits for transaction.
+/// We only support up to nine decimal digits for transaction.
 const FIL_AMOUNT_NANO_DIGITS: u32 = 9;
 
-/// Parse token amount from string.
+/// Parse the token amount from string.
 pub fn parse_token_amount(s: &str) -> anyhow::Result<TokenAmount> {
     let f: f64 = s.parse()?;
     // no rounding, just the integer part
@@ -43,7 +43,7 @@ pub fn parse_token_amount(s: &str) -> anyhow::Result<TokenAmount> {
     Ok(TokenAmount::from_nano(nano as u128))
 }
 
-/// Parse token amount in attoFIL (10**18) from string.
+/// Parse the token amount in attoFIL (10**18) from string.
 pub fn parse_token_amount_from_atto(s: &str) -> anyhow::Result<TokenAmount> {
     Ok(TokenAmount::from_atto(BigInt::from_str(s)?))
 }

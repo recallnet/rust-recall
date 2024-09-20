@@ -4,7 +4,7 @@
 use anyhow::anyhow;
 use async_trait::async_trait;
 use fendermint_crypto::SecretKey;
-use fendermint_vm_message::{chain::ChainMessage, signed::Object, signed::SignedMessage};
+use fendermint_vm_message::{chain::ChainMessage, signed::SignedMessage};
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::{
     address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
@@ -47,26 +47,16 @@ impl Signer for Void {
         _value: TokenAmount,
         _method_num: MethodNum,
         _params: RawBytes,
-        _object: Option<Object>,
         _gas_params: GasParams,
     ) -> anyhow::Result<ChainMessage> {
         Err(anyhow!("void signer cannot create transactions"))
     }
 
-    fn sign_message(
-        &self,
-        _message: Message,
-        _object: Option<Object>,
-    ) -> anyhow::Result<SignedMessage> {
+    fn sign_message(&self, _message: Message) -> anyhow::Result<SignedMessage> {
         Err(anyhow!("void signer cannot sign messages"))
     }
 
-    fn verify_message(
-        &self,
-        _message: &Message,
-        _object: &Option<Object>,
-        _signature: &Signature,
-    ) -> anyhow::Result<()> {
+    fn verify_message(&self, _message: &Message, _signature: &Signature) -> anyhow::Result<()> {
         Err(anyhow!("void signer cannot verify messages"))
     }
 }

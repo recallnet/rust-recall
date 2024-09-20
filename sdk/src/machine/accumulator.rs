@@ -122,7 +122,6 @@ impl Accumulator {
                 Default::default(),
                 Push as u64,
                 params,
-                None,
                 options.gas_params,
             )
             .await?;

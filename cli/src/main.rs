@@ -18,15 +18,19 @@ use hoku_sdk::{network::Network as SdkNetwork, TxParams};
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, SubnetID, Wallet};
 
 use crate::account::{handle_account, AccountArgs};
+use crate::credit::{handle_credit, CreditArgs};
 use crate::machine::{
     accumulator::{handle_accumulator, AccumulatorArgs},
     handle_machine,
     objectstore::{handle_objectstore, ObjectstoreArgs},
     MachineArgs,
 };
+use crate::storage::{handle_storage, StorageArgs};
 
 mod account;
+mod credit;
 mod machine;
+mod storage;
 
 #[derive(Clone, Debug, Parser)]
 #[command(name = "hoku", author, version, about, long_about = None)]
@@ -56,6 +60,11 @@ enum Commands {
     /// Account related commands.
     #[clap(alias = "accounts")]
     Account(AccountArgs),
+    // Credit related commands.
+    #[clap(alias = "credits")]
+    Credit(CreditArgs),
+    // Storage related commands.
+    Storage(StorageArgs),
     /// Machine related commands.
     #[clap(alias = "machines")]
     Machine(MachineArgs),
@@ -168,13 +177,14 @@ async fn main() -> anyhow::Result<()> {
         .quiet(cli.quiet)
         .verbosity(cli.verbosity as usize)
         .timestamp(Timestamp::Millisecond)
-        .init()
-        .unwrap();
+        .init()?;
 
     cli.network.get().init();
 
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cli, args).await,
+        Commands::Credit(args) => handle_credit(cli, args).await,
+        Commands::Storage(args) => handle_storage(cli, args).await,
         Commands::Objectstore(args) => handle_objectstore(cli, args).await,
         Commands::Accumulator(args) => handle_accumulator(cli, args).await,
         Commands::Machine(args) => handle_machine(cli, args).await,

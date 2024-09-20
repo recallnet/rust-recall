@@ -63,10 +63,7 @@ async fn main() -> anyhow::Result<()> {
     let value = machine
         .leaf(&provider, 0, FvmQueryHeight::Committed)
         .await?;
-    println!(
-        "Value at index 0: '{}'",
-        std::str::from_utf8(&value).unwrap()
-    );
+    println!("Value at index 0: '{}'", std::str::from_utf8(&value)?);
 
     // Query for count
     let count = machine.count(&provider, FvmQueryHeight::Committed).await?;

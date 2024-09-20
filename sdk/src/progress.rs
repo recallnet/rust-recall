@@ -39,8 +39,8 @@ pub(crate) fn new_multi_bar(hide: bool) -> Arc<MultiProgress> {
 }
 
 /// Create a new progress bar.
-pub(crate) fn new_progress_bar(size: usize) -> ProgressBar {
-    let pb = ProgressBar::new(size as u64);
+pub(crate) fn new_progress_bar(size: u64) -> ProgressBar {
+    let pb = ProgressBar::new(size);
     pb.set_style(PROGRESS_STYLE.clone());
     pb
 }

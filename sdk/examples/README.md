@@ -81,7 +81,7 @@ Created new object store t2stfvbana4ljpvxdxit7ls23tt42owa2uy4isveq
 Transaction hash: 0x005B93799842089F1AF25304D38FAD9995D5AC1C67D940A38E02383E984CADFB
 Added 1MiB file to object store t2stfvbana4ljpvxdxit7ls23tt42owa2uy4isveq with key foo/my_file
 Transaction hash: 0xC49C5E0FBC62774C0A3C4AD24D4151D996F8BC9168C369A1A67D9049DA0A0278
-Query result cid: bafybeidm37d6cxxoyu5fpadpuycta2wenno6ogmzi7uh3gsfd4e4c6tyda (key=foo/my_file; detached; resolved=true)
+Query result for key foo/my_file: bafybeidm37d6cxxoyu5fpadpuycta2wenno6ogmzi7uh3gsfd4e4c6tyda
 ```
 
 Read the docs (run `make doc` from the repo root) for more object store methods.

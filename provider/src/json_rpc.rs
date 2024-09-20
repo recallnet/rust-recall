@@ -11,6 +11,7 @@ use fendermint_vm_message::{
     query::{FvmQuery, FvmQueryHeight},
 };
 use fvm_shared::address::Address;
+use iroh::blobs::Hash;
 use iroh::net::NodeAddr;
 use reqwest::multipart::Form;
 use tendermint::abci::response::DeliverTx;
@@ -22,7 +23,6 @@ use tendermint_rpc::{
 
 use crate::object::ObjectProvider;
 use crate::query::QueryProvider;
-use crate::response::Cid;
 use crate::tx::{BroadcastMode, TxProvider, TxReceipt};
 use crate::{Provider, TendermintClient};
 
@@ -167,9 +167,9 @@ where
 
     async fn upload(
         &self,
-        cid: Cid,
+        hash: Hash,
         source: NodeAddr,
-        _total_bytes: usize,
+        size: u64,
         msg: String,
         chain_id: u64,
     ) -> anyhow::Result<()> {
@@ -181,7 +181,8 @@ where
         let form = Form::new()
             .text("chain_id", chain_id.to_string())
             .text("msg", msg)
-            .text("cid", cid.to_string())
+            .text("hash", hash.to_string())
+            .text("size", size.to_string())
             .text("source", serde_json::to_string(&source)?);
 
         let url = format!("{}v1/objects", client.url);
@@ -232,7 +233,7 @@ where
         Ok(response)
     }
 
-    async fn size(&self, address: Address, key: &str, height: u64) -> anyhow::Result<usize> {
+    async fn size(&self, address: Address, key: &str, height: u64) -> anyhow::Result<u64> {
         let client = self
             .objects
             .clone()
@@ -250,7 +251,7 @@ where
             )));
         }
 
-        let size: usize = response
+        let size: u64 = response
             .headers()
             .get("content-length")
             .ok_or_else(|| anyhow!("missing content-length header in response for object size"))?

@@ -13,16 +13,17 @@ use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine};
 use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_objectstore::{
-    AddParams, DeleteParams, GetParams,
+    AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
     Method::{AddObject, DeleteObject, GetObject, ListObjects},
-    Object, ObjectList,
+    Object,
 };
 use fendermint_vm_actor_interface::adm::Kind;
-use fendermint_vm_message::{query::FvmQueryHeight, signed::Object as MessageObject};
+use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
+use fvm_shared::clock::ChainEpoch;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
-use iroh::blobs::{provider::AddProgress, util::SetTagOption};
+use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash};
 use iroh::client::blobs::WrapOption;
 use iroh::net::NodeId;
 use tendermint::abci::response::DeliverTx;
@@ -53,6 +54,14 @@ use crate::{
 /// Object add options.
 #[derive(Clone, Default, Debug)]
 pub struct AddOptions {
+    /// Object time-to-live (TTL) duration.
+    /// If a TTL is specified, credits will be reserved for the duration,
+    /// after which the object will be deleted.
+    /// If a TTL is not specified, the object will be continuously renewed about every hour.
+    /// If the owner's free credit balance is exhuasted, the object will be deleted.
+    pub ttl: Option<ChainEpoch>,
+    /// Metadata to add to the object.
+    pub metadata: HashMap<String, String>,
     /// Overwrite the object if it already exists.
     pub overwrite: bool,
     /// Broadcast mode for the transaction.
@@ -61,8 +70,6 @@ pub struct AddOptions {
     pub gas_params: GasParams,
     /// Whether to show progress-related output (useful for command-line interfaces).
     pub show_progress: bool,
-    /// Metadata to add to the object.
-    pub metadata: HashMap<String, String>,
 }
 
 /// Object delete options.
@@ -327,7 +334,7 @@ impl ObjectStore {
                     name: _,
                     size,
                 } => {
-                    object_size = size as usize;
+                    object_size = size;
                     pro_bar.set_length(size);
                 }
                 AddProgress::Done { id: _, hash: _ } => {
@@ -345,17 +352,9 @@ impl ObjectStore {
             }
         };
 
-        let object_cid = Cid(cid::Cid::new_v1(
-            0x55,
-            cid::multihash::Multihash::wrap(
-                cid::multihash::Code::Blake3_256.into(),
-                object_hash.as_ref(),
-            )?,
-        ));
-
         // Upload
         msg_bar.set_prefix("[2/3]");
-        msg_bar.set_message(format!("Uploading {} to network...", object_cid));
+        msg_bar.set_message(format!("Uploading {} to network...", object_hash));
 
         let node_addr = provider.node_addr().await?;
         let up_bar = bars.add(new_progress_bar(object_size));
@@ -422,8 +421,9 @@ impl ObjectStore {
             node_addr.node_id,
             signer,
             key,
-            object_cid,
+            object_hash,
             object_size,
+            options.ttl,
             options.metadata.clone(),
             options.overwrite,
         )
@@ -438,26 +438,22 @@ impl ObjectStore {
         msg_bar.set_prefix("[3/3]");
         msg_bar.set_message("Broadcasting transaction...");
         let params = AddParams {
+            to: self.address,
+            source: fendermint_actor_blobs_shared::state::PublicKey(*node_addr.node_id.as_bytes()),
             key: key.into(),
-            cid: object_cid.0,
-            overwrite: options.overwrite,
-            metadata: options.metadata,
+            hash: fendermint_actor_blobs_shared::state::Hash(*object_hash.as_bytes()),
             size: object_size,
+            ttl: options.ttl,
+            metadata: options.metadata,
+            overwrite: options.overwrite,
         };
         let serialized_params = RawBytes::serialize(params.clone())?;
-        let object = Some(MessageObject::new(
-            params.key.clone(),
-            object_cid.0,
-            self.address,
-            node_addr.node_id,
-        ));
         let message = signer
             .transaction(
                 self.address,
                 Default::default(),
                 AddObject as u64,
                 serialized_params,
-                object,
                 options.gas_params,
             )
             .await?;
@@ -467,10 +463,10 @@ impl ObjectStore {
             .await?;
 
         msg_bar.println(format!(
-            "{} Added detached object in {} (cid={}; size={})",
+            "{} Added object in {} (hash={}; size={})",
             SPARKLE,
             HumanDuration(started.elapsed()),
-            object_cid,
+            object_hash,
             object_size
         ));
 
@@ -486,32 +482,28 @@ impl ObjectStore {
         provider_node_id: NodeId,
         signer: &mut impl Signer,
         key: &str,
-        cid: Cid,
-        size: usize,
+        hash: Hash,
+        size: u64,
+        ttl: Option<ChainEpoch>,
         metadata: HashMap<String, String>,
         overwrite: bool,
     ) -> anyhow::Result<()> {
         let from = signer.address();
         let params = AddParams {
+            to: self.address,
+            source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
             key: key.into(),
-            cid: cid.0,
-            overwrite,
-            metadata,
+            hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
             size,
+            ttl,
+            metadata,
+            overwrite,
         };
         let serialized_params = RawBytes::serialize(params)?;
 
         let message =
             object_upload_message(from, self.address, AddObject as u64, serialized_params);
-        let singed_message = signer.sign_message(
-            message,
-            Some(MessageObject::new(
-                key.into(),
-                cid.0,
-                self.address,
-                provider_node_id,
-            )),
-        )?;
+        let singed_message = signer.sign_message(message)?;
         let serialized_signed_message = fvm_ipld_encoding::to_vec(&singed_message)?;
 
         let chain_id = match signer.subnet_id() {
@@ -524,7 +516,7 @@ impl ObjectStore {
         let node_addr = self.iroh.net().node_addr().await?;
         provider
             .upload(
-                cid,
+                hash,
                 node_addr,
                 size,
                 general_purpose::URL_SAFE.encode(&serialized_signed_message),
@@ -546,7 +538,10 @@ impl ObjectStore {
     where
         C: Client + Send + Sync,
     {
-        let params = DeleteParams { key: key.into() };
+        let params = DeleteParams {
+            to: self.address,
+            key: key.into(),
+        };
         let params = RawBytes::serialize(params)?;
         let message = signer
             .transaction(
@@ -554,7 +549,6 @@ impl ObjectStore {
                 Default::default(),
                 DeleteObject as u64,
                 params,
-                None,
                 options.gas_params,
             )
             .await?;
@@ -580,21 +574,19 @@ impl ObjectStore {
 
         msg_bar.set_prefix("[1/2]");
         msg_bar.set_message("Getting object info...");
-        let params = GetParams { key: key.into() };
+        let params = GetParams(key.into());
         let params = RawBytes::serialize(params)?;
         let message = local_message(self.address, GetObject as u64, params);
         let response = provider.call(message, options.height, decode_get).await?;
-
         let object = response
             .value
             .ok_or_else(|| anyhow!("object not found for key '{}'", key))?;
 
-        let cid = cid::Cid::try_from(object.cid.0)?;
-        if !object.resolved {
-            return Err(anyhow!("object is not resolved"));
-        }
         msg_bar.set_prefix("[2/2]");
-        msg_bar.set_message(format!("Downloading {}... ", cid));
+        msg_bar.set_message(format!(
+            "Downloading object (hash={}; size={})",
+            object.hash, object.size
+        ));
 
         let object_size = provider
             .size(self.address, key, options.height.into())
@@ -609,7 +601,7 @@ impl ObjectStore {
             match item {
                 Ok(chunk) => {
                     writer.write_all(&chunk).await?;
-                    progress = min(progress + chunk.len(), object_size);
+                    progress = min(progress + chunk.len(), object_size as usize);
                     pro_bar.set_position(progress as u64);
                 }
                 Err(e) => {
@@ -619,10 +611,11 @@ impl ObjectStore {
         }
         pro_bar.finish_and_clear();
         msg_bar.println(format!(
-            "{} Downloaded detached object in {} (cid={})",
+            "{} Downloaded object in {} (hash={}; size={})",
             SPARKLE,
             HumanDuration(started.elapsed()),
-            cid
+            object.hash,
+            object.size
         ));
 
         msg_bar.finish_and_clear();
@@ -636,8 +629,8 @@ impl ObjectStore {
         &self,
         provider: &impl QueryProvider,
         options: QueryOptions,
-    ) -> anyhow::Result<ObjectList> {
-        let params = fendermint_actor_objectstore::ListParams {
+    ) -> anyhow::Result<ListObjectsReturn> {
+        let params = ListParams {
             prefix: options.prefix.into(),
             delimiter: options.delimiter.into(),
             offset: options.offset,
@@ -656,7 +649,8 @@ fn decode_get(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Object>> {
         .map_err(|e| anyhow!("error parsing as Option<Object>: {e}"))
 }
 
-fn decode_list(deliver_tx: &DeliverTx) -> anyhow::Result<ObjectList> {
+fn decode_list(deliver_tx: &DeliverTx) -> anyhow::Result<ListObjectsReturn> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice(&data).map_err(|e| anyhow!("error parsing as ObjectList: {e}"))
+    fvm_ipld_encoding::from_slice(&data)
+        .map_err(|e| anyhow!("error parsing as ListObjectsReturn: {e}"))
 }
