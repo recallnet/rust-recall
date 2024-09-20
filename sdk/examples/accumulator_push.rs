@@ -39,6 +39,7 @@ async fn main() -> anyhow::Result<()> {
     let (machine, tx) = Accumulator::new(
         &provider,
         &mut signer,
+        None,
         WriteAccess::OnlyOwner,
         HashMap::new(),
         Default::default(),
