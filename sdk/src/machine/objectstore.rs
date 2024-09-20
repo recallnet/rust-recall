@@ -54,8 +54,12 @@ use crate::{
 /// Object add options.
 #[derive(Clone, Default, Debug)]
 pub struct AddOptions {
-    /// Object time-to-live (TTL) duration. Credits will be reserved for this duration.
-    pub ttl: ChainEpoch,
+    /// Object time-to-live (TTL) duration.
+    /// If a TTL is specified, credits will be reserved for the duration,
+    /// after which the object will be deleted.
+    /// If a TTL is not specified, the object will be continuously renewed about every hour.
+    /// If the owner's free credit balance is exhuasted, the object will be deleted.
+    pub ttl: Option<ChainEpoch>,
     /// Metadata to add to the object.
     pub metadata: HashMap<String, String>,
     /// Overwrite the object if it already exists.
@@ -480,7 +484,7 @@ impl ObjectStore {
         key: &str,
         hash: Hash,
         size: u64,
-        ttl: ChainEpoch,
+        ttl: Option<ChainEpoch>,
         metadata: HashMap<String, String>,
         overwrite: bool,
     ) -> anyhow::Result<()> {

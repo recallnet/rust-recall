@@ -90,7 +90,11 @@ async fn main() -> anyhow::Result<()> {
     let list = machine.query(&provider, options).await?;
     for (key_bytes, object) in list.objects {
         let key = core::str::from_utf8(&key_bytes).unwrap_or_default();
-        println!("Query result for key {}: {}", key, object.hash);
+        if let Some(object) = object {
+            println!("Query result for key {}: {}", key, object.hash);
+        } else {
+            println!("Query result for key {}: {}", key, "blob is not resolved");
+        }
     }
 
     // Download the actual object at `foo/my_file`
