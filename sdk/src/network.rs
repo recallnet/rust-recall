@@ -19,29 +19,29 @@ const TESTNET_SUBNET_ID: &str = "/r314159/t410f26ejh7sqkimbhw5ojbeyvvkqnequ7ktxy
 const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6dl55afbyjbpupdtrmedyqrnmxdmpk7rxuduafq"; // chain ID: 3620398568294336
 const DEVNET_SUBNET_ID: &str = "test";
 
-const TESTNET_RPC_URL: &str = "https://rpc-testnet-validator-0.3box.io";
+const TESTNET_RPC_URL: &str = "https://api.n1.hoku.sh";
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
 
 const RPC_TIMEOUT: Duration = Duration::from_secs(60);
 
-const TESTNET_EVM_RPC_URL: &str = "https://evm-testnet-validator-0.3box.io";
+const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.hoku.sh";
 const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
 
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
-const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xD4e09E3EeF4F5d177e130F22d5BAD25E5028F125";
+const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x8e3Fd2b47e564E7D636Fa80082f286eD038BE54b";
 const LOCALNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const LOCALNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 const LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E";
 
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
-const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x141Ef571Fd6C9e7f51FAf697f4796A557C6BB663";
-const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x89D8029d5cF4bAEbd0b43E39B547c34eAa8c5C54";
+const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xC26b3909E826359E3AFcF0196921e4201a90766D";
+const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x9BE5DB9771835c7Ebd693A53067218A22f202a18";
 const LOCALNET_PARENT_EVM_RPC_URL: &str = "http://127.0.0.1:8545";
 const LOCALNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x9A676e781A523b5d0C0e43731313A708CB607508";
 const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0xc5a5C42992dECbae36851359345FE25997F5C42d";
 
-const TESTNET_OBJECT_API_URL: &str = "https://object-api-testnet-validator-0.3box.io";
+const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.hoku.sh";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 
 /// Options for [`EVMSubnet`] configurations.
