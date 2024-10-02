@@ -61,10 +61,22 @@ async fn main() -> anyhow::Result<()> {
     println!("Transaction hash: 0x{}", tx.hash);
 
     // Get the value back
-    let value = machine
+    let result = machine
         .leaf(&provider, 0, FvmQueryHeight::Committed)
         .await?;
-    println!("Value at index 0: '{}'", std::str::from_utf8(&value)?);
+
+    match result {
+        None => {
+            println!("No value at the given index!")
+        }
+        Some((timestamp, value)) => {
+            println!(
+                "index 0 timestamp: {}, value: '{}'",
+                timestamp,
+                std::str::from_utf8(&value)?
+            );
+        }
+    }
 
     // Query for count
     let count = machine.count(&provider, FvmQueryHeight::Committed).await?;

@@ -1,8 +1,7 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::collections::HashMap;
-
+use anyhow::anyhow;
 use bytes::Bytes;
 use clap::{Args, Subcommand};
 use clap_stdin::FileOrStdin;
@@ -12,6 +11,7 @@ use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
 use hoku_provider::util::parse_metadata;
 use serde_json::{json, Value};
+use std::collections::HashMap;
 use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
 
 use hoku_provider::{
@@ -202,10 +202,19 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
         }
         AccumulatorCommands::Leaf(args) => {
             let machine = Accumulator::attach(args.address).await?;
-            let leaf = machine.leaf(&provider, args.index, args.height).await?;
+            let leaf = machine
+                .leaf(&provider, args.index, args.height)
+                .await?
+                .ok_or_else(|| {
+                    anyhow!(
+                        "leaf not found for index '{}' at height {:?}",
+                        args.index,
+                        args.height
+                    )
+                });
 
             let mut stdout = io::stdout();
-            stdout.write_all(&leaf).await?;
+            stdout.write_all(format!("{leaf:?}").as_bytes()).await?;
             Ok(())
         }
         AccumulatorCommands::Count(args) => {
