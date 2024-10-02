@@ -195,7 +195,7 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
             let leaf = machine.leaf(&provider, args.index, args.height).await?;
 
             let mut stdout = io::stdout();
-            stdout.write_all(&leaf).await?;
+            stdout.write_all(format!("{leaf:?}").as_bytes()).await?;
             Ok(())
         }
         AccumulatorCommands::Count(args) => {
