@@ -16,7 +16,7 @@ use hoku_signer::SubnetID;
 use crate::ipc::subnet::EVMSubnet;
 
 const TESTNET_SUBNET_ID: &str = "/r314159/t410f26ejh7sqkimbhw5ojbeyvvkqnequ7ktxy5gyxyq"; // chain ID: 1717203960113192
-const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6dl55afbyjbpupdtrmedyqrnmxdmpk7rxuduafq"; // chain ID: 3620398568294336
+const LOCALNET_SUBNET_ID: &str = "/r31337/t410fkzrz3mlkyufisiuae3scumllgalzuu3wxlxa2ly"; // chain ID: 4362550583360910
 const DEVNET_SUBNET_ID: &str = "test";
 
 const TESTNET_RPC_URL: &str = "https://rpc-testnet-validator-0.3box.io";
@@ -39,7 +39,7 @@ const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x141Ef571Fd6C9e7f51FAf697f479
 const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x89D8029d5cF4bAEbd0b43E39B547c34eAa8c5C54";
 const LOCALNET_PARENT_EVM_RPC_URL: &str = "http://127.0.0.1:8545";
 const LOCALNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x9A676e781A523b5d0C0e43731313A708CB607508";
-const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0xc5a5C42992dECbae36851359345FE25997F5C42d";
+const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1";
 
 const TESTNET_OBJECT_API_URL: &str = "https://object-api-testnet-validator-0.3box.io";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
