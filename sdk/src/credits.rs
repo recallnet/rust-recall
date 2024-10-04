@@ -2,12 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
-use fendermint_actor_blobs_shared::params::{BuyCreditParams, GetAccountParams};
-use fendermint_actor_blobs_shared::Method::{BuyCredit, GetAccount, GetStats};
+use fendermint_actor_blobs_shared::params::{
+    ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
+};
+use fendermint_actor_blobs_shared::Method::{
+    ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit,
+};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
+use fvm_shared::bigint::BigUint;
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
 use serde::{Deserialize, Serialize};
@@ -24,6 +29,37 @@ use hoku_signer::Signer;
 /// Options for buying credit.
 #[derive(Clone, Default, Debug)]
 pub struct BuyOptions {
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
+}
+
+/// Options for approving credit.
+#[derive(Clone, Default, Debug)]
+pub struct ApproveOptions {
+    /// Restrict the approval to a caller address, e.g., an object store.
+    /// The receiver will only be able to use the approval via a caller contract.
+    pub caller: Option<Address>,
+    /// Credit approval limit.
+    /// If specified, the approval becomes invalid once the committed credits reach the
+    /// specified limit.
+    pub limit: Option<BigUint>,
+    /// Credit approval time-to-live epochs.
+    /// If specified, the approval becomes invalid after this duration.
+    pub ttl: Option<ChainEpoch>,
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
+}
+
+/// Options for revoke credit.
+#[derive(Clone, Default, Debug)]
+pub struct RevokeOptions {
+    /// Restrict the approval to a caller address, e.g., an object store.
+    /// The receiver will only be able to use the approval via a caller contract.
+    pub caller: Option<Address>,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
@@ -62,6 +98,39 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
             credit_free: v.credit_free.to_string(),
             credit_committed: v.credit_committed.to_string(),
             last_debit_epoch,
+        }
+    }
+}
+
+/// A credit approval.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Approval {
+    /// Optional credit approval limit.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<String>,
+    /// Optional credit approval expiry epoch.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expiry: Option<ChainEpoch>,
+    /// Counter for how much credit has been committed via this approval.
+    pub committed: String,
+}
+
+impl Default for Approval {
+    fn default() -> Self {
+        Self {
+            limit: None,
+            expiry: None,
+            committed: "0".into(),
+        }
+    }
+}
+
+impl From<fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
+    fn from(v: fendermint_actor_blobs_shared::state::CreditApproval) -> Self {
+        Self {
+            limit: v.limit.map(|l| l.to_string()),
+            expiry: v.expiry,
+            committed: v.committed.to_string(),
         }
     }
 }
@@ -128,14 +197,14 @@ impl Credits {
     pub async fn buy<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        to: Address,
+        recipient: Address,
         amount: TokenAmount,
         options: BuyOptions,
     ) -> anyhow::Result<TxReceipt<Balance>>
     where
         C: Client + Send + Sync,
     {
-        let params = BuyCreditParams(to);
+        let params = BuyCreditParams(recipient);
         let params = RawBytes::serialize(params)?;
         let message = signer
             .transaction(
@@ -148,6 +217,64 @@ impl Credits {
             .await?;
         provider
             .perform(message, options.broadcast_mode, decode_buy)
+            .await
+    }
+
+    pub async fn approve<C>(
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        receiver: Address,
+        options: ApproveOptions,
+    ) -> anyhow::Result<TxReceipt<Approval>>
+    where
+        C: Client + Send + Sync,
+    {
+        let params = ApproveCreditParams {
+            receiver,
+            required_caller: options.caller,
+            limit: options.limit,
+            ttl: options.ttl,
+        };
+        let params = RawBytes::serialize(params)?;
+        let message = signer
+            .transaction(
+                BLOBS_ACTOR_ADDR,
+                Default::default(),
+                ApproveCredit as u64,
+                params,
+                options.gas_params,
+            )
+            .await?;
+        provider
+            .perform(message, options.broadcast_mode, decode_approve)
+            .await
+    }
+
+    pub async fn revoke<C>(
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        receiver: Address,
+        options: RevokeOptions,
+    ) -> anyhow::Result<TxReceipt<()>>
+    where
+        C: Client + Send + Sync,
+    {
+        let params = RevokeCreditParams {
+            receiver,
+            required_caller: options.caller,
+        };
+        let params = RawBytes::serialize(params)?;
+        let message = signer
+            .transaction(
+                BLOBS_ACTOR_ADDR,
+                Default::default(),
+                RevokeCredit as u64,
+                params,
+                options.gas_params,
+            )
+            .await?;
+        provider
+            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 }
@@ -171,4 +298,15 @@ fn decode_buy(deliver_tx: &DeliverTx) -> anyhow::Result<Balance> {
     fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::Account>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as Balance: {e}"))
+}
+
+fn decode_approve(deliver_tx: &DeliverTx) -> anyhow::Result<Approval> {
+    let data = decode_bytes(deliver_tx)?;
+    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::CreditApproval>(&data)
+        .map(|v| v.into())
+        .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
+}
+
+fn decode_empty(_: &DeliverTx) -> anyhow::Result<()> {
+    Ok(())
 }

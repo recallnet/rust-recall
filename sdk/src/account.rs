@@ -40,34 +40,34 @@ impl Account {
     /// Deposit funds from a [`Signer`] to an address in the given subnet.
     pub async fn deposit(
         signer: &impl Signer,
-        to: Address,
+        recipient: Address,
         subnet: EVMSubnet,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
         // Approve the gateway to spend funds on behalf of the user.
-        // This is required to when subnet use a custom ERC20 token as
+        // This is required when the subnet uses a custom ERC20 token as
         // the gateway's supply source.
         EvmManager::approve_gateway(signer, subnet.clone(), amount.clone()).await?;
-        EvmManager::deposit(signer, to, subnet, amount).await
+        EvmManager::deposit(signer, recipient, subnet, amount).await
     }
 
     /// Withdraw funds from a [`Signer`] to an address in the given subnet.
     pub async fn withdraw(
         signer: &impl Signer,
-        to: Address,
+        recipient: Address,
         subnet: EVMSubnet,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
-        EvmManager::withdraw(signer, to, subnet, amount).await
+        EvmManager::withdraw(signer, recipient, subnet, amount).await
     }
 
     /// Transfer funds from [`Signer`] to an address in the given subnet.
     pub async fn transfer(
         signer: &impl Signer,
-        to: Address,
+        recipient: Address,
         subnet: EVMSubnet,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
-        EvmManager::transfer(signer, to, subnet, amount).await
+        EvmManager::transfer(signer, recipient, subnet, amount).await
     }
 }

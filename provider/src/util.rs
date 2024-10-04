@@ -5,6 +5,7 @@
 use fendermint_vm_message::query::FvmQueryHeight;
 use std::str::FromStr;
 
+use fvm_shared::bigint::BigUint;
 use fvm_shared::{
     address::{Address, Error, Network},
     bigint::BigInt,
@@ -46,6 +47,11 @@ pub fn parse_token_amount(s: &str) -> anyhow::Result<TokenAmount> {
 /// Parse the token amount in attoFIL (10**18) from string.
 pub fn parse_token_amount_from_atto(s: &str) -> anyhow::Result<TokenAmount> {
     Ok(TokenAmount::from_atto(BigInt::from_str(s)?))
+}
+
+/// Parse the credit amount from string.
+pub fn parse_credit_amount(s: &str) -> anyhow::Result<BigUint> {
+    Ok(BigUint::from_str(s)?)
 }
 
 /// Parse query height from string.

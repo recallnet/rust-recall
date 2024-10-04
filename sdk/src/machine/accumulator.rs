@@ -68,6 +68,7 @@ impl Machine for Accumulator {
     async fn new<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
+        owner: Option<Address>,
         write_access: WriteAccess,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
@@ -78,6 +79,7 @@ impl Machine for Accumulator {
         let (address, tx) = deploy_machine(
             provider,
             signer,
+            owner,
             Kind::Accumulator,
             write_access,
             metadata,

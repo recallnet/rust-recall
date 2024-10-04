@@ -60,10 +60,10 @@ enum Commands {
     /// Account related commands.
     #[clap(alias = "accounts")]
     Account(AccountArgs),
-    // Credit related commands.
+    /// Credit related commands.
     #[clap(alias = "credits")]
     Credit(CreditArgs),
-    // Storage related commands.
+    /// Storage related commands.
     Storage(StorageArgs),
     /// Machine related commands.
     #[clap(alias = "machines")]

@@ -43,6 +43,7 @@ async fn main() -> anyhow::Result<()> {
     let (machine, tx) = ObjectStore::new(
         &provider,
         &mut signer,
+        None,
         WriteAccess::OnlyOwner,
         HashMap::new(),
         Default::default(),

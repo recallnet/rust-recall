@@ -61,6 +61,10 @@ struct AccumulatorCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
+    /// Object store owner address.
+    /// The owner defaults to the signer if not specified.
+    #[arg(short, long, value_parser = parse_address)]
+    owner: Option<Address>,
     /// Allow public write access to the accumulator.
     #[arg(long, default_value_t = false)]
     public_write: bool,
@@ -142,9 +146,15 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
 
-            let (store, tx) =
-                Accumulator::new(&provider, &mut signer, write_access, metadata, gas_params)
-                    .await?;
+            let (store, tx) = Accumulator::new(
+                &provider,
+                &mut signer,
+                args.owner,
+                write_access,
+                metadata,
+                gas_params,
+            )
+            .await?;
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }
