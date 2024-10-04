@@ -16,7 +16,7 @@ use iroh::net::NodeAddr;
 use reqwest::multipart::Form;
 use tendermint::abci::response::DeliverTx;
 use tendermint::block::Height;
-use tendermint_rpc::{
+pub use tendermint_rpc::{
     endpoint::abci_query::AbciQuery, Client, HttpClient, Scheme, Url, WebSocketClient,
     WebSocketClientDriver, WebSocketClientUrl,
 };

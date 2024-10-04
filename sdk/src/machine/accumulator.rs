@@ -9,7 +9,7 @@ use bytes::Bytes;
 use fendermint_actor_accumulator::Method::{Count, Get, Peaks, Push, Root};
 use fendermint_actor_machine::WriteAccess;
 use fendermint_vm_actor_interface::adm::Kind;
-use fendermint_vm_message::query::FvmQueryHeight;
+pub use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::{BytesSer, RawBytes};
 use fvm_shared::address::Address;
 use serde::{Deserialize, Serialize};
