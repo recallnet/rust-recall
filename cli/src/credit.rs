@@ -171,9 +171,11 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
             signer.set_sequence(sequence, &provider).await?;
 
+            let from = signer.address();
             let tx = Credits::approve(
                 &provider,
                 &mut signer,
+                from,
                 args.receiver,
                 ApproveOptions {
                     caller: args.caller,
@@ -198,9 +200,11 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
             signer.set_sequence(sequence, &provider).await?;
 
+            let from = signer.address();
             let tx = Credits::revoke(
                 &provider,
                 &mut signer,
+                from,
                 args.receiver,
                 RevokeOptions {
                     caller: args.caller,
