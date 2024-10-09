@@ -223,6 +223,7 @@ impl Credits {
     pub async fn approve<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
+        from: Address,
         receiver: Address,
         options: ApproveOptions,
     ) -> anyhow::Result<TxReceipt<Approval>>
@@ -230,6 +231,7 @@ impl Credits {
         C: Client + Send + Sync,
     {
         let params = ApproveCreditParams {
+            from,
             receiver,
             required_caller: options.caller,
             limit: options.limit,
@@ -253,6 +255,7 @@ impl Credits {
     pub async fn revoke<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
+        from: Address,
         receiver: Address,
         options: RevokeOptions,
     ) -> anyhow::Result<TxReceipt<()>>
@@ -260,6 +263,7 @@ impl Credits {
         C: Client + Send + Sync,
     {
         let params = RevokeCreditParams {
+            from,
             receiver,
             required_caller: options.caller,
         };
