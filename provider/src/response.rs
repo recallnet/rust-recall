@@ -5,12 +5,13 @@
 use std::fmt::Display;
 use std::str::FromStr;
 
-use anyhow::{anyhow, Context};
+use anyhow::{anyhow, bail, Context};
 use base64::Engine;
 use bytes::Bytes;
 use fvm_ipld_encoding::RawBytes;
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use tendermint::abci::response::DeliverTx;
+use tendermint::abci::Code;
 
 /// Apply the encoding that Tendermint does to the bytes inside [`DeliverTx`].
 pub(crate) fn encode_data(data: &[u8]) -> Bytes {
@@ -31,11 +32,17 @@ pub(crate) fn decode_data(data: &Bytes) -> anyhow::Result<RawBytes> {
 }
 
 /// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as raw bytes.
-///
-/// Only call this after the `code` of both [`DeliverTx`] and
-/// [`tendermint::abci::response::CheckTx`] have been inspected!
 pub fn decode_bytes(deliver_tx: &DeliverTx) -> anyhow::Result<RawBytes> {
-    decode_data(&deliver_tx.data)
+    match deliver_tx.code {
+        Code::Ok => decode_data(&deliver_tx.data),
+        Code::Err(code) => {
+            bail!(
+                "error executing request: code={} message={}",
+                code,
+                deliver_tx.info
+            )
+        }
+    }
 }
 
 /// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as a [`Cid`].

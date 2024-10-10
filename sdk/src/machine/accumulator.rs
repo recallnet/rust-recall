@@ -133,19 +133,17 @@ impl Accumulator {
     }
 
     /// Get leaf stored at a given index and height.
+    /// Returns None if there is no leaf at the given index.
     pub async fn leaf(
         &self,
         provider: &impl QueryProvider,
         index: u64,
         height: FvmQueryHeight,
-    ) -> anyhow::Result<Vec<u8>> {
+    ) -> anyhow::Result<Option<(u64, Vec<u8>)>> {
         let params = RawBytes::serialize(index)?;
         let message = local_message(self.address, Get as u64, params);
         let response = provider.call(message, height, decode_leaf).await?;
-        let leaf = response
-            .value
-            .ok_or_else(|| anyhow!("leaf not found for index '{}'", index))?;
-        Ok(leaf)
+        Ok(response.value)
     }
 
     /// Get total leaf count at a given height.
@@ -189,10 +187,10 @@ fn decode_push_return(deliver_tx: &DeliverTx) -> anyhow::Result<PushReturn> {
         .map_err(|e| anyhow!("error parsing as PushReturn: {e}"))
 }
 
-fn decode_leaf(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Vec<u8>>> {
+fn decode_leaf(deliver_tx: &DeliverTx) -> anyhow::Result<Option<(u64, Vec<u8>)>> {
     let data = decode_bytes(deliver_tx)?;
     fvm_ipld_encoding::from_slice(&data)
-        .map_err(|e| anyhow!("error parsing as Option<Vec<u8>>: {e}"))
+        .map_err(|e| anyhow!("error parsing as Option<(u64, Vec<u8>)>: {e}"))
 }
 
 fn decode_count(deliver_tx: &DeliverTx) -> anyhow::Result<u64> {
