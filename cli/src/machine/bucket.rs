@@ -380,9 +380,17 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 .objects
                 .iter()
                 .map(|(key_bytes, object)| {
-                    let key = core::str::from_utf8(key_bytes).unwrap_or_default().to_string();
+                    let key = core::str::from_utf8(key_bytes)
+                        .unwrap_or_default()
+                        .to_string();
                     let value = if let Some(object) = object {
-                        json!({"hash": object.hash.to_string(), "size": object.size, "expiry": object.expiry, "metadata": object.metadata})    
+                        json!({
+                            "hash": object.hash.to_string(),
+                            "recovery_hash": object.recovery_hash.to_string(),
+                            "size": object.size,
+                            "expiry": object.expiry,
+                            "metadata": object.metadata,
+                        })
                     } else {
                         json!("deleted")
                     };
