@@ -155,9 +155,11 @@ model provides a flexible and extensible way to represent complex data structure
 
 #### Timehub machine
 
-An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
-verifiable anchoring system for state updates. You can push values up to 500KiB and retrieve them by index.
-Timehubs support querying for state root, MMR peaks, and total leaf count.
+A timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
+verifiable anchoring system for state updates. You can push values up to 500KiB and retrieve them by index, along
+with the block timestamp of the block in which the value was included.
+Timehubs support querying for total leaf count and the pair of timestamp and value stored at a given leaf index.
+It additionally supports querying for the state root and MMR peaks.
 As you push new data to the timehub, you can retrieve the underlying data at a `leaf` or other relevant data
 structure components like `peaks` and total `count`. Similar to the object store machine, the timehub stores a
 CID summary in its on-chain state.

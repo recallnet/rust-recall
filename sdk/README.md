@@ -29,8 +29,8 @@ Hoku SDK is a library for managing your account and data machines.
 - _Timehub machines_:
   An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
   verifiable anchoring system for state updates.
-  You can push values up to 500KiB and retrieve them by index.
-  Timehubs support querying for state root, MMR peaks, and total leaf count.
+  You can push values up to 500KiB and retrieve them by index, along with the block timestamp of
+  the block in which the value was included.
 
 Read more about data machines [here](../README.md).
 
@@ -40,7 +40,7 @@ The SDK consists of the following crates:
 - [`hoku_signer`](../signer): A transaction signer for Hoku.
   This crate has a built-in [wallet](../signer/src/wallet.rs) signer implementation that relies on a local private key
   to sign messages.
-- [`hoku_sdk`](.): The top-level user interface for managing Hoku object storage and state timehubs.
+- [`hoku_sdk`](.): The top-level user interface for managing Hoku object storage and timehubs.
 
 The `hoku` crates haven't been published yet, but you can read the Cargo docs by building them locally from the repo
 root.

@@ -57,8 +57,8 @@ Hoku CLI is a tool for managing your account and data machines.
 - _Timehub machines_:
   An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
   verifiable anchoring system for state updates.
-  You can push values up to 500KiB and retrieve them by index.
-  Timehubs support querying for state root, MMR peaks, and total leaf count.
+  You can push values up to 500KiB and retrieve them by index, along with the block timestamp of
+  the block in which the value was included.
 
 Read more about data machines [here](../README.md).
 
@@ -934,11 +934,11 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
 
 ### Timehub
 
-Interact with an timehub machine type using either the `timehub` or aliased `ac` subcommand:
+Interact with an timehub machine type using either the `timehub` or aliased `th` subcommand:
 
 ```
-hoku machine timehub <SUBCOMMAND>
-hoku machine ac <SUBCOMMAND>
+hoku timehub <SUBCOMMAND>
+hoku th <SUBCOMMAND>
 ```
 
 The `timehub` subcommand has the following subcommands:
@@ -956,7 +956,7 @@ The `timehub` subcommand has the following subcommands:
 Create a new timehub machine.
 
 ```
-hoku machine timehub create
+hoku timehub create
 ```
 
 | Flag                | Required? | Description                                                               |
@@ -971,7 +971,7 @@ hoku machine timehub create
 **Example:**
 
 ```
-> hoku machine timehub create
+> hoku timehub create
 
 {
   "address": "t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia",
@@ -1039,7 +1039,7 @@ Query machines by:
 Push a value to the timehub.
 
 ```
-hoku machine timehub push --address <ADDRESS> [INPUT]
+hoku timehub push --address <ADDRESS> [INPUT]
 ```
 
 The `INPUT` can be a file path or piped from stdin.
@@ -1059,7 +1059,7 @@ The `INPUT` can be a file path or piped from stdin.
 - Push a file to the timehub:
 
 ```
-> hoku machine timehub push \
+> hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 ./hello.json
 
@@ -1078,7 +1078,7 @@ The `INPUT` can be a file path or piped from stdin.
 - Pipe from stdin:
 
 ```
-> echo '{"hello":"world"}' | hoku machine timehub push \
+> echo "hello world" | hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 ```
 
@@ -1087,7 +1087,7 @@ The `INPUT` can be a file path or piped from stdin.
 Get leaf at a given index and height.
 
 ```
-hoku machine timehub leaf --address <ADDRESS> <INDEX>
+hoku timehub leaf --address <ADDRESS> <INDEX>
 ```
 
 | Positionals | Description |
@@ -1101,14 +1101,14 @@ hoku machine timehub leaf --address <ADDRESS> <INDEX>
 
 **Example:**
 
-- Get leaf at index `0` (the "hello world" object pushed above):
+- Get leaf at index `0` (the "hello world" byte string pushed above):
 
 ```
-> hoku machine timehub leaf \
+> hoku timehub leaf \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 0
 
-{"hello":"world"}
+Ok((1729201398, [72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 10]))
 ```
 
 #### Get count
@@ -1116,7 +1116,7 @@ hoku machine timehub leaf --address <ADDRESS> <INDEX>
 Get the leaf counts at a given height.
 
 ```
-hoku machine timehub count --address <ADDRESS>
+hoku timehub count --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                                                                                  |
@@ -1129,7 +1129,7 @@ hoku machine timehub count --address <ADDRESS>
 - Get the leaf count, which is just a single leaf at this point:
 
 ```
-> hoku machine timehub root \
+> hoku timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1140,10 +1140,10 @@ hoku machine timehub count --address <ADDRESS>
 - If you push another piece of data, the count will increase:
 
 ```
-> echo '{"hello":"again"}' | hoku machine timehub push \
+> echo "hello again" | hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> hoku machine timehub root \
+> hoku timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1156,7 +1156,7 @@ hoku machine timehub count --address <ADDRESS>
 Get the peaks at a given height.
 
 ```
-hoku machine timehub peaks --address <ADDRESS>
+hoku timehub peaks --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
@@ -1169,7 +1169,7 @@ hoku machine timehub peaks --address <ADDRESS>
 - Since there are only two leaves, there is only one peak since it's a balanced tree:
 
 ```
-> hoku machine timehub peaks \
+> hoku timehub peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1182,10 +1182,10 @@ hoku machine timehub peaks --address <ADDRESS>
 - Pushing another piece of data (i.e., three total) leads to another peak:
 
 ```
-> echo '{"hello":"basin"}' | hoku machine timehub push \
+> echo "hello basin" | hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> hoku machine timehub peaks \
+> hoku timehub peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1201,7 +1201,7 @@ hoku machine timehub peaks --address <ADDRESS>
 Get the root at a given height.
 
 ```
-hoku machine timehub root --address <ADDRESS>
+hoku timehub root --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
@@ -1212,7 +1212,7 @@ hoku machine timehub root --address <ADDRESS>
 **Example:**
 
 ```
-> hoku machine timehub root \
+> hoku timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
