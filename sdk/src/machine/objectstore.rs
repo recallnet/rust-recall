@@ -23,14 +23,16 @@ use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use fvm_shared::clock::ChainEpoch;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
+use infer::Type;
 use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash};
 use iroh::client::blobs::WrapOption;
 use iroh::net::NodeId;
+use peekable::tokio::AsyncPeekable;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
 use tokio::sync::{mpsc, Mutex};
 use tokio::{
-    io::{AsyncRead, AsyncSeek, AsyncWrite, AsyncWriteExt},
+    io::{AsyncRead, AsyncWrite, AsyncWriteExt},
     time::Instant,
 };
 use tokio_stream::StreamExt;
@@ -251,8 +253,15 @@ impl ObjectStore {
     ) -> anyhow::Result<TxReceipt<Cid>>
     where
         C: Client + Send + Sync,
-        R: AsyncRead + AsyncSeek + Unpin + Send + 'static,
+        R: AsyncRead + Unpin + Send + 'static,
     {
+        let mut reader = AsyncPeekable::from(reader);
+        let mut buffer = [0u8; 40]; // 40 bytes is enough to detect mime type
+        reader.peek(&mut buffer).await?;
+
+        let content_type = infer::get(&buffer[..]);
+        let options = self.add_content_type_to_metadata(options, content_type);
+
         let started = Instant::now();
         let bars = new_multi_bar(!options.show_progress);
         let msg_bar = bars.add(new_message_bar());
@@ -286,6 +295,9 @@ impl ObjectStore {
         if !md.is_file() {
             return Err(anyhow!("input must be a file"));
         }
+
+        let content_type = infer::get_from_path(path)?;
+        let options = self.add_content_type_to_metadata(options, content_type);
 
         let started = Instant::now();
         let bars = new_multi_bar(!options.show_progress);
@@ -637,6 +649,23 @@ impl ObjectStore {
         let message = local_message(self.address, ListObjects as u64, params);
         let response = provider.call(message, options.height, decode_list).await?;
         Ok(response.value)
+    }
+
+    fn add_content_type_to_metadata(
+        &self,
+        options: AddOptions,
+        content_type: Option<Type>,
+    ) -> AddOptions {
+        let mut metadata = options.metadata;
+        metadata.insert(
+            "content-type".into(),
+            content_type.map_or("application/octet-stream".into(), |t| t.mime_type().into()),
+        );
+
+        AddOptions {
+            metadata,
+            ..options
+        }
     }
 }
 
