@@ -174,7 +174,7 @@ where
         size: u64,
         msg: String,
         chain_id: u64,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<reqwest::Response> {
         let client = self
             .objects
             .clone()
@@ -196,7 +196,7 @@ where
             )));
         }
 
-        Ok(())
+        Ok(response)
     }
 
     async fn download(
