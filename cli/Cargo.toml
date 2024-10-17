@@ -37,9 +37,9 @@ tendermint-rpc = { workspace = true }
 fvm_shared = { workspace = true }
 fvm_ipld_encoding = { workspace = true }
 
-fendermint_actor_accumulator = { workspace = true }
 fendermint_actor_machine = { workspace = true }
 fendermint_actor_objectstore = { workspace = true }
+fendermint_actor_timehub = { workspace = true }
 fendermint_crypto = { workspace = true }
 fendermint_vm_actor_interface = { workspace = true }
 fendermint_vm_message = { workspace = true }

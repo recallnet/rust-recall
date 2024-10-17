@@ -26,8 +26,8 @@ use hoku_provider::{
 };
 use hoku_signer::Signer;
 
-pub mod accumulator;
 pub mod objectstore;
+pub mod timehub;
 
 /// Deployed machine transaction receipt details.
 #[derive(Copy, Clone, Debug, Serialize)]

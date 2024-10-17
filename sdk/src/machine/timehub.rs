@@ -6,8 +6,8 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use bytes::Bytes;
-use fendermint_actor_accumulator::Method::{Count, Get, Peaks, Push, Root};
 use fendermint_actor_machine::WriteAccess;
+use fendermint_actor_timehub::Method::{Count, Get, Peaks, Push, Root};
 use fendermint_vm_actor_interface::adm::Kind;
 use fvm_ipld_encoding::{BytesSer, RawBytes};
 use fvm_shared::address::Address;
@@ -39,17 +39,17 @@ pub struct PushOptions {
     pub gas_params: GasParams,
 }
 
-/// JSON serialization friendly version of [`fendermint_actor_accumulator::PushReturn`].
+/// JSON serialization friendly version of [`fendermint_actor_timehub::PushReturn`].
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PushReturn {
-    /// The new accumulator root.
+    /// The new timehub root.
     pub root: Cid,
     /// The index of the newly pushed value.
     pub index: u64,
 }
 
-impl From<fendermint_actor_accumulator::PushReturn> for PushReturn {
-    fn from(v: fendermint_actor_accumulator::PushReturn) -> Self {
+impl From<fendermint_actor_timehub::PushReturn> for PushReturn {
+    fn from(v: fendermint_actor_timehub::PushReturn) -> Self {
         Self {
             root: v.root.into(),
             index: v.index,
@@ -58,13 +58,13 @@ impl From<fendermint_actor_accumulator::PushReturn> for PushReturn {
 }
 
 /// A machine for event stream accumulation.
-pub struct Accumulator {
+pub struct Timehub {
     address: Address,
 }
 
 #[async_trait]
-impl Machine for Accumulator {
-    const KIND: Kind = Kind::Accumulator;
+impl Machine for Timehub {
+    const KIND: Kind = Kind::Timehub;
 
     async fn new<C>(
         provider: &impl Provider<C>,
@@ -81,7 +81,7 @@ impl Machine for Accumulator {
             provider,
             signer,
             owner,
-            Kind::Accumulator,
+            Kind::Timehub,
             write_access,
             metadata,
             gas_params,
@@ -91,7 +91,7 @@ impl Machine for Accumulator {
     }
 
     async fn attach(address: Address) -> anyhow::Result<Self> {
-        Ok(Accumulator { address })
+        Ok(Timehub { address })
     }
 
     fn address(&self) -> Address {
@@ -99,8 +99,8 @@ impl Machine for Accumulator {
     }
 }
 
-impl Accumulator {
-    /// Push a payload into the accumulator.
+impl Timehub {
+    /// Push a payload into the timehub.
     pub async fn push<C>(
         &self,
         provider: &impl Provider<C>,
@@ -183,7 +183,7 @@ impl Accumulator {
 
 fn decode_push_return(deliver_tx: &DeliverTx) -> anyhow::Result<PushReturn> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_accumulator::PushReturn>(&data)
+    fvm_ipld_encoding::from_slice::<fendermint_actor_timehub::PushReturn>(&data)
         .map(|r| r.into())
         .map_err(|e| anyhow!("error parsing as PushReturn: {e}"))
 }

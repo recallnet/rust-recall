@@ -16,7 +16,7 @@
   - [Machines (smart contracts)](#machines-smart-contracts)
     - [Machine manager](#machine-manager)
     - [Object store machine](#object-store-machine)
-    - [Accumulator machine](#accumulator-machine)
+    - [Timehub machine](#timehub-machine)
   - [Accounts](#accounts)
   - [Access control](#access-control)
   - [Broadcast modes](#broadcast-modes)
@@ -129,7 +129,7 @@ the state of the network. There are three primary machines in Hoku:
 
 - Machine manager
 - Object store machines
-- Accumulator machines
+- Timehub machines
 
 The FVM executes messages in WASM over machine state and uses
 the [Wasmtime](https://github.com/bytecodealliance/wasmtime)
@@ -139,7 +139,7 @@ runtime, and this includes a WASM implementation of the EVM bytecode interpreter
 #### Machine manager
 
 Users are able to deploy new machines on-demand using the machine manager. This interface is responsible for creating
-new object stores or accumulators and also managing the state of the network. Each machine is associated with a unique
+new object stores or timehubs and also managing the state of the network. Each machine is associated with a unique
 address, which is used to identify the machine on the network.
 
 #### Object store machine
@@ -153,13 +153,13 @@ Internally, the state of an object store is represented as
 an [IPLD-based HAMT](ipns://ipld.io/specs/advanced-data-layouts/hamt/spec/) (hash array mapped trie). The IPLD data
 model provides a flexible and extensible way to represent complex data structures.
 
-#### Accumulator machine
+#### Timehub machine
 
-An accumulator is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
+An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
 verifiable anchoring system for state updates. You can push values up to 500KiB and retrieve them by index.
-Accumulators support querying for state root, MMR peaks, and total leaf count.
-As you push new data to the accumulator, you can retrieve the underlying data at a `leaf` or other relevant data
-structure components like `peaks` and total `count`. Similar to the object store machine, the accumulator stores a
+Timehubs support querying for state root, MMR peaks, and total leaf count.
+As you push new data to the timehub, you can retrieve the underlying data at a `leaf` or other relevant data
+structure components like `peaks` and total `count`. Similar to the object store machine, the timehub stores a
 CID summary in its on-chain state.
 
 ### Accounts

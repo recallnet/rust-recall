@@ -21,16 +21,16 @@
 Hoku SDK is a library for managing your account and data machines.
 
 - _Machine manager_:
-  This singleton machine is responsible for creating new object stores and/or accumulators.
+  This singleton machine is responsible for creating new object stores and/or timehubs.
 - _Object store machines_:
   These are key-value stores that allow you to push and retrieve data in a familiar S3-like fashion.
   Object stores support byte range requests and advanced queries based on key prefix, delimiter, offset, and
   limit.
-- _Accumulator machines_:
-  An accumulator is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
+- _Timehub machines_:
+  An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
   verifiable anchoring system for state updates.
   You can push values up to 500KiB and retrieve them by index.
-  Accumulators support querying for state root, MMR peaks, and total leaf count.
+  Timehubs support querying for state root, MMR peaks, and total leaf count.
 
 Read more about data machines [here](../README.md).
 
@@ -40,7 +40,7 @@ The SDK consists of the following crates:
 - [`hoku_signer`](../signer): A transaction signer for Hoku.
   This crate has a built-in [wallet](../signer/src/wallet.rs) signer implementation that relies on a local private key
   to sign messages.
-- [`hoku_sdk`](.): The top-level user interface for managing Hoku object storage and state accumulators.
+- [`hoku_sdk`](.): The top-level user interface for managing Hoku object storage and state timehubs.
 
 The `hoku` crates haven't been published yet, but you can read the Cargo docs by building them locally from the repo
 root.
