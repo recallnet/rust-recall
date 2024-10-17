@@ -17,9 +17,11 @@ use reqwest::multipart::Form;
 use tendermint::abci::response::DeliverTx;
 use tendermint::block::Height;
 use tendermint_rpc::{
-    endpoint::abci_query::AbciQuery, Client, HttpClient, Scheme, Url, WebSocketClient,
-    WebSocketClientDriver, WebSocketClientUrl,
+    endpoint::abci_query::AbciQuery, Client, Scheme, WebSocketClient, WebSocketClientDriver,
+    WebSocketClientUrl,
 };
+
+pub use tendermint_rpc::{HttpClient, Url};
 
 use crate::object::ObjectProvider;
 use crate::query::QueryProvider;
