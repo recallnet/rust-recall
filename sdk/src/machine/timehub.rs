@@ -56,6 +56,23 @@ impl From<fendermint_actor_timehub::PushReturn> for PushReturn {
         }
     }
 }
+/// JSON serialization friendly version of [`fendermint_actor_accumulator::Leaf`].
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Leaf {
+    /// Timestamp of the witness in seconds since the UNIX epoch
+    pub timestamp: u64,
+    /// Witnessed root CID
+    pub witnessed: Cid,
+}
+
+impl From<fendermint_actor_accumulator::Leaf> for Leaf {
+    fn from(value: fendermint_actor_accumulator::Leaf) -> Self {
+        Self {
+            timestamp: value.timestamp,
+            witnessed: value.witnessed.into(),
+        }
+    }
+}
 
 /// A machine for event stream accumulation.
 pub struct Timehub {
@@ -140,7 +157,7 @@ impl Timehub {
         provider: &impl QueryProvider,
         index: u64,
         height: FvmQueryHeight,
-    ) -> anyhow::Result<Option<(u64, Vec<u8>)>> {
+    ) -> anyhow::Result<Option<Leaf>> {
         let params = RawBytes::serialize(index)?;
         let message = local_message(self.address, Get as u64, params);
         let response = provider.call(message, height, decode_leaf).await?;
@@ -188,10 +205,13 @@ fn decode_push_return(deliver_tx: &DeliverTx) -> anyhow::Result<PushReturn> {
         .map_err(|e| anyhow!("error parsing as PushReturn: {e}"))
 }
 
-fn decode_leaf(deliver_tx: &DeliverTx) -> anyhow::Result<Option<(u64, Vec<u8>)>> {
+fn decode_leaf(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Leaf>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice(&data)
-        .map_err(|e| anyhow!("error parsing as Option<(u64, Vec<u8>)>: {e}"))
+    Ok(
+        fvm_ipld_encoding::from_slice::<Option<fendermint_actor_accumulator::Leaf>>(&data)
+            .map_err(|e| anyhow!("error parsing leaf: {e}"))?
+            .map(|r| r.into()),
+    )
 }
 
 fn decode_count(deliver_tx: &DeliverTx) -> anyhow::Result<u64> {
