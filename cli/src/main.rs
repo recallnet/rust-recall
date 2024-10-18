@@ -20,9 +20,9 @@ use hoku_signer::{key::parse_secret_key, AccountKind, Signer, SubnetID, Wallet};
 use crate::account::{handle_account, AccountArgs};
 use crate::credit::{handle_credit, CreditArgs};
 use crate::machine::{
-    accumulator::{handle_accumulator, AccumulatorArgs},
     handle_machine,
     objectstore::{handle_objectstore, ObjectstoreArgs},
+    timehub::{handle_timehub, TimehubArgs},
     MachineArgs,
 };
 use crate::storage::{handle_storage, StorageArgs};
@@ -71,9 +71,9 @@ enum Commands {
     /// Object store related commands (alias: os).
     #[clap(alias = "os")]
     Objectstore(ObjectstoreArgs),
-    /// Accumulator related commands (alias: ac).
-    #[clap(alias = "ac")]
-    Accumulator(AccumulatorArgs),
+    /// Timehub related commands (alias: th).
+    #[clap(alias = "th")]
+    Timehub(TimehubArgs),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -186,7 +186,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Credit(args) => handle_credit(cli, args).await,
         Commands::Storage(args) => handle_storage(cli, args).await,
         Commands::Objectstore(args) => handle_objectstore(cli, args).await,
-        Commands::Accumulator(args) => handle_accumulator(cli, args).await,
+        Commands::Timehub(args) => handle_timehub(cli, args).await,
         Commands::Machine(args) => handle_machine(cli, args).await,
     }
 }

@@ -11,7 +11,7 @@ use fendermint_vm_message::query::FvmQueryHeight;
 
 use hoku_provider::json_rpc::JsonRpcProvider;
 use hoku_sdk::{
-    machine::{accumulator::Accumulator, Machine},
+    machine::{timehub::Timehub, Machine},
     network::Network,
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
@@ -35,8 +35,8 @@ async fn main() -> anyhow::Result<()> {
     let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?)?;
     signer.init_sequence(&provider).await?;
 
-    // Create a new accumulator
-    let (machine, tx) = Accumulator::new(
+    // Create a new timehub
+    let (machine, tx) = Timehub::new(
         &provider,
         &mut signer,
         None,
@@ -45,16 +45,16 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )
     .await?;
-    println!("Created new accumulator {}", machine.address(),);
+    println!("Created new timehub {}", machine.address(),);
     println!("Transaction hash: 0x{}", tx.hash);
 
-    // Push a value to the accumulator
+    // Push a value to the timehub
     let value = Bytes::from("my_value");
     let tx = machine
         .push(&provider, &mut signer, value, Default::default())
         .await?;
     println!(
-        "Pushed to accumulator {} with index {}",
+        "Pushed to timehub {} with index {}",
         machine.address(),
         tx.data.unwrap().index // Safe if broadcast mode is "commit". See `PushOptions`.
     );

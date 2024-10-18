@@ -15,8 +15,8 @@ use hoku_sdk::machine::info;
 
 use crate::{get_rpc_url, print_json, Cli};
 
-pub mod accumulator;
 pub mod objectstore;
+pub mod timehub;
 
 #[derive(Clone, Debug, Args)]
 pub struct MachineArgs {

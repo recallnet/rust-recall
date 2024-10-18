@@ -20,7 +20,7 @@ use hoku_provider::{
 };
 use hoku_sdk::{
     machine::{
-        accumulator::{Accumulator, PushOptions},
+        timehub::{PushOptions, Timehub},
         Machine,
     },
     TxParams,
@@ -32,32 +32,32 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Args)]
-pub struct AccumulatorArgs {
+pub struct TimehubArgs {
     #[command(subcommand)]
-    command: AccumulatorCommands,
+    command: TimehubCommands,
 }
 
 #[derive(Clone, Debug, Subcommand)]
-enum AccumulatorCommands {
-    /// Create a new accumulator.
-    Create(AccumulatorCreateArgs),
-    /// List accumulators.
+enum TimehubCommands {
+    /// Create a new timehub.
+    Create(TimehubCreateArgs),
+    /// List timehubs.
     #[clap(alias = "ls")]
     List(AddressArgs),
     /// Push a value.
-    Push(AccumulatorPushArgs),
+    Push(TimehubPushArgs),
     /// Get leaf at a given index and height.
-    Leaf(AccumulatorLeafArgs),
+    Leaf(TimehubLeafArgs),
     /// Get leaf count at a given height.
-    Count(AccumulatorQueryArgs),
+    Count(TimehubQueryArgs),
     /// Get peaks at a given height.
-    Peaks(AccumulatorQueryArgs),
+    Peaks(TimehubQueryArgs),
     /// Get root at a given height.
-    Root(AccumulatorQueryArgs),
+    Root(TimehubQueryArgs),
 }
 
 #[derive(Clone, Debug, Args)]
-struct AccumulatorCreateArgs {
+struct TimehubCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
@@ -65,7 +65,7 @@ struct AccumulatorCreateArgs {
     /// The owner defaults to the signer if not specified.
     #[arg(short, long, value_parser = parse_address)]
     owner: Option<Address>,
-    /// Allow public write access to the accumulator.
+    /// Allow public write access to the timehub.
     #[arg(long, default_value_t = false)]
     public_write: bool,
     /// User-defined metadata.
@@ -76,11 +76,11 @@ struct AccumulatorCreateArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-struct AccumulatorPushArgs {
+struct TimehubPushArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
-    /// Accumulator machine address.
+    /// Timehub machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Input file (or stdin) containing the value to push.
@@ -94,8 +94,8 @@ struct AccumulatorPushArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-struct AccumulatorQueryArgs {
-    /// Accumulator machine address.
+struct TimehubQueryArgs {
+    /// Timehub machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Query block height.
@@ -108,8 +108,8 @@ struct AccumulatorQueryArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-struct AccumulatorLeafArgs {
-    /// Accumulator machine address.
+struct TimehubLeafArgs {
+    /// Timehub machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Leaf index.
@@ -123,13 +123,13 @@ struct AccumulatorLeafArgs {
     height: FvmQueryHeight,
 }
 
-/// Accumulator commmands handler.
-pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Result<()> {
+/// Timehub commmands handler.
+pub async fn handle_timehub(cli: Cli, args: &TimehubArgs) -> anyhow::Result<()> {
     let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
     let subnet_id = get_subnet_id(&cli)?;
 
     match &args.command {
-        AccumulatorCommands::Create(args) => {
+        TimehubCommands::Create(args) => {
             let write_access = if args.public_write {
                 WriteAccess::Public
             } else {
@@ -146,7 +146,7 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
 
-            let (store, tx) = Accumulator::new(
+            let (store, tx) = Timehub::new(
                 &provider,
                 &mut signer,
                 args.owner,
@@ -158,9 +158,9 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }
-        AccumulatorCommands::List(args) => {
+        TimehubCommands::List(args) => {
             let address = get_address(args.clone(), &subnet_id)?;
-            let metadata = Accumulator::list(&provider, &Void::new(address), args.height).await?;
+            let metadata = Timehub::list(&provider, &Void::new(address), args.height).await?;
 
             let metadata = metadata
                 .iter()
@@ -169,7 +169,7 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
 
             print_json(&metadata)
         }
-        AccumulatorCommands::Push(args) => {
+        TimehubCommands::Push(args) => {
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
                 gas_params,
@@ -185,7 +185,7 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
             reader.read_to_end(&mut buf).await?;
             let payload = Bytes::from(buf);
 
-            let machine = Accumulator::attach(args.address).await?;
+            let machine = Timehub::attach(args.address).await?;
             let tx = machine
                 .push(
                     &provider,
@@ -200,8 +200,8 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
 
             print_json(&tx)
         }
-        AccumulatorCommands::Leaf(args) => {
-            let machine = Accumulator::attach(args.address).await?;
+        TimehubCommands::Leaf(args) => {
+            let machine = Timehub::attach(args.address).await?;
             let leaf = machine
                 .leaf(&provider, args.index, args.height)
                 .await?
@@ -217,20 +217,20 @@ pub async fn handle_accumulator(cli: Cli, args: &AccumulatorArgs) -> anyhow::Res
             stdout.write_all(format!("{leaf:?}").as_bytes()).await?;
             Ok(())
         }
-        AccumulatorCommands::Count(args) => {
-            let machine = Accumulator::attach(args.address).await?;
+        TimehubCommands::Count(args) => {
+            let machine = Timehub::attach(args.address).await?;
             let count = machine.count(&provider, args.height).await?;
 
             print_json(&json!({"count": count}))
         }
-        AccumulatorCommands::Peaks(args) => {
-            let machine = Accumulator::attach(args.address).await?;
+        TimehubCommands::Peaks(args) => {
+            let machine = Timehub::attach(args.address).await?;
             let peaks = machine.peaks(&provider, args.height).await?;
 
             print_json(&json!({"peaks": peaks}))
         }
-        AccumulatorCommands::Root(args) => {
-            let machine = Accumulator::attach(args.address).await?;
+        TimehubCommands::Root(args) => {
+            let machine = Timehub::attach(args.address).await?;
             let root = machine.root(&provider, args.height).await?;
 
             print_json(&json!({"root": root.to_string()}))

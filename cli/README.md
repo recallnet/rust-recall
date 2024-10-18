@@ -33,9 +33,9 @@
     - [Get an object](#get-an-object)
     - [Delete an object](#delete-an-object)
     - [Query objects](#query-objects)
-  - [Accumulator](#accumulator)
+  - [Timehub](#timehub)
     - [Create](#create-1)
-    - [List accumulators](#list-accumulators)
+    - [List timehubs](#list-timehubs)
     - [Push](#push)
     - [Get leaf](#get-leaf)
     - [Get count](#get-count)
@@ -49,16 +49,16 @@
 Hoku CLI is a tool for managing your account and data machines.
 
 - _Machine manager_:
-  This singleton machine is responsible for creating new object stores and/or accumulators.
+  This singleton machine is responsible for creating new object stores and/or timehubs.
 - _Object store machines_:
   These are key-value stores that allow you to push and retrieve data in a familiar S3-like fashion.
   Object stores support byte range requests and advanced queries based on key prefix, delimiter, offset, and
   limit.
-- _Accumulator machines_:
-  An accumulator is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
+- _Timehub machines_:
+  An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
   verifiable anchoring system for state updates.
-  You can push values up to 500KiB and retrieve them by index.
-  Accumulators support querying for state root, MMR peaks, and total leaf count.
+  You can push values up to 500KiB and retrieve them by index, along with the block timestamp of
+  the block in which the value was included.
 
 Read more about data machines [here](../README.md).
 
@@ -523,8 +523,8 @@ values.
 ### Machine
 
 Machines are the core building blocks of Hoku. The `machine` command allows you to retrieve machine information
-relative to a specific address. This helps track which `ObjectStore` or `Accumulator` machines are tied to your account,
-which are later used in the `objectstore` and `accumulator` subcommands.
+relative to a specific address. This helps track which `ObjectStore` or `Timehub` machines are tied to your account,
+which are later used in the `objectstore` and `timehub` subcommands.
 
 #### Get machine info
 
@@ -932,31 +932,31 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
 }
 ```
 
-### Accumulator
+### Timehub
 
-Interact with an accumulator machine type using either the `accumulator` or aliased `ac` subcommand:
+Interact with an timehub machine type using either the `timehub` or aliased `th` subcommand:
 
 ```
-hoku machine accumulator <SUBCOMMAND>
-hoku machine ac <SUBCOMMAND>
+hoku timehub <SUBCOMMAND>
+hoku th <SUBCOMMAND>
 ```
 
-The `accumulator` subcommand has the following subcommands:
+The `timehub` subcommand has the following subcommands:
 
-- `create`: Create a new accumulator.
-- `list`: List accumulators by owner in a subnet.
-- `push`: Push a value to the accumulator.
+- `create`: Create a new timehub.
+- `list`: List timehubs by owner in a subnet.
+- `push`: Push a value to the timehub.
 - `leaf`: Get leaf at a given index and height.
 - `count`: Get leaf count at a given height.
-- `root`: Get the root of the accumulator.
+- `root`: Get the root of the timehub.
 - `peaks`: Get peaks at a given height.
 
 #### Create
 
-Create a new accumulator machine.
+Create a new timehub machine.
 
 ```
-hoku machine accumulator create
+hoku timehub create
 ```
 
 | Flag                | Required? | Description                                                               |
@@ -971,7 +971,7 @@ hoku machine accumulator create
 **Example:**
 
 ```
-> hoku machine accumulator create
+> hoku timehub create
 
 {
   "address": "t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia",
@@ -983,19 +983,19 @@ hoku machine accumulator create
 }
 ```
 
-#### List accumulators
+#### List timehubs
 
-List accumulators by owner in a subnet.
+List timehubs by owner in a subnet.
 
 ```
-hoku accumulator list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+hoku timehub list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `hoku accumulator list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
-- `hoku accumulator list --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `hoku timehub list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
+- `hoku timehub list --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -1010,13 +1010,13 @@ Query machines by:
 - A hex address:
 
 ```
-> hoku accumulator list \
+> hoku timehub list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 [
   {
     "address": "t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia",
-    "kind": "Accumulator"
+    "kind": "Timehub"
   }
 ]
 ```
@@ -1024,22 +1024,22 @@ Query machines by:
 - Its equivalent `t410` address:
 
 ```
-> hoku accumulator list \
+> hoku timehub list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
 - At a specific block height:
 
 ```
-> hoku accumulator list --height 339004
+> hoku timehub list --height 339004
 ```
 
 #### Push
 
-Push a value to the accumulator.
+Push a value to the timehub.
 
 ```
-hoku machine accumulator push --address <ADDRESS> [INPUT]
+hoku timehub push --address <ADDRESS> [INPUT]
 ```
 
 The `INPUT` can be a file path or piped from stdin.
@@ -1047,7 +1047,7 @@ The `INPUT` can be a file path or piped from stdin.
 | Flag                   | Required? | Description                                                                           |
 | ---------------------- | --------- | ------------------------------------------------------------------------------------- |
 | `-p, --private-key`    | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.                       |
-| `-a, --address`        | Yes       | Accumulator machine address.                                                          |
+| `-a, --address`        | Yes       | Timehub machine address.                                                          |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
 | `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).             |
@@ -1056,10 +1056,10 @@ The `INPUT` can be a file path or piped from stdin.
 
 **Examples:**
 
-- Push a file to the accumulator:
+- Push a file to the timehub:
 
 ```
-> hoku machine accumulator push \
+> hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 ./hello.json
 
@@ -1078,7 +1078,7 @@ The `INPUT` can be a file path or piped from stdin.
 - Pipe from stdin:
 
 ```
-> echo '{"hello":"world"}' | hoku machine accumulator push \
+> echo "hello world" | hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 ```
 
@@ -1087,7 +1087,7 @@ The `INPUT` can be a file path or piped from stdin.
 Get leaf at a given index and height.
 
 ```
-hoku machine accumulator leaf --address <ADDRESS> <INDEX>
+hoku timehub leaf --address <ADDRESS> <INDEX>
 ```
 
 | Positionals | Description |
@@ -1096,19 +1096,19 @@ hoku machine accumulator leaf --address <ADDRESS> <INDEX>
 
 | Flag            | Required? | Description                                              |
 | --------------- | --------- | -------------------------------------------------------- |
-| `-a, --address` | Yes       | Accumulator machine address.                             |
+| `-a, --address` | Yes       | Timehub machine address.                             |
 | `--height`      | No        | Query at a specific block height (default: `committed`). |
 
 **Example:**
 
-- Get leaf at index `0` (the "hello world" object pushed above):
+- Get leaf at index `0` (the "hello world" byte string pushed above):
 
 ```
-> hoku machine accumulator leaf \
+> hoku timehub leaf \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 0
 
-{"hello":"world"}
+Ok((1729201398, [72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 10]))
 ```
 
 #### Get count
@@ -1116,12 +1116,12 @@ hoku machine accumulator leaf --address <ADDRESS> <INDEX>
 Get the leaf counts at a given height.
 
 ```
-hoku machine accumulator count --address <ADDRESS>
+hoku timehub count --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                                                                                  |
 | --------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
-| `-a, --address` | Yes       | Accumulator machine address.                                                                                 |
+| `-a, --address` | Yes       | Timehub machine address.                                                                                 |
 | `--height`      | No        | Query block height: `committed`, `pending`, or a specific block height (e.g., `123`) (default: `committed`). |
 
 **Examples:**
@@ -1129,7 +1129,7 @@ hoku machine accumulator count --address <ADDRESS>
 - Get the leaf count, which is just a single leaf at this point:
 
 ```
-> hoku machine accumulator root \
+> hoku timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1140,10 +1140,10 @@ hoku machine accumulator count --address <ADDRESS>
 - If you push another piece of data, the count will increase:
 
 ```
-> echo '{"hello":"again"}' | hoku machine accumulator push \
+> echo "hello again" | hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> hoku machine accumulator root \
+> hoku timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1156,12 +1156,12 @@ hoku machine accumulator count --address <ADDRESS>
 Get the peaks at a given height.
 
 ```
-hoku machine accumulator peaks --address <ADDRESS>
+hoku timehub peaks --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
 | --------------- | --------- | -------------------------------------------------------- |
-| `-a, --address` | Yes       | Accumulator machine address.                             |
+| `-a, --address` | Yes       | Timehub machine address.                             |
 | `--height`      | No        | Query at a specific block height (default: `committed`). |
 
 **Examples:**
@@ -1169,7 +1169,7 @@ hoku machine accumulator peaks --address <ADDRESS>
 - Since there are only two leaves, there is only one peak since it's a balanced tree:
 
 ```
-> hoku machine accumulator peaks \
+> hoku timehub peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1182,10 +1182,10 @@ hoku machine accumulator peaks --address <ADDRESS>
 - Pushing another piece of data (i.e., three total) leads to another peak:
 
 ```
-> echo '{"hello":"basin"}' | hoku machine accumulator push \
+> echo "hello basin" | hoku timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> hoku machine accumulator peaks \
+> hoku timehub peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1201,18 +1201,18 @@ hoku machine accumulator peaks --address <ADDRESS>
 Get the root at a given height.
 
 ```
-hoku machine accumulator root --address <ADDRESS>
+hoku timehub root --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
 | --------------- | --------- | -------------------------------------------------------- |
-| `-a, --address` | Yes       | Accumulator machine address.                             |
+| `-a, --address` | Yes       | Timehub machine address.                             |
 | `--height`      | No        | Query at a specific block height (default: `committed`). |
 
 **Example:**
 
 ```
-> hoku machine accumulator root \
+> hoku timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {

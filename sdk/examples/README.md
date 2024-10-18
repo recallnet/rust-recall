@@ -86,26 +86,26 @@ Query result for key foo/my_file: bafybeidm37d6cxxoyu5fpadpuycta2wenno6ogmzi7uh3
 
 Read the docs (run `make doc` from the repo root) for more object store methods.
 
-### Accumulators
+### Timehubs
 
-[`accumulator_push.rs`](accumulator_push.rs) creates a new accumulator for state updates, pushes a new value,
-gets it back, and then qeuries for the accumulator's count and state root.
+[`timehub_push.rs`](timehub_push.rs) creates a new timehub for state updates, pushes a new value,
+gets it back, and then qeuries for the timehub's count and state root.
 To run this example, you must deposit some funds into the `hoku` testnet subnet.
 
 ```shell
-cargo run --example accumulator_push -- [YOUR_HEX_ENCODED_PRIVATE_KEY]
+cargo run --example timehub_push -- [YOUR_HEX_ENCODED_PRIVATE_KEY]
 ```
 
 Example output:
 
 ```text
-Created new accumulator t2hmsh5t5rhrlhsl3igo35rh35lt4woboxzghpujq
+Created new timehub t2hmsh5t5rhrlhsl3igo35rh35lt4woboxzghpujq
 Transaction hash: 0x54ECC3EA468D7FA3FAD165B8EAE6DEB0FECD88C53738E5E1C32BE3925E7AB886
-Pushed to accumulator t2hmsh5t5rhrlhsl3igo35rh35lt4woboxzghpujq with index 0
+Pushed to timehub t2hmsh5t5rhrlhsl3igo35rh35lt4woboxzghpujq with index 0
 Transaction hash: 0x1D5DF1C9BB5CA5C5F14F8AC1D17188BB0EFE3D735A8A03A16EBB331D1FDEF0BF
 Value at index 0: 'my_value'
 Count: 1
 State root: bafy2bzacecqsdwyjka2novzw77zex3mumho7r7q6ddcx7vgzy75fe5zqsbkxo
 ```
 
-Read the docs (run `make doc` from the repo root) for more accumulator methods.
+Read the docs (run `make doc` from the repo root) for more timehub methods.
