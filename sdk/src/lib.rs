@@ -8,6 +8,7 @@
 use hoku_provider::message::GasParams;
 
 pub mod account;
+pub mod chain;
 pub mod credits;
 pub mod ipc;
 pub mod machine;

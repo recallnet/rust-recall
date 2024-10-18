@@ -18,6 +18,7 @@ use hoku_sdk::{network::Network as SdkNetwork, TxParams};
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, SubnetID, Wallet};
 
 use crate::account::{handle_account, AccountArgs};
+use crate::chain::{handle_chain, ChainArgs};
 use crate::credit::{handle_credit, CreditArgs};
 use crate::machine::{
     handle_machine,
@@ -28,6 +29,7 @@ use crate::machine::{
 use crate::storage::{handle_storage, StorageArgs};
 
 mod account;
+mod chain;
 mod credit;
 mod machine;
 mod storage;
@@ -60,6 +62,8 @@ enum Commands {
     /// Account related commands.
     #[clap(alias = "accounts")]
     Account(AccountArgs),
+    /// Chain related commands.
+    Chain(ChainArgs),
     /// Credit related commands.
     #[clap(alias = "credits")]
     Credit(CreditArgs),
@@ -183,6 +187,7 @@ async fn main() -> anyhow::Result<()> {
 
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cli, args).await,
+        Commands::Chain(args) => handle_chain(cli, args).await,
         Commands::Credit(args) => handle_credit(cli, args).await,
         Commands::Storage(args) => handle_storage(cli, args).await,
         Commands::Objectstore(args) => handle_objectstore(cli, args).await,
