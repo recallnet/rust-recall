@@ -26,11 +26,13 @@ use crate::machine::{
     MachineArgs,
 };
 use crate::storage::{handle_storage, StorageArgs};
+use crate::subnet::{handle_subnet, SubnetArgs};
 
 mod account;
 mod credit;
 mod machine;
 mod storage;
+mod subnet;
 
 #[derive(Clone, Debug, Parser)]
 #[command(name = "hoku", author, version, about, long_about = None)]
@@ -60,6 +62,8 @@ enum Commands {
     /// Account related commands.
     #[clap(alias = "accounts")]
     Account(AccountArgs),
+    /// Subnet related commands.
+    Subnet(SubnetArgs),
     /// Credit related commands.
     #[clap(alias = "credits")]
     Credit(CreditArgs),
@@ -183,6 +187,7 @@ async fn main() -> anyhow::Result<()> {
 
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cli, args).await,
+        Commands::Subnet(args) => handle_subnet(cli, args).await,
         Commands::Credit(args) => handle_credit(cli, args).await,
         Commands::Storage(args) => handle_storage(cli, args).await,
         Commands::Objectstore(args) => handle_objectstore(cli, args).await,

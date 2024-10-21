@@ -14,6 +14,7 @@ pub mod machine;
 pub mod network;
 pub mod progress;
 pub mod storage;
+pub mod subnet;
 
 /// Arguments common to transactions.
 #[derive(Clone, Default, Debug)]
