@@ -12,7 +12,7 @@ use fvm_shared::address::Address;
 use hoku_provider::util::parse_metadata;
 use serde_json::{json, Value};
 use std::collections::HashMap;
-use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
+use tokio::io::AsyncReadExt;
 
 use hoku_provider::{
     json_rpc::JsonRpcProvider,
@@ -211,11 +211,9 @@ pub async fn handle_timehub(cli: Cli, args: &TimehubArgs) -> anyhow::Result<()> 
                         args.index,
                         args.height
                     )
-                });
+                })?;
 
-            let mut stdout = io::stdout();
-            stdout.write_all(format!("{leaf:?}").as_bytes()).await?;
-            Ok(())
+            print_json(&leaf)
         }
         TimehubCommands::Count(args) => {
             let machine = Timehub::attach(args.address).await?;

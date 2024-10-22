@@ -1,15 +1,16 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::collections::HashMap;
 use std::env;
+use std::{collections::HashMap, str::FromStr as _};
 
 use anyhow::anyhow;
-use bytes::Bytes;
+use cid::Cid;
 use fendermint_actor_machine::WriteAccess;
 use fendermint_vm_message::query::FvmQueryHeight;
 
 use hoku_provider::json_rpc::JsonRpcProvider;
+use hoku_sdk::machine::timehub::Leaf;
 use hoku_sdk::{
     machine::{timehub::Timehub, Machine},
     network::Network,
@@ -48,10 +49,11 @@ async fn main() -> anyhow::Result<()> {
     println!("Created new timehub {}", machine.address(),);
     println!("Transaction hash: 0x{}", tx.hash);
 
-    // Push a value to the timehub
-    let value = Bytes::from("my_value");
+    // Push a value to the accumulator
+    let value =
+        Cid::from_str("baeabeif2afeua6dg23holphe2ecingsqr7sjo5gdbmtvekjybzspxpmaf4")?.to_bytes();
     let tx = machine
-        .push(&provider, &mut signer, value, Default::default())
+        .push(&provider, &mut signer, value.into(), Default::default())
         .await?;
     println!(
         "Pushed to timehub {} with index {}",
@@ -69,12 +71,11 @@ async fn main() -> anyhow::Result<()> {
         None => {
             println!("No value at the given index!")
         }
-        Some((timestamp, value)) => {
-            println!(
-                "index 0 timestamp: {}, value: '{}'",
-                timestamp,
-                std::str::from_utf8(&value)?
-            );
+        Some(Leaf {
+            timestamp,
+            witnessed,
+        }) => {
+            println!("index 0 timestamp: {timestamp}, value: '{witnessed}'",);
         }
     }
 
