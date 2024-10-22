@@ -42,8 +42,8 @@ fvm_ipld_encoding = { workspace = true }
 fvm_shared = { workspace = true }
 
 fendermint_actor_blobs_shared = { workspace = true }
+fendermint_actor_bucket = { workspace = true }
 fendermint_actor_machine = { workspace = true }
-fendermint_actor_objectstore = { workspace = true }
 fendermint_actor_timehub = { workspace = true }
 fendermint_crypto = { workspace = true }
 fendermint_vm_actor_interface = { workspace = true }

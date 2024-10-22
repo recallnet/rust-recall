@@ -11,9 +11,9 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_sdk::machine::objectstore::{AddOptions, GetOptions, QueryOptions};
+use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
 use hoku_sdk::{
-    machine::{objectstore::ObjectStore, Machine},
+    machine::{bucket::Bucket, Machine},
     network::Network,
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
@@ -39,8 +39,8 @@ async fn main() -> anyhow::Result<()> {
     let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?)?;
     signer.init_sequence(&provider).await?;
 
-    // Create a new object store
-    let (machine, tx) = ObjectStore::new(
+    // Create a new bucket
+    let (machine, tx) = Bucket::new(
         &provider,
         &mut signer,
         None,
@@ -49,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
         Default::default(),
     )
     .await?;
-    println!("Created new object store {}", machine.address());
+    println!("Created new bucket {}", machine.address());
     println!("Transaction hash: 0x{}", tx.hash);
 
     // Create a temp file to add
@@ -60,7 +60,7 @@ async fn main() -> anyhow::Result<()> {
     file.write_all(&random_data).await?;
     file.flush().await?;
 
-    // Add a file to the object store
+    // Add a file to the bucket
     let key = "foo/my_file";
     let mut metadata = HashMap::new();
     metadata.insert("foo".to_string(), "bar".to_string());
@@ -73,7 +73,7 @@ async fn main() -> anyhow::Result<()> {
         .add_from_path(&provider, &mut signer, key, file.file_path(), options)
         .await?;
     println!(
-        "Added 1MiB file to object store {} with key {}",
+        "Added 1MiB file to bucket {} with key {}",
         machine.address(),
         key,
     );

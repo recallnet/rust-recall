@@ -80,7 +80,7 @@ struct ApproveArgs {
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
     receiver: Address,
-    /// Restrict the approval to a caller address, e.g., an object store.
+    /// Restrict the approval to a caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
     #[arg(long, value_parser = parse_address)]
     caller: Option<Address>,
@@ -108,7 +108,7 @@ struct RevokeArgs {
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
     receiver: Address,
-    /// Restrict the approval to a caller address, e.g., an object store.
+    /// Restrict the approval to a caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
     #[arg(long, value_parser = parse_address)]
     caller: Option<Address>,

@@ -20,8 +20,8 @@ use hoku_signer::{key::parse_secret_key, AccountKind, Signer, SubnetID, Wallet};
 use crate::account::{handle_account, AccountArgs};
 use crate::credit::{handle_credit, CreditArgs};
 use crate::machine::{
+    bucket::{handle_bucket, BucketArgs},
     handle_machine,
-    objectstore::{handle_objectstore, ObjectstoreArgs},
     timehub::{handle_timehub, TimehubArgs},
     MachineArgs,
 };
@@ -72,9 +72,9 @@ enum Commands {
     /// Machine related commands.
     #[clap(alias = "machines")]
     Machine(MachineArgs),
-    /// Object store related commands (alias: os).
-    #[clap(alias = "os")]
-    Objectstore(ObjectstoreArgs),
+    /// Bucket related commands (alias: bu).
+    #[clap(alias = "bu")]
+    Bucket(BucketArgs),
     /// Timehub related commands (alias: th).
     #[clap(alias = "th")]
     Timehub(TimehubArgs),
@@ -190,7 +190,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Subnet(args) => handle_subnet(cli, args).await,
         Commands::Credit(args) => handle_credit(cli, args).await,
         Commands::Storage(args) => handle_storage(cli, args).await,
-        Commands::Objectstore(args) => handle_objectstore(cli, args).await,
+        Commands::Bucket(args) => handle_bucket(cli, args).await,
         Commands::Timehub(args) => handle_timehub(cli, args).await,
         Commands::Machine(args) => handle_machine(cli, args).await,
     }

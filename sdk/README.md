@@ -21,10 +21,10 @@
 Hoku SDK is a library for managing your account and data machines.
 
 - _Machine manager_:
-  This singleton machine is responsible for creating new object stores and/or timehubs.
-- _Object store machines_:
+  This singleton machine is responsible for creating new buckets and/or timehubs.
+- _Bucket machines_:
   These are key-value stores that allow you to push and retrieve data in a familiar S3-like fashion.
-  Object stores support byte range requests and advanced queries based on key prefix, delimiter, offset, and
+  Buckets support byte range requests and advanced queries based on key prefix, delimiter, offset, and
   limit.
 - _Timehub machines_:
   An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
