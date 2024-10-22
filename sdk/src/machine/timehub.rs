@@ -56,7 +56,7 @@ impl From<fendermint_actor_timehub::PushReturn> for PushReturn {
         }
     }
 }
-/// JSON serialization friendly version of [`fendermint_actor_accumulator::Leaf`].
+/// JSON serialization friendly version of [`fendermint_actor_timehub::Leaf`].
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Leaf {
     /// Timestamp of the witness in seconds since the UNIX epoch
@@ -65,8 +65,8 @@ pub struct Leaf {
     pub witnessed: Cid,
 }
 
-impl From<fendermint_actor_accumulator::Leaf> for Leaf {
-    fn from(value: fendermint_actor_accumulator::Leaf) -> Self {
+impl From<fendermint_actor_timehub::Leaf> for Leaf {
+    fn from(value: fendermint_actor_timehub::Leaf) -> Self {
         Self {
             timestamp: value.timestamp,
             witnessed: value.witnessed.into(),
@@ -208,7 +208,7 @@ fn decode_push_return(deliver_tx: &DeliverTx) -> anyhow::Result<PushReturn> {
 fn decode_leaf(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Leaf>> {
     let data = decode_bytes(deliver_tx)?;
     Ok(
-        fvm_ipld_encoding::from_slice::<Option<fendermint_actor_accumulator::Leaf>>(&data)
+        fvm_ipld_encoding::from_slice::<Option<fendermint_actor_timehub::Leaf>>(&data)
             .map_err(|e| anyhow!("error parsing leaf: {e}"))?
             .map(|r| r.into()),
     )

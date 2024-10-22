@@ -10,6 +10,7 @@ use fendermint_actor_machine::WriteAccess;
 use fendermint_vm_message::query::FvmQueryHeight;
 
 use hoku_provider::json_rpc::JsonRpcProvider;
+use hoku_sdk::machine::timehub::Leaf;
 use hoku_sdk::{
     machine::{timehub::Timehub, Machine},
     network::Network,
