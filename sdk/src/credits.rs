@@ -38,7 +38,7 @@ pub struct BuyOptions {
 /// Options for approving credit.
 #[derive(Clone, Default, Debug)]
 pub struct ApproveOptions {
-    /// Restrict the approval to a caller address, e.g., an object store.
+    /// Restrict the approval to a caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
     pub caller: Option<Address>,
     /// Credit approval limit.
@@ -57,7 +57,7 @@ pub struct ApproveOptions {
 /// Options for revoke credit.
 #[derive(Clone, Default, Debug)]
 pub struct RevokeOptions {
-    /// Restrict the approval to a caller address, e.g., an object store.
+    /// Restrict the approval to a caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
     pub caller: Option<Address>,
     /// Broadcast mode for the transaction.

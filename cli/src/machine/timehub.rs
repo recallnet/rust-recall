@@ -61,7 +61,7 @@ struct TimehubCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
-    /// Object store owner address.
+    /// Timehub owner address.
     /// The owner defaults to the signer if not specified.
     #[arg(short, long, value_parser = parse_address)]
     owner: Option<Address>,

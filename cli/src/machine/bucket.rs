@@ -21,10 +21,10 @@ use hoku_provider::{
 };
 
 use hoku_sdk::credits::{BuyOptions, Credits};
-use hoku_sdk::machine::objectstore::{AddOptions, DeleteOptions, GetOptions};
+use hoku_sdk::machine::bucket::{AddOptions, DeleteOptions, GetOptions};
 use hoku_sdk::{
     machine::{
-        objectstore::{ObjectStore, QueryOptions},
+        bucket::{Bucket, QueryOptions},
         Machine,
     },
     TxParams,
@@ -36,43 +36,43 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Args)]
-pub struct ObjectstoreArgs {
+pub struct BucketArgs {
     #[command(subcommand)]
-    command: ObjectstoreCommands,
+    command: BucketCommands,
 }
 
 #[derive(Clone, Debug, Subcommand)]
-enum ObjectstoreCommands {
-    /// Create a new object store.
-    Create(ObjectstoreCreateArgs),
-    /// List object stores.
+enum BucketCommands {
+    /// Create a new bucket.
+    Create(BucketCreateArgs),
+    /// List buckets.
     #[clap(alias = "ls")]
     List(AddressArgs),
     /// Add an object with a key prefix.
-    Add(ObjectstorePutArgs),
+    Add(BucketPutArgs),
     /// Delete an object.
-    Delete(ObjectstoreDeleteArgs),
+    Delete(BucketDeleteArgs),
     /// Get an object.
-    Get(ObjectstoreGetArgs),
+    Get(BucketGetArgs),
     /// Query for objects.
-    Query(ObjectstoreQueryArgs),
+    Query(BucketQueryArgs),
 }
 
 #[derive(Clone, Debug, Args)]
-struct ObjectstoreCreateArgs {
+struct BucketCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
-    /// Object store owner address.
+    /// Bucket owner address.
     /// The owner defaults to the signer if not specified.
     #[arg(short, long, value_parser = parse_address)]
     owner: Option<Address>,
-    /// Allow public write access to the object store.
+    /// Allow public write access to the bucket.
     #[arg(long, default_value_t = false)]
     public_write: bool,
-    /// The amount of FIL to spend on credit for the object store.
-    /// If you don't buy credits when creating the object store,
-    /// you can buy them later with the `credit buy --to <objectstore address>` command.
+    /// The amount of FIL to spend on credit for the bucket.
+    /// If you don't buy credits when creating the bucket,
+    /// you can buy them later with the `credit buy --to <bucket address>` command.
     #[arg(long, value_parser = parse_token_amount)]
     buy_credit: Option<TokenAmount>,
     /// User-defined metadata.
@@ -83,14 +83,14 @@ struct ObjectstoreCreateArgs {
 }
 
 #[derive(Clone, Debug, Parser)]
-struct ObjectstorePutArgs {
+struct BucketPutArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// Node Object API URL.
     #[arg(long, env)]
     object_api_url: Option<Url>,
-    /// Object store machine address.
+    /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Key of the object to upload.
@@ -119,11 +119,11 @@ struct ObjectstorePutArgs {
 }
 
 #[derive(Clone, Debug, Parser)]
-struct ObjectstoreDeleteArgs {
+struct BucketDeleteArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env, value_parser = parse_secret_key)]
     private_key: SecretKey,
-    /// Object store machine address.
+    /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Key of the object to delete.
@@ -136,8 +136,8 @@ struct ObjectstoreDeleteArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-struct ObjectstoreAddressArgs {
-    /// Object store machine address.
+struct BucketAddressArgs {
+    /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Query block height.
@@ -150,11 +150,11 @@ struct ObjectstoreAddressArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-struct ObjectstoreGetArgs {
+struct BucketGetArgs {
     /// Node Object API URL.
     #[arg(long, env)]
     object_api_url: Option<Url>,
-    /// Object store machine address.
+    /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Key of the object to get.
@@ -174,8 +174,8 @@ struct ObjectstoreGetArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-struct ObjectstoreQueryArgs {
-    /// Object store machine address.
+struct BucketQueryArgs {
+    /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// The prefix to filter objects by.
@@ -199,12 +199,12 @@ struct ObjectstoreQueryArgs {
     height: FvmQueryHeight,
 }
 
-/// Objectstore commmands handler.
-pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Result<()> {
+/// Bucket commands handler.
+pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
     let subnet_id = get_subnet_id(&cli)?;
 
     match &args.command {
-        ObjectstoreCommands::Create(args) => {
+        BucketCommands::Create(args) => {
             let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
 
             let write_access = if args.public_write {
@@ -223,7 +223,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
 
-            let (store, tx) = ObjectStore::new(
+            let (store, tx) = Bucket::new(
                 &provider,
                 &mut signer,
                 args.owner,
@@ -251,11 +251,11 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }
-        ObjectstoreCommands::List(args) => {
+        BucketCommands::List(args) => {
             let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
 
             let address = get_address(args.clone(), &subnet_id)?;
-            let metadata = ObjectStore::list(&provider, &Void::new(address), args.height).await?;
+            let metadata = Bucket::list(&provider, &Void::new(address), args.height).await?;
 
             let metadata = metadata
                 .iter()
@@ -264,7 +264,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             print_json(&metadata)
         }
-        ObjectstoreCommands::Add(args) => {
+        BucketCommands::Add(args) => {
             let object_api_url = args
                 .object_api_url
                 .clone()
@@ -286,7 +286,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let machine = ObjectStore::attach(args.address).await?;
+            let machine = Bucket::attach(args.address).await?;
             let tx = machine
                 .add_from_path(
                     &provider,
@@ -306,7 +306,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             print_json(&tx)
         }
-        ObjectstoreCommands::Delete(args) => {
+        BucketCommands::Delete(args) => {
             let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
 
             let broadcast_mode = args.broadcast_mode.get();
@@ -322,7 +322,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let machine = ObjectStore::attach(args.address).await?;
+            let machine = Bucket::attach(args.address).await?;
             let tx = machine
                 .delete(
                     &provider,
@@ -337,7 +337,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
 
             print_json(&tx)
         }
-        ObjectstoreCommands::Get(args) => {
+        BucketCommands::Get(args) => {
             let object_api_url = args
                 .object_api_url
                 .clone()
@@ -345,7 +345,7 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
             let provider =
                 JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, Some(object_api_url))?;
 
-            let machine = ObjectStore::attach(args.address).await?;
+            let machine = Bucket::attach(args.address).await?;
             machine
                 .get(
                     &provider,
@@ -359,10 +359,10 @@ pub async fn handle_objectstore(cli: Cli, args: &ObjectstoreArgs) -> anyhow::Res
                 )
                 .await
         }
-        ObjectstoreCommands::Query(args) => {
+        BucketCommands::Query(args) => {
             let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
 
-            let machine = ObjectStore::attach(args.address).await?;
+            let machine = Bucket::attach(args.address).await?;
             let list = machine
                 .query(
                     &provider,

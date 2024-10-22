@@ -11,12 +11,12 @@ use std::{cmp::min, collections::HashMap};
 use anyhow::anyhow;
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine};
-use fendermint_actor_machine::WriteAccess;
-use fendermint_actor_objectstore::{
+use fendermint_actor_bucket::{
     AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
     Method::{AddObject, DeleteObject, GetObject, ListObjects},
     Object,
 };
+use fendermint_actor_machine::WriteAccess;
 use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
@@ -126,7 +126,7 @@ impl Default for QueryOptions {
 }
 
 /// A machine for S3-like object storage.
-pub struct ObjectStore {
+pub struct Bucket {
     address: Address,
     /// The temporary root dir for the iroh node.
     /// Kept around so it is only deleted when the store gets removed.
@@ -139,8 +139,8 @@ pub struct ObjectStore {
 }
 
 #[async_trait]
-impl Machine for ObjectStore {
-    const KIND: Kind = Kind::ObjectStore;
+impl Machine for Bucket {
+    const KIND: Kind = Kind::Bucket;
 
     async fn new<C>(
         provider: &impl Provider<C>,
@@ -157,7 +157,7 @@ impl Machine for ObjectStore {
             provider,
             signer,
             owner,
-            Kind::ObjectStore,
+            Kind::Bucket,
             write_access,
             metadata,
             gas_params,
@@ -177,7 +177,7 @@ impl Machine for ObjectStore {
             .spawn()
             .await?;
 
-        Ok(ObjectStore {
+        Ok(Bucket {
             address,
             iroh_dir,
             iroh: node,
@@ -239,10 +239,10 @@ impl iroh::blobs::provider::CustomEventSender for BlobEvents {
     }
 }
 
-impl ObjectStore {
-    /// Add an object into the object store with a reader.
+impl Bucket {
+    /// Add an object into the bucket with a reader.
     ///
-    /// Use [`ObjectStore::add_from_path`] for files.
+    /// Use [`Bucket::add_from_path`] for files.
     pub async fn add_reader<C, R>(
         &self,
         provider: &impl Provider<C>,
@@ -278,7 +278,7 @@ impl ObjectStore {
         .await
     }
 
-    /// Add an object into the object store from a path.
+    /// Add an object into the bucket from a path.
     pub async fn add_from_path<C>(
         &self,
         provider: &impl Provider<C>,

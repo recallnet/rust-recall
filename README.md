@@ -15,7 +15,7 @@
     - [Consensus](#consensus)
   - [Machines (smart contracts)](#machines-smart-contracts)
     - [Machine manager](#machine-manager)
-    - [Object store machine](#object-store-machine)
+    - [Bucket machine](#bucket-machine)
     - [Timehub machine](#timehub-machine)
   - [Accounts](#accounts)
   - [Access control](#access-control)
@@ -38,7 +38,7 @@ Hoku is a decentralized data layer, enabled by subnets that are purpose built fo
 It is built on top of the Filecoin Virtual Machine (FVM) and provides a horizontally scalable, verifiable, and
 cost-effective data availability layer for onchain applications, networks (e.g., DePINs), and services.
 The first _data Layer 2 (L2)_.
-A handful of specialized "machines" for object storage and data anchoring
+A handful of specialized "machines" for bucket storage and data anchoring
 power the Hoku's featured data services.
 
 ### Architecture
@@ -109,7 +109,7 @@ in a node's local (networked) block store. Hoku uses the concept of a _detached 
 which is a transaction that includes a CID reference to an object, but does not include the object data itself. When a
 detached payload is added to the chain, validators are required to download the object data from the network and verify
 that it matches the CID reference. This ensures that all validators have a copy of the object data and can verify the
-integrity of the object store state.
+integrity of the bucket state.
 
 The core IPC process for top-down parent finality is a vote-based mechanism. Once a validator has the data locally (via
 synchronization with its peers), the validator issues a _vote_ to the other validators to confirm data availability
@@ -128,7 +128,7 @@ for executing the logic of Hoku protocol, including processing transactions, upd
 the state of the network. There are three primary machines in Hoku:
 
 - Machine manager
-- Object store machines
+- Bucket machines
 - Timehub machines
 
 The FVM executes messages in WASM over machine state and uses
@@ -139,17 +139,17 @@ runtime, and this includes a WASM implementation of the EVM bytecode interpreter
 #### Machine manager
 
 Users are able to deploy new machines on-demand using the machine manager. This interface is responsible for creating
-new object stores or timehubs and also managing the state of the network. Each machine is associated with a unique
+new buckets or timehubs and also managing the state of the network. Each machine is associated with a unique
 address, which is used to identify the machine on the network.
 
-#### Object store machine
+#### Bucket machine
 
 These are key-value stores that allow you to push and retrieve data in a familiar S3-like fashion.
-Object stores support byte range requests and advanced queries based on key prefix, delimiter, offset, and limit.
-The object store machine provides a set of methods for interacting with the store, including `put`, `get`, and `delete`,
+Buckets support byte range requests and advanced queries based on key prefix, delimiter, offset, and limit.
+The bucket machine provides a set of methods for interacting with the store, including `put`, `get`, and `delete`,
 which allow users to store and retrieve data from the store.
 
-Internally, the state of an object store is represented as
+Internally, the state of a bucket is represented as
 an [IPLD-based HAMT](ipns://ipld.io/specs/advanced-data-layouts/hamt/spec/) (hash array mapped trie). The IPLD data
 model provides a flexible and extensible way to represent complex data structures.
 
@@ -161,7 +161,7 @@ with the block timestamp of the block in which the value was included.
 Timehubs support querying for total leaf count and the pair of timestamp and value stored at a given leaf index.
 It additionally supports querying for the state root and MMR peaks.
 As you push new data to the timehub, you can retrieve the underlying data at a `leaf` or other relevant data
-structure components like `peaks` and total `count`. Similar to the object store machine, the timehub stores a
+structure components like `peaks` and total `count`. Similar to the bucket machine, the timehub stores a
 CID summary in its on-chain state.
 
 ### Accounts
@@ -173,7 +173,7 @@ account system. Here's a quick primer:
 - Addresses are prefixed with a network identifier: `t` for Filecoin testnet, or `f` for Filecoin mainnet, and there are
   five different address types denoted by the second character in the address string: `t0`/`f0` to `t4`/`f4`.
 - If you're coming from the EVM world, you'll mostly see two types in Hoku:
-  - `t2`/`f2`: Any FVM-native contract that gets deployed, such as the object store and accumlator machines.
+  - `t2`/`f2`: Any FVM-native contract that gets deployed, such as the bucket and timehub machines.
   - `t4`/`f4`: A namespaced contract address, and `t410`/`f410` is a specifalized namespace for Ethereum-compatible
     addresses (wallets _and_ smart contracts) on the FVM.
 - Namely, each `t410...`/`f410...` address is equivalent to a `0x` address; the hex address
@@ -185,7 +185,7 @@ be used interchangeably on Filecoin and all Hoku subnets.
 ### Access control
 
 Currently, there are two types of write-access controls: only-owner or public access.
-For example, you can create an object store that you,
+For example, you can create a bucket that you,
 and _only_ you can write to — gated by signatures from your private key.
 Or, you can have "allow all" access where anyone can write data.
 

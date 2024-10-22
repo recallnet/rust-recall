@@ -26,9 +26,9 @@
     - [Transfer funds](#transfer-funds)
   - [Machine](#machine)
     - [Get machine info](#get-machine-info)
-  - [Object store](#object-store)
+  - [Bucket](#bucket)
     - [Create](#create)
-    - [List object stores](#list-object-stores)
+    - [List buckets](#list-buckets)
     - [Add an object](#add-an-object)
     - [Get an object](#get-an-object)
     - [Delete an object](#delete-an-object)
@@ -49,10 +49,10 @@
 Hoku CLI is a tool for managing your account and data machines.
 
 - _Machine manager_:
-  This singleton machine is responsible for creating new object stores and/or timehubs.
-- _Object store machines_:
+  This singleton machine is responsible for creating new buckets and/or timehubs.
+- _Bucket machines_:
   These are key-value stores that allow you to push and retrieve data in a familiar S3-like fashion.
-  Object stores support byte range requests and advanced queries based on key prefix, delimiter, offset, and
+  Buckets support byte range requests and advanced queries based on key prefix, delimiter, offset, and
   limit.
 - _Timehub machines_:
   An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
@@ -256,7 +256,7 @@ Get the sequence by:
 - Hex address:
 
 ```
-> hoku objectstore list \
+> hoku bucket list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 {
@@ -267,7 +267,7 @@ Get the sequence by:
 - Its equivalent `t410` address:
 
 ```
-> hoku objectstore list \
+> hoku bucket list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
@@ -523,8 +523,8 @@ values.
 ### Machine
 
 Machines are the core building blocks of Hoku. The `machine` command allows you to retrieve machine information
-relative to a specific address. This helps track which `ObjectStore` or `Timehub` machines are tied to your account,
-which are later used in the `objectstore` and `timehub` subcommands.
+relative to a specific address. This helps track which `Bucket` or `Timehub` machines are tied to your account,
+which are later used in the `bucket` and `timehub` subcommands.
 
 #### Get machine info
 
@@ -548,28 +548,28 @@ hoku machine info <ADDRESS>
 > hoku machine info t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
 
 {
-    "kind": "ObjectStore",
+    "kind": "Bucket",
     "owner": "0x4d5286d81317e284cd377cb98b478552bbe641ae"
 }
 ```
 
-### Object store
+### Bucket
 
-Interact with an object store machine using either the `objectstore` or aliased `os` subcommand:
+Interact with an bucket machine using either the `bucket` or aliased `bu` subcommand:
 
 ```
-hoku objectstore <SUBCOMMAND>
-hoku os <SUBCOMMAND>
+hoku bucket <SUBCOMMAND>
+hoku bu <SUBCOMMAND>
 ```
 
-The `objectstore` subcommand has the following subcommands:
+The `bucket` subcommand has the following subcommands:
 
-- `create`: Create a new object store machine.
-- `list`: List object stores by owner in a subnet.
-- `add`: Add an object into the object store.
-- `get`: Get an object from the object store.
-- `delete`: Delete an object from the object store.
-- `query`: Query objects in the object store.
+- `create`: Create a new bucket machine.
+- `list`: List buckets by owner in a subnet.
+- `add`: Add an object into the bucket.
+- `get`: Get an object from the bucket.
+- `delete`: Delete an object from the bucket.
+- `query`: Query objects in the bucket.
 
 When you create objects, the `key` is a custom identifier that, by default, uses the `/` delimiter to create a key-based
 hierarchy. The value is the data you want to store, which can be a file path. A best practice is to
@@ -579,16 +579,16 @@ the `query` subcommand).
 
 #### Create
 
-Create a new object store machine.
+Create a new bucket machine.
 
 ```
-hoku objectstore create
+hoku bucket create
 ```
 
 | Flag                | Required? | Description                                                               |
 | ------------------- | --------- | ------------------------------------------------------------------------- |
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
-| `--public-write`    | No        | Allow **_public, open_** write access to the object store.                |
+| `--public-write`    | No        | Allow **_public, open_** write access to the bucket.                |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
 | `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL). |
 | `--gas-premium`     | No        | Gas premium for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).     |
@@ -597,7 +597,7 @@ hoku objectstore create
 **Example:**
 
 ```
-> hoku objectstore create
+> hoku bucket create
 
 {
   "address": "t2pefhfyobx2tdgznhcf2anr6p34z2rgso2ix7x5y",
@@ -609,19 +609,19 @@ hoku objectstore create
 }
 ```
 
-#### List object stores
+#### List buckets
 
-List object stores by owner in a subnet.
+List buckets by owner in a subnet.
 
 ```
-hoku objectstore list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+hoku bucket list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `hoku objectstore list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
-- `hoku objectstore list --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `hoku bucket list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
+- `hoku bucket list --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -636,17 +636,17 @@ Query machines by:
 - A hex address:
 
 ```
-> hoku objectstore list \
+> hoku bucket list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 [
   {
     "address": "t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa",
-    "kind": "ObjectStore"
+    "kind": "Bucket"
   },
   {
     "address": "t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa",
-    "kind": "ObjectStore"
+    "kind": "Bucket"
   }
 ]
 ```
@@ -654,7 +654,7 @@ Query machines by:
 - Its equivalent `t410` address:
 
 ```
-> hoku objectstore list \
+> hoku bucket list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
@@ -662,11 +662,11 @@ Query machines by:
   recent `committed` height above):
 
 ```
-> hoku objectstore list --height 114345
+> hoku bucket list --height 114345
 [
   {
     "address": "t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa",
-    "kind": "ObjectStore"
+    "kind": "Bucket"
   }
 ]
 ```
@@ -676,7 +676,7 @@ Query machines by:
 Add an object with a key prefix.
 
 ```
-hoku objectstore add \
+hoku bucket add \
 --address <ADDRESS> \
 --key <KEY> \
 [INPUT]
@@ -687,7 +687,7 @@ The `INPUT` can be a file path.
 | Flag                   | Required? | Description                                                                           |
 | ---------------------- | --------- | ------------------------------------------------------------------------------------- |
 | `-p, --private-key`    | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.                       |
-| `-a, --address`        | Yes       | Object store machine address.                                                         |
+| `-a, --address`        | Yes       | Bucket machine address.                                                         |
 | `-k, --key`            | Yes       | Key of the object to upload.                                                          |
 | `-o, --overwrite`      | No        | Overwrite the object if it already exists.                                            |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
@@ -698,10 +698,10 @@ The `INPUT` can be a file path.
 
 **Examples:**
 
-- Push a file to the object store:
+- Push a file to the bucket:
 
 ```
-> hoku objectstore add \
+> hoku bucket add \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --key "my/object" \
 ./hello.json
@@ -717,10 +717,10 @@ The `INPUT` can be a file path.
 
 #### Get an object
 
-Get an object from the object store machine.
+Get an object from the bucket machine.
 
 ```
-hoku objectstore get --address <ADDRESS> <KEY>
+hoku bucket get --address <ADDRESS> <KEY>
 ```
 
 | Positionals | Description               |
@@ -731,7 +731,7 @@ Note that when you retrieve the object, it will be written to stdout.
 
 | Flag               | Required? | Description                                                                                                   |
 | ------------------ | --------- | ------------------------------------------------------------------------------------------------------------- |
-| `-a, --address`    | Yes       | Object store machine address.                                                                                 |
+| `-a, --address`    | Yes       | Bucket machine address.                                                                                 |
 | `--object-api-url` | No        | Node Object API URL.                                                                                          |
 | `--range`          | No        | Range of bytes to get from the object (format: `"start-end"`; inclusive). Example: "0-99" => first 100 bytes. |
 | `--height`         | No        | Query at a specific block height (default: `committed`).                                                      |
@@ -741,7 +741,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Get an object and write to stdout (default behavior):
 
 ```
-> hoku objectstore get \
+> hoku bucket get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object"
 
@@ -751,7 +751,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Download the output to a file by piping the output:
 
 ```
-> hoku objectstore get \
+> hoku bucket get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object" > downloaded.json
 ```
@@ -759,7 +759,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Range request for a subset of bytes:
 
 ```
-> hoku objectstore get \
+> hoku bucket get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --range "10-14" \
 "my/object"
@@ -769,10 +769,10 @@ world
 
 #### Delete an object
 
-Delete an object from the object store.
+Delete an object from the bucket.
 
 ```
-hoku objectstore delete \
+hoku bucket delete \
 --address <ADDRESS> \
 <KEY>
 ```
@@ -786,7 +786,7 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 | Flag                   | Required? | Description                                                                           |
 | ---------------------- | --------- | ------------------------------------------------------------------------------------- |
 | `-p, --private-key`    | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.                       |
-| `-a, --address`        | Yes       | Object store machine address.                                                         |
+| `-a, --address`        | Yes       | Bucket machine address.                                                         |
 | `--object-api-url`     | No        | Node Object API URL.                                                                  |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
@@ -799,7 +799,7 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 - Delete an existing object:
 
 ```
-> hoku objectstore delete \
+> hoku bucket delete \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object"
 
@@ -817,7 +817,7 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 Query across all objects in the store.
 
 ```
-hoku objectstore query --address <ADDRESS>
+hoku bucket query --address <ADDRESS>
 ```
 
 Performing a `query` lists all keys that match a given prefix _up to and including the delimiter_.
@@ -832,7 +832,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
 
 | Flag              | Required? | Description                                                                        |
 | ----------------- | --------- | ---------------------------------------------------------------------------------- |
-| `-a, --address`   | Yes       | Object store machine address.                                                      |
+| `-a, --address`   | Yes       | Bucket machine address.                                                      |
 | `-p, --prefix`    | No        | The prefix to filter objects by (defaults to empty string).                        |
 | `-d, --delimiter` | No        | The delimiter used to define object hierarchy (default: `/`).                      |
 | `-o, --offset`    | No        | The offset from which to start listing objects (default: `0`)                      |
@@ -845,7 +845,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   prefix `my/`, but no objects are listed since the "root" is the prefix:
 
 ```
-> hoku objectstore query \
+> hoku bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
 
 {
@@ -861,7 +861,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   empty, so you know there are no more sub-objects to list:
 
 ```
-> hoku objectstore query \
+> hoku bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --prefix "my/"
 
@@ -870,17 +870,19 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
     {
       "key": "my/object",
       "value": {
-        "kind": "internal",
-        "content": "bafy2bzacecgbwqdlb2ujejlsjyjnqq77ky6yhrsj7fa2dpafsdrcxsamzntby",
-        "size": 18
+        "hash": "rzghyg4z3p6vbz5jkgc75lk64fci7kieul65o6hk6xznx7lctkmq",
+        "size": 6,
+        "expiry": 101285,
+        "metadata": {}
       }
-    },
+    }
     {
-      "key": "my/data",
+      "key": "hello/data",
       "value": {
-        "kind": "external",
-        "content": "bafybeigdp2yqaqdbfhltvxdt3m5xmsrbvzyvtjrz5klhee33vpr5hdnpou",
-        "resolved": true
+        "hash": "rzghyg4z3p6vbz5jkgc75lk64fci7kieul65o6hk6xznx7lctkmq",
+        "size": 6,
+        "expiry": 101285,
+        "metadata": {}
       }
     }
   ],
@@ -888,20 +890,13 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
 }
 ```
 
-> [!NOTE]
-> You can see the `my/object` object's `kind` is `internal` (shown with its `size` in bytes), and `my/data`
-> object's `kind` is `external`. The `external` kind means it's a "detached" object that isn't stored fully onchain but
-> externally on IPFS. That is, only the CID is stored onchain, but differs from `internal`'s onchain object storage. Any
-> objects over 1 KB (1024 bytes) are considered `external`. Also, the `resolved` flag indicates whether the reference
-> has been resolved or not by nodes on the network.
-
 - Get all objects and "ignore" the delimiter. Here, an arbitrary `"*"` symbol is used as the delimiter; it's been chosen
   since it doesn't exist in the example's keys that are used. Thus, this effectively lists all objects in the store
   because the delimiter isn't in the keys, so the `common_prefixes` array will be empty. The response will be the same
   as above.
 
 ```
-> hoku objectstore query \
+> hoku bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --delimiter "*"
 ```
@@ -910,7 +905,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   _after_ `"my/object"`, so it will be the first object listed after offsetting by `1`:
 
 ```
-> hoku objectstore query \
+> hoku bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --delimiter "/" \
 --prefix "my/" \
@@ -962,7 +957,7 @@ hoku timehub create
 | Flag                | Required? | Description                                                               |
 | ------------------- | --------- | ------------------------------------------------------------------------- |
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
-| `--public-write`    | No        | Allow **_public, open_** write access to the object store.                |
+| `--public-write`    | No        | Allow **_public, open_** write access to the bucket.                |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
 | `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL). |
 | `--gas-premium`     | No        | Gas premium for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).     |
