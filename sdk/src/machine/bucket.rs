@@ -517,9 +517,6 @@ impl Bucket {
             source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
             key: key.into(),
             hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
-            // TODO: another AddParams is used to broadcast message after this http request is done.
-            // Fendermint doesn't need metadata_hash as it is producing it.
-            // We need to check if it's reasonable to pass a dummy value here.
             recovery_hash: fendermint_actor_blobs_shared::state::Hash([0; 32]),
             size,
             ttl,
