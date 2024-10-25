@@ -20,7 +20,7 @@ pub trait ObjectProvider: Send + Sync {
         size: u64,
         msg: String,
         chain_id: u64,
-    ) -> anyhow::Result<()>;
+    ) -> anyhow::Result<reqwest::Response>;
 
     /// Download an object.
     async fn download(

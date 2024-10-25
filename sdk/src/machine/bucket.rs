@@ -4,6 +4,7 @@
 use std::future::Future;
 use std::path::Path;
 use std::pin::Pin;
+use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{cmp::min, collections::HashMap};
@@ -28,6 +29,7 @@ use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash};
 use iroh::client::blobs::WrapOption;
 use iroh::net::NodeId;
 use peekable::tokio::AsyncPeekable;
+use serde::Deserialize;
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
 use tokio::sync::{mpsc, Mutex};
@@ -60,7 +62,7 @@ pub struct AddOptions {
     /// If a TTL is specified, credits will be reserved for the duration,
     /// after which the object will be deleted.
     /// If a TTL is not specified, the object will be continuously renewed about every hour.
-    /// If the owner's free credit balance is exhuasted, the object will be deleted.
+    /// If the owner's free credit balance is exhausted, the object will be deleted.
     pub ttl: Option<ChainEpoch>,
     /// Metadata to add to the object.
     pub metadata: HashMap<String, String>,
@@ -239,6 +241,11 @@ impl iroh::blobs::provider::CustomEventSender for BlobEvents {
     }
 }
 
+#[derive(Deserialize)]
+struct UploadResponse {
+    metadata_hash: String,
+}
+
 impl Bucket {
     /// Add an object into the bucket with a reader.
     ///
@@ -332,7 +339,7 @@ impl Bucket {
     {
         // Iroh ingest
         msg_bar.set_prefix("[1/3]");
-        msg_bar.set_message("Injesting data ...");
+        msg_bar.set_message("Ingesting data ...");
 
         let pro_bar = bars.add(new_progress_bar(0));
         let mut object_size = 0;
@@ -430,18 +437,21 @@ impl Bucket {
             up_bar.finish_and_clear();
         });
 
-        self.upload(
-            provider,
-            node_addr.node_id,
-            signer,
-            key,
-            object_hash,
-            object_size,
-            options.ttl,
-            options.metadata.clone(),
-            options.overwrite,
-        )
-        .await?;
+        let metadata_hash = self
+            .upload(
+                provider,
+                node_addr.node_id,
+                signer,
+                key,
+                object_hash,
+                object_size,
+                options.ttl,
+                options.metadata.clone(),
+                options.overwrite,
+            )
+            .await?;
+
+        let metadata_hash = Hash::from_str(metadata_hash.as_str())?;
 
         cancel_s.send(()).ok();
         self.iroh_blob_events_handle
@@ -455,6 +465,7 @@ impl Bucket {
             source: fendermint_actor_blobs_shared::state::PublicKey(*node_addr.node_id.as_bytes()),
             key: key.into(),
             hash: fendermint_actor_blobs_shared::state::Hash(*object_hash.as_bytes()),
+            recovery_hash: fendermint_actor_blobs_shared::state::Hash(*metadata_hash.as_bytes()),
             size: object_size,
             ttl: options.ttl,
             metadata: options.metadata,
@@ -500,12 +511,14 @@ impl Bucket {
         ttl: Option<ChainEpoch>,
         metadata: HashMap<String, String>,
         overwrite: bool,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<String> {
         let from = signer.address();
         let params = AddParams {
             source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
             key: key.into(),
             hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
+            // We use dummy for now. This ticket should handle it https://github.com/hokunet/ipc/issues/300
+            recovery_hash: fendermint_actor_blobs_shared::state::Hash([0; 32]),
             size,
             ttl,
             metadata,
@@ -526,7 +539,7 @@ impl Bucket {
         };
 
         let node_addr = self.iroh.net().node_addr().await?;
-        provider
+        let response = provider
             .upload(
                 hash,
                 node_addr,
@@ -536,7 +549,9 @@ impl Bucket {
             )
             .await?;
 
-        Ok(())
+        let response = response.json::<UploadResponse>().await?;
+
+        Ok(response.metadata_hash)
     }
 
     /// Delete an object.
