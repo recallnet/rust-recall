@@ -517,6 +517,7 @@ impl Bucket {
             source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
             key: key.into(),
             hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
+            // We use dummy for now. This ticket should handle it https://github.com/hokunet/ipc/issues/300
             recovery_hash: fendermint_actor_blobs_shared::state::Hash([0; 32]),
             size,
             ttl,
