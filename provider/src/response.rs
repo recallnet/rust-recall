@@ -45,12 +45,15 @@ pub fn decode_bytes(deliver_tx: &DeliverTx) -> anyhow::Result<RawBytes> {
     }
 }
 
-/// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as a [`Cid`].
-pub fn decode_cid(deliver_tx: &DeliverTx) -> anyhow::Result<Cid> {
+/// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as generic type `T`.
+pub fn decode_as<T>(deliver_tx: &DeliverTx) -> anyhow::Result<T>
+where
+    T: for<'de> Deserialize<'de> + Into<T>,
+{
     let data = decode_data(&deliver_tx.data)?;
-    fvm_ipld_encoding::from_slice::<cid::Cid>(&data)
+    fvm_ipld_encoding::from_slice::<T>(&data)
         .map(|c| c.into())
-        .map_err(|e| anyhow!("error parsing as Cid: {e}"))
+        .map_err(|e| anyhow!("error parsing data as {}: {e}", std::any::type_name::<T>()))
 }
 
 /// JSON serialization friendly version of [`cid::Cid`].
