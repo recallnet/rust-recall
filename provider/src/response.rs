@@ -52,7 +52,6 @@ where
 {
     let data = decode_data(&deliver_tx.data)?;
     fvm_ipld_encoding::from_slice::<T>(&data)
-        .map(|c| c.into())
         .map_err(|e| anyhow!("error parsing data as {}: {e}", std::any::type_name::<T>()))
 }
 
