@@ -18,7 +18,7 @@ use tendermint_rpc::Client;
 use hoku_provider::{
     message::{local_message, GasParams},
     query::QueryProvider,
-    response::{decode_bytes, decode_as, Cid},
+    response::{decode_as, decode_bytes, Cid},
     tx::{BroadcastMode, TxReceipt},
     Provider,
 };

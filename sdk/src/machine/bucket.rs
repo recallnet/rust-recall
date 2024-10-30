@@ -43,7 +43,7 @@ use hoku_provider::{
     message::{local_message, object_upload_message, GasParams},
     object::ObjectProvider,
     query::QueryProvider,
-    response::{decode_bytes, decode_as},
+    response::{decode_as, decode_bytes},
     tx::{BroadcastMode, TxReceipt},
     Provider,
 };
@@ -577,7 +577,11 @@ impl Bucket {
             )
             .await?;
         provider
-            .perform(message, options.broadcast_mode, |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) })
+            .perform(
+                message,
+                options.broadcast_mode,
+                |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
+            )
             .await
     }
 
