@@ -9,10 +9,12 @@ use hoku_provider::message::GasParams;
 
 pub mod account;
 pub mod credits;
+pub mod encryption;
 pub mod ipc;
 pub mod machine;
 pub mod network;
 pub mod progress;
+pub mod range;
 pub mod storage;
 pub mod subnet;
 
