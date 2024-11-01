@@ -43,7 +43,7 @@ use hoku_provider::{
     message::{local_message, object_upload_message, GasParams},
     object::ObjectProvider,
     query::QueryProvider,
-    response::{decode_bytes, decode_cid, Cid},
+    response::{decode_as, decode_bytes},
     tx::{BroadcastMode, TxReceipt},
     Provider,
 };
@@ -257,7 +257,7 @@ impl Bucket {
         key: &str,
         reader: R,
         options: AddOptions,
-    ) -> anyhow::Result<TxReceipt<Cid>>
+    ) -> anyhow::Result<TxReceipt<Object>>
     where
         C: Client + Send + Sync,
         R: AsyncRead + Unpin + Send + 'static,
@@ -293,7 +293,7 @@ impl Bucket {
         key: &str,
         path: impl AsRef<Path>,
         options: AddOptions,
-    ) -> anyhow::Result<TxReceipt<Cid>>
+    ) -> anyhow::Result<TxReceipt<Object>>
     where
         C: Client + Send + Sync,
     {
@@ -333,7 +333,7 @@ impl Bucket {
         bars: Arc<MultiProgress>,
         msg_bar: ProgressBar,
         mut progress: iroh::client::blobs::AddProgress,
-    ) -> anyhow::Result<TxReceipt<Cid>>
+    ) -> anyhow::Result<TxReceipt<Object>>
     where
         C: Client + Send + Sync,
     {
@@ -458,7 +458,7 @@ impl Bucket {
             .collect_events
             .store(false, Ordering::Relaxed);
 
-        // Broadcast transaction with Object's CID
+        // Broadcast transaction with Object
         msg_bar.set_prefix("[3/3]");
         msg_bar.set_message("Broadcasting transaction...");
         let params = AddParams {
@@ -483,7 +483,7 @@ impl Bucket {
             .await?;
 
         let tx = provider
-            .perform(message, options.broadcast_mode, decode_cid)
+            .perform(message, options.broadcast_mode, decode_as)
             .await?;
 
         msg_bar.println(format!(
@@ -561,7 +561,7 @@ impl Bucket {
         signer: &mut impl Signer,
         key: &str,
         options: DeleteOptions,
-    ) -> anyhow::Result<TxReceipt<Cid>>
+    ) -> anyhow::Result<TxReceipt<()>>
     where
         C: Client + Send + Sync,
     {
@@ -577,7 +577,11 @@ impl Bucket {
             )
             .await?;
         provider
-            .perform(message, options.broadcast_mode, decode_cid)
+            .perform(
+                message,
+                options.broadcast_mode,
+                |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
+            )
             .await
     }
 
