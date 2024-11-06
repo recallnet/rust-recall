@@ -18,7 +18,7 @@ use tendermint_rpc::Client;
 use hoku_provider::{
     message::{local_message, GasParams},
     query::QueryProvider,
-    response::{decode_as, decode_bytes, Cid},
+    response::{decode_bytes, decode_cid, Cid},
     tx::{BroadcastMode, TxReceipt},
     Provider,
 };
@@ -193,7 +193,7 @@ impl Timehub {
         height: FvmQueryHeight,
     ) -> anyhow::Result<Cid> {
         let message = local_message(self.address, Root as u64, Default::default());
-        let response = provider.call(message, height, decode_as).await?;
+        let response = provider.call(message, height, decode_cid).await?;
         Ok(response.value)
     }
 }

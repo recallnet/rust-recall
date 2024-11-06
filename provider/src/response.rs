@@ -12,6 +12,7 @@ use fvm_ipld_encoding::RawBytes;
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use tendermint::abci::response::DeliverTx;
 use tendermint::abci::Code;
+use fendermint_actor_bucket::Object;
 
 /// Apply the encoding that Tendermint does to the bytes inside [`DeliverTx`].
 pub(crate) fn encode_data(data: &[u8]) -> Bytes {
@@ -45,14 +46,20 @@ pub fn decode_bytes(deliver_tx: &DeliverTx) -> anyhow::Result<RawBytes> {
     }
 }
 
-/// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as generic type `T`.
-pub fn decode_as<T>(deliver_tx: &DeliverTx) -> anyhow::Result<T>
-where
-    T: for<'de> Deserialize<'de> + Into<T>,
-{
+/// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as a [`Cid`].
+pub fn decode_cid(deliver_tx: &DeliverTx) -> anyhow::Result<Cid> {
     let data = decode_data(&deliver_tx.data)?;
-    fvm_ipld_encoding::from_slice::<T>(&data)
-        .map_err(|e| anyhow!("error parsing data as {}: {e}", std::any::type_name::<T>()))
+    fvm_ipld_encoding::from_slice::<cid::Cid>(&data)
+        .map(|c| c.into())
+        .map_err(|e| anyhow!("error parsing as Cid: {e}"))
+}
+
+/// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as an [`Object`].
+pub fn decode_object(deliver_tx: &DeliverTx) -> anyhow::Result<Object> {
+    let data = decode_data(&deliver_tx.data)?;
+    fvm_ipld_encoding::from_slice::<Object>(&data)
+        .map(|c| c.into())
+        .map_err(|e| anyhow!("error parsing as Object: {e}"))
 }
 
 /// JSON serialization friendly version of [`cid::Cid`].
