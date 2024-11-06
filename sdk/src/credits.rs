@@ -3,10 +3,11 @@
 
 use anyhow::anyhow;
 use fendermint_actor_blobs_shared::params::{
-    ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
+    ApproveCreditParams, BuyCreditParams, GetAccountParams, GetCreditApprovalParams,
+    RevokeCreditParams,
 };
 use fendermint_actor_blobs_shared::Method::{
-    ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit,
+    ApproveCredit, BuyCredit, GetAccount, GetCreditApproval, GetStats, RevokeCredit,
 };
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
@@ -103,6 +104,7 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
 }
 
 /// A credit approval.
+/// JSON serialization friendly version of [`fendermint_actor_blobs_shared::state::CreditApproval`].
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Approval {
     /// Optional credit approval limit.
@@ -252,6 +254,26 @@ impl Credits {
             .await
     }
 
+    pub async fn get_approval<C>(
+        provider: &impl Provider<C>,
+        to: Address,
+        from: Address,
+        caller: Address,
+        height: FvmQueryHeight,
+    ) -> anyhow::Result<Option<Approval>>
+    where
+        C: Client + Send + Sync,
+    {
+        let params = GetCreditApprovalParams { to, from, caller };
+        let params = RawBytes::serialize(params)?;
+
+        let message = local_message(BLOBS_ACTOR_ADDR, GetCreditApproval as u64, params);
+        let response = provider
+            .call(message, height, decode_optional_approval)
+            .await?;
+        Ok(response.value)
+    }
+
     pub async fn revoke<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
@@ -309,6 +331,15 @@ fn decode_approve(deliver_tx: &DeliverTx) -> anyhow::Result<Approval> {
     fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::CreditApproval>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
+}
+
+fn decode_optional_approval(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Approval>> {
+    let data = decode_bytes(deliver_tx)?;
+    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::CreditApproval>>(
+        &data,
+    )
+    .map(|v| v.map(|v| v.into()))
+    .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
 }
 
 fn decode_empty(_: &DeliverTx) -> anyhow::Result<()> {

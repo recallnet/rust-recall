@@ -3,6 +3,7 @@
 
 use clap::{Args, Subcommand};
 use fendermint_crypto::SecretKey;
+use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
 use fvm_shared::bigint::BigUint;
 use fvm_shared::clock::ChainEpoch;
@@ -11,7 +12,7 @@ use serde_json::json;
 
 use hoku_provider::{
     json_rpc::JsonRpcProvider,
-    util::{parse_address, parse_credit_amount, parse_token_amount},
+    util::{parse_address, parse_credit_amount, parse_query_height, parse_token_amount},
 };
 use hoku_sdk::credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions};
 use hoku_sdk::TxParams;
@@ -36,9 +37,11 @@ enum CreditCommands {
     /// Buy credits for an account.
     /// Use the `stats` command to see the subnet byte-blocks per atto token rate.
     Buy(BuyArgs),
-    /// Approve an account to use credits from another acccount.
+    /// Approve an account to use credits from another account.
     Approve(ApproveArgs),
-    /// Revoke an account from using credits from another acccount.
+    /// Look up an existing credit approval.
+    Approval(ApprovalArgs),
+    /// Revoke an account from using credits from another account.
     Revoke(RevokeArgs),
 }
 
@@ -98,6 +101,27 @@ struct ApproveArgs {
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct ApprovalArgs {
+    /// The receiver account address.
+    #[arg(long, value_parser = parse_address)]
+    to: Address,
+    /// The granter account address.
+    #[arg(long, value_parser = parse_address)]
+    from: Address,
+    /// The caller address being used, e.g. a bucket.
+    /// The receiver can only use an approval via a caller contract.
+    #[arg(long, value_parser = parse_address)]
+    caller: Address,
+    /// Query block height.
+    /// Possible values:
+    /// "committed" (latest committed block),
+    /// "pending" (consider pending state changes),
+    /// or a specific block height, e.g., "123".
+    #[arg(long, value_parser = parse_query_height, default_value = "committed")]
+    height: FvmQueryHeight,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -188,6 +212,18 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
             .await?;
 
             print_json(&tx)
+        }
+        CreditCommands::Approval(args) => {
+            let approval =
+                Credits::get_approval(&provider, args.to, args.from, args.caller, args.height)
+                    .await?;
+            match approval {
+                None => {
+                    println!("No approval found");
+                    Ok(())
+                }
+                Some(approval) => print_json(&json!(approval)),
+            }
         }
         CreditCommands::Revoke(args) => {
             let broadcast_mode = args.broadcast_mode.get();
