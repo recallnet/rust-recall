@@ -8,11 +8,11 @@ use std::str::FromStr;
 use anyhow::{anyhow, bail, Context};
 use base64::Engine;
 use bytes::Bytes;
+use fendermint_actor_bucket::Object;
 use fvm_ipld_encoding::RawBytes;
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use tendermint::abci::response::DeliverTx;
 use tendermint::abci::Code;
-use fendermint_actor_bucket::Object;
 
 /// Apply the encoding that Tendermint does to the bytes inside [`DeliverTx`].
 pub(crate) fn encode_data(data: &[u8]) -> Bytes {
@@ -58,7 +58,7 @@ pub fn decode_cid(deliver_tx: &DeliverTx) -> anyhow::Result<Cid> {
 pub fn decode_object(deliver_tx: &DeliverTx) -> anyhow::Result<Object> {
     let data = decode_data(&deliver_tx.data)?;
     fvm_ipld_encoding::from_slice::<Object>(&data)
-        .map(|c| c.into())
+        // .map(|c| c.into())
         .map_err(|e| anyhow!("error parsing as Object: {e}"))
 }
 
