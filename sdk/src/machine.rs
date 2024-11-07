@@ -27,6 +27,7 @@ use hoku_provider::{
 use hoku_signer::Signer;
 
 pub mod bucket;
+pub mod sqlite;
 pub mod timehub;
 
 /// Deployed machine transaction receipt details.
