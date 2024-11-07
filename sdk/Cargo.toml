@@ -42,6 +42,7 @@ fendermint_actor_bucket = { workspace = true }
 fendermint_actor_hoku_config_shared = { workspace = true }
 fendermint_actor_machine = { workspace = true }
 fendermint_actor_timehub = { workspace = true }
+fendermint_actor_sqlite = { workspace = true }
 fendermint_vm_actor_interface = { workspace = true }
 
 ipc_actors_abis = { workspace = true }

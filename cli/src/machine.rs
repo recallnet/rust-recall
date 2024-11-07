@@ -16,6 +16,7 @@ use hoku_sdk::{machine::info, network::NetworkConfig};
 use crate::print_json;
 
 pub mod bucket;
+pub mod sqlite;
 pub mod timehub;
 
 #[derive(Clone, Debug, Args)]

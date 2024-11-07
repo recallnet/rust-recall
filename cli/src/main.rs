@@ -26,6 +26,7 @@ use crate::credit::{handle_credit, CreditArgs};
 use crate::machine::{
     bucket::{handle_bucket, BucketArgs},
     handle_machine,
+    sqlite::{handle_sqlite, SqliteArgs},
     timehub::{handle_timehub, TimehubArgs},
     MachineArgs,
 };
@@ -82,6 +83,9 @@ enum Commands {
     /// Timehub related commands (alias: th).
     #[clap(alias = "th")]
     Timehub(TimehubArgs),
+    /// Sqlite related commands (alias sql)
+    #[clap(alias = "sql")]
+    Sqlite(SqliteArgs),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -199,6 +203,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Bucket(args) => handle_bucket(cfg, !cli.quiet, args).await,
         Commands::Timehub(args) => handle_timehub(cfg, args).await,
         Commands::Machine(args) => handle_machine(cfg, args).await,
+        Commands::Sqlite(args) => handle_sqlite(cfg, args).await,
     }
 }
 
