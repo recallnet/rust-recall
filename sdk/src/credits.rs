@@ -111,8 +111,8 @@ pub struct Approval {
     /// Optional credit approval expiry epoch.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expiry: Option<ChainEpoch>,
-    /// Counter for how much credit has been committed via this approval.
-    pub committed: String,
+    /// Counter for how much credit has been used via this approval.
+    pub used: String,
 }
 
 impl Default for Approval {
@@ -120,7 +120,7 @@ impl Default for Approval {
         Self {
             limit: None,
             expiry: None,
-            committed: "0".into(),
+            used: "0".into(),
         }
     }
 }
@@ -130,7 +130,7 @@ impl From<fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
         Self {
             limit: v.limit.map(|l| l.to_string()),
             expiry: v.expiry,
-            committed: v.committed.to_string(),
+            used: v.used.to_string(),
         }
     }
 }

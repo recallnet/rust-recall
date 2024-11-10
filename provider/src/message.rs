@@ -8,6 +8,9 @@ use fendermint_vm_message::signed::SignedMessage;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::{address::Address, econ::TokenAmount, message::Message, MethodNum};
 
+const MIN_GAS_FEE_CAP: u64 = 100;
+const MIN_GAS_PREMIUM: u64 = 100_000;
+
 /// Gas parameters for transactions.
 #[derive(Clone, Debug)]
 pub struct GasParams {
@@ -17,8 +20,11 @@ pub struct GasParams {
     ///
     /// Any discrepancy between this and the base fee is paid for
     /// by the validator who puts the transaction into the block.
+    /// The client will enforce a minimum value of 100 attoFIL.
     pub gas_fee_cap: TokenAmount,
     /// Gas premium.
+    ///
+    /// The client will enforce a minimum value of 100,000 attoFIL.
     pub gas_premium: TokenAmount,
 }
 
@@ -26,8 +32,29 @@ impl Default for GasParams {
     fn default() -> Self {
         GasParams {
             gas_limit: fvm_shared::BLOCK_GAS_LIMIT,
-            gas_fee_cap: Default::default(),
-            gas_premium: Default::default(),
+            gas_fee_cap: TokenAmount::from_atto(MIN_GAS_FEE_CAP),
+            gas_premium: TokenAmount::from_atto(MIN_GAS_PREMIUM),
+        }
+    }
+}
+
+impl GasParams {
+    /// Sets limits on the gas params.
+    ///
+    /// Note: Currently a user could set gas_fee_cap and/or gas_premium to zero.
+    /// https://github.com/consensus-shipyard/ipc/pull/1185 fixes this.
+    /// In the meantime, we enforce limits in the client.
+    pub fn set_limits(&mut self) {
+        if self.gas_limit == 0 || self.gas_limit > fvm_shared::BLOCK_GAS_LIMIT {
+            self.gas_limit = fvm_shared::BLOCK_GAS_LIMIT;
+        }
+        let min_gas_fee_cap = TokenAmount::from_atto(MIN_GAS_FEE_CAP);
+        if self.gas_fee_cap < min_gas_fee_cap {
+            self.gas_fee_cap = min_gas_fee_cap;
+        }
+        let min_gas_premium = TokenAmount::from_atto(MIN_GAS_PREMIUM);
+        if self.gas_premium < min_gas_premium {
+            self.gas_premium = min_gas_premium;
         }
     }
 }

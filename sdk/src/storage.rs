@@ -24,15 +24,6 @@ use hoku_provider::tx::BroadcastMode;
 //   hoku storage cat [hash] (get a blob directly)
 //   hoku storage ls --address (list blobs by account)
 
-/// Options for funding an account.
-#[derive(Clone, Default, Debug)]
-pub struct FundOptions {
-    /// Broadcast mode for the transaction.
-    pub broadcast_mode: BroadcastMode,
-    /// Gas params for the transaction.
-    pub gas_params: GasParams,
-}
-
 /// Storage usage stats for an account.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Usage {
