@@ -22,13 +22,13 @@ const IGNITION_SUBNET_ID: &str = "/r314159/t410fihazdq4n3v6xs7olrubepndnkbrwyxkz
 
 const TESTNET_RPC_URL: &str = "https://api.n1.hoku.sh";
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
-const IGNITION_RPC_URL: &str = "https://rpc-testnet-ignition-v1-validator-0.3box.io";
+const IGNITION_RPC_URL: &str = "https://api-ignition-0.hoku.sh";
 
 const RPC_TIMEOUT: Duration = Duration::from_secs(60);
 
 const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.hoku.sh";
 const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
-const IGNITION_EVM_RPC_URL: &str = "https://evm-testnet-ignition-v1-validator-0.3box.io";
+const IGNITION_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
 
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
@@ -48,7 +48,7 @@ const IGNITION_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x0bb143a180b61ae6b1872bbf99
 
 const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.hoku.sh";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
-const IGNITION_OBJECT_API_URL: &str = "https://object-api-testnet-ignition-v1-validator-0.3box.io";
+const IGNITION_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 
 /// Options for [`EVMSubnet`] configurations.
 #[derive(Debug, Clone)]
