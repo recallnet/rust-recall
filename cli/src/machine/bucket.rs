@@ -35,6 +35,8 @@ use crate::{
     get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,
 };
 
+use fendermint_actor_bucket::Object;
+
 #[derive(Clone, Debug, Args)]
 pub struct BucketArgs {
     #[command(subcommand)]
@@ -304,7 +306,13 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 )
                 .await?;
 
-            print_json(&tx)
+            print_json(&json!({
+                "hash": tx.hash.to_string(),
+                "height": tx.height,
+                "gas_used": tx.gas_used,
+                "status": tx.status,
+                "object": object_to_json(&tx.data),
+            }))
         }
         BucketCommands::Delete(args) => {
             let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
@@ -383,18 +391,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                     let key = core::str::from_utf8(key_bytes)
                         .unwrap_or_default()
                         .to_string();
-                    let value = if let Some(object) = object {
-                        json!({
-                            "hash": object.hash.to_string(),
-                            "recovery_hash": object.recovery_hash.to_string(),
-                            "size": object.size,
-                            "expiry": object.expiry,
-                            "metadata": object.metadata,
-                        })
-                    } else {
-                        json!("deleted")
-                    };
-                    json!({"key": key, "value": value})
+                    json!({"key": key, "value": object_to_json(object)})
                 })
                 .collect::<Vec<Value>>();
             let common_prefixes = list
@@ -405,5 +402,19 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
 
             print_json(&json!({"objects": objects, "common_prefixes": common_prefixes}))
         }
+    }
+}
+
+fn object_to_json(object: &Option<Object>) -> Value {
+    if let Some(object) = object {
+        json!({
+            "hash": object.hash.to_string(),
+            "recovery_hash": object.recovery_hash.to_string(),
+            "size": object.size,
+            "expiry": object.expiry,
+            "metadata": object.metadata,
+        })
+    } else {
+        json!("none")
     }
 }
