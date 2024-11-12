@@ -61,7 +61,7 @@ enum BucketCommands {
 #[derive(Clone, Debug, Args)]
 struct BucketCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// Bucket owner address.
     /// The owner defaults to the signer if not specified.
@@ -85,10 +85,10 @@ struct BucketCreateArgs {
 #[derive(Clone, Debug, Parser)]
 struct BucketPutArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// Node Object API URL.
-    #[arg(long, env)]
+    #[arg(long, env = "HOKU_OBJECT_API_URL")]
     object_api_url: Option<Url>,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -112,7 +112,7 @@ struct BucketPutArgs {
     /// Input file (or stdin) containing the object to upload.
     input: PathBuf,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -121,7 +121,7 @@ struct BucketPutArgs {
 #[derive(Clone, Debug, Parser)]
 struct BucketDeleteArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -129,7 +129,7 @@ struct BucketDeleteArgs {
     /// Key of the object to delete.
     key: String,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -152,7 +152,7 @@ struct BucketAddressArgs {
 #[derive(Clone, Debug, Args)]
 struct BucketGetArgs {
     /// Node Object API URL.
-    #[arg(long, env)]
+    #[arg(long, env = "HOKU_OBJECT_API_URL")]
     object_api_url: Option<Url>,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
