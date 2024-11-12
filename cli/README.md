@@ -106,8 +106,8 @@ The default network is `testnet`, so it's not necessary to set the variable unle
 developing locally (`devnet`).
 
 ```
-PRIVATE_KEY=your_private_key
-NETWORK=testnet
+HOKU_PRIVATE_KEY=your_private_key
+HOKU_NETWORK=testnet
 ```
 
 Each of the following sections includes examples that presume you've completed this setup step.
@@ -124,8 +124,8 @@ modes are also possible.
 
 ### Global options
 
-All the global flags can also be passed as all-caps, snake case environment variables
-(e.g., `--rpc-url` => `RPC_URL`) that are set and sourced in a `.env` file.
+All the global flags can also be passed as all-caps, snake case environment variables with a HOKU_ prefix
+(e.g., `--rpc-url` => `HOKU_RPC_URL`) that are set and sourced in a `.env` file.
 
 | Flag              | Description                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------ |
