@@ -36,6 +36,9 @@ const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x8e3Fd2b47e564E7D636Fa80082f28
 const LOCALNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const LOCALNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 const LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E";
+const IGNITION_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
+const IGNITION_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
+const IGNITION_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xd057a1d678ec664b29a454c3df7213ac7d1e6dc7";
 
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
 const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xe17B86E7BEFC691DAEfe2086e56B86D4253f3294";
@@ -226,7 +229,7 @@ impl Network {
             Network::Testnet => Ok(parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
             Network::Localnet => Ok(parse_address(LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
             Network::Devnet => Err(anyhow!("network has no parent")),
-            Network::Ignition => Err(anyhow!("network has no parent")),
+            Network::Ignition => Ok(parse_address(IGNITION_EVM_SUPPLY_SOURCE_ADDRESS)?),
         }
     }
 }
