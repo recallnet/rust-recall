@@ -128,15 +128,21 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
                 get_subnet_config(&cli, &subnet_id, args.subnet.clone())?,
             )
             .await?;
-            let parent_balance = Account::balance(
-                &Void::new(address),
-                get_parent_subnet_config(&cli, &subnet_id, args.subnet.clone())?,
-            )
-            .await?;
+            if cli.network.get().has_parent() {
+                let parent_balance = Account::balance(
+                    &Void::new(address),
+                    get_parent_subnet_config(&cli, &subnet_id, args.subnet.clone())?,
+                )
+                .await?;
 
-            print_json(
-                &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": balance.to_string(), "parent_balance": parent_balance.to_string()}),
-            )
+                print_json(
+                    &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": balance.to_string(), "parent_balance": parent_balance.to_string()}),
+                )
+            } else {
+                print_json(
+                    &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": balance.to_string()}),
+                )
+            }
         }
         AccountCommands::Deposit(args) => {
             let config = get_parent_subnet_config(&cli, &subnet_id, args.subnet.clone())?;

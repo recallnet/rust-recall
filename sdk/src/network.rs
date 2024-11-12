@@ -29,6 +29,7 @@ const RPC_TIMEOUT: Duration = Duration::from_secs(60);
 const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.hoku.sh";
 const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
 const IGNITION_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
+const DEVNET_EVM_RPC_URL: &str = "http://127.0.0.1:8545";
 
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
@@ -39,6 +40,8 @@ const LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xE6E340D132b5f46d1e472DebcD68
 const IGNITION_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const IGNITION_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 const IGNITION_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xd057a1d678ec664b29a454c3df7213ac7d1e6dc7";
+const DEVNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
+const DEVNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
 const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xe17B86E7BEFC691DAEfe2086e56B86D4253f3294";
@@ -123,6 +126,17 @@ impl Network {
         })
     }
 
+    /// Returns whether this network type has a parent chain.
+    pub fn has_parent(&self) -> bool {
+        match self {
+            Network::Mainnet => true,
+            Network::Testnet => true,
+            Network::Localnet => true,
+            Network::Ignition => true,
+            Network::Devnet => false,
+        }
+    }
+
     /// Returns the network [`Url`] of the CometBFT RPC API.
     pub fn rpc_url(&self) -> anyhow::Result<Url> {
         match self {
@@ -149,7 +163,7 @@ impl Network {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(reqwest::Url::from_str(TESTNET_EVM_RPC_URL)?),
             Network::Localnet => Ok(reqwest::Url::from_str(LOCALNET_EVM_RPC_URL)?),
-            Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Devnet => Ok(reqwest::Url::from_str(DEVNET_EVM_RPC_URL)?),
             Network::Ignition => Ok(reqwest::Url::from_str(IGNITION_EVM_RPC_URL)?),
         }
     }
@@ -160,7 +174,7 @@ impl Network {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_EVM_GATEWAY_ADDRESS)?),
             Network::Localnet => Ok(parse_address(LOCALNET_EVM_GATEWAY_ADDRESS)?),
-            Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Devnet => Ok(parse_address(DEVNET_EVM_GATEWAY_ADDRESS)?),
             Network::Ignition => Ok(parse_address(IGNITION_PARENT_EVM_GATEWAY_ADDRESS)?),
         }
     }
@@ -171,7 +185,7 @@ impl Network {
             Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
             Network::Testnet => Ok(parse_address(TESTNET_EVM_REGISTRY_ADDRESS)?),
             Network::Localnet => Ok(parse_address(LOCALNET_EVM_REGISTRY_ADDRESS)?),
-            Network::Devnet => Err(anyhow!("network has no parent")),
+            Network::Devnet => Ok(parse_address(DEVNET_EVM_REGISTRY_ADDRESS)?),
             Network::Ignition => Ok(parse_address(IGNITION_PARENT_EVM_REGISTRY_ADDRESS)?),
         }
     }
