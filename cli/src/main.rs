@@ -49,10 +49,10 @@ struct Cli {
     #[arg(long, env = "HOKU_RPC_URL")]
     rpc_url: Option<Url>,
     /// Logging verbosity (repeat for more verbose logging).
-    #[arg(short, long, env = "HOKU_VERBOSITY", action = clap::ArgAction::Count)]
+    #[arg(short, long, env = "HOKU_LOG_VERBOSITY", action = clap::ArgAction::Count)]
     verbosity: u8,
     /// Silence logging.
-    #[arg(short, long, env = "HOKU_QUIET", default_value_t = false)]
+    #[arg(short, long, env = "HOKU_LOG_QUIET", default_value_t = false)]
     quiet: bool,
 }
 
