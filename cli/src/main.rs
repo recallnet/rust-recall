@@ -40,19 +40,19 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
     /// Network presets for subnet and RPC URLs.
-    #[arg(short, long, env, value_enum, default_value_t = Network::Testnet)]
+    #[arg(short, long, env = "HOKU_NETWORK", value_enum, default_value_t = Network::Testnet)]
     network: Network,
     /// The ID of the target subnet.
-    #[arg(short, long, env)]
+    #[arg(short, long, env = "HOKU_SUBNET")]
     subnet: Option<SubnetID>,
     /// Node CometBFT RPC URL.
-    #[arg(long, env)]
+    #[arg(long, env = "HOKU_RPC_URL")]
     rpc_url: Option<Url>,
     /// Logging verbosity (repeat for more verbose logging).
-    #[arg(short, long, env, action = clap::ArgAction::Count)]
+    #[arg(short, long, env = "HOKU_LOG_VERBOSITY", action = clap::ArgAction::Count)]
     verbosity: u8,
     /// Silence logging.
-    #[arg(short, long, env, default_value_t = false)]
+    #[arg(short, long, env = "HOKU_LOG_QUIET", default_value_t = false)]
     quiet: bool,
 }
 
@@ -129,15 +129,15 @@ impl BroadcastMode {
 #[derive(Clone, Debug, Args)]
 struct TxArgs {
     /// Gas limit for the transaction.
-    #[arg(long, env)]
+    #[arg(long, env = "HOKU_GAS_LIMIT")]
     gas_limit: Option<u64>,
     /// Maximum gas fee for the transaction in attoFIL.
     /// 1FIL = 10**18 attoFIL.
-    #[arg(long, env, value_parser = parse_token_amount_from_atto)]
+    #[arg(long, env = "HOKU_GAS_FEE_CAP", value_parser = parse_token_amount_from_atto)]
     gas_fee_cap: Option<TokenAmount>,
     /// Gas premium for the transaction in attoFIL.
     /// 1FIL = 10**18 attoFIL.
-    #[arg(long, env, value_parser = parse_token_amount_from_atto)]
+    #[arg(long, env = "HOKU_GAS_PREMIUM", value_parser = parse_token_amount_from_atto)]
     gas_premium: Option<TokenAmount>,
     /// Sequence for the transaction.
     #[arg(long)]
@@ -161,7 +161,7 @@ impl TxArgs {
 #[derive(Clone, Debug, Args)]
 struct AddressArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: Option<SecretKey>,
     /// Account address. The signer address is used if no address is given.
     #[arg(short, long, value_parser = parse_address)]

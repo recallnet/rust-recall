@@ -59,7 +59,7 @@ enum TimehubCommands {
 #[derive(Clone, Debug, Args)]
 struct TimehubCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// Timehub owner address.
     /// The owner defaults to the signer if not specified.
@@ -78,7 +78,7 @@ struct TimehubCreateArgs {
 #[derive(Clone, Debug, Args)]
 struct TimehubPushArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// Timehub machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -87,7 +87,7 @@ struct TimehubPushArgs {
     #[clap(default_value = "-")]
     input: FileOrStdin,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,

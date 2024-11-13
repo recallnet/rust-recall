@@ -57,7 +57,7 @@ struct BalanceArgs {
 #[derive(Clone, Debug, Args)]
 struct BuyArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
@@ -66,7 +66,7 @@ struct BuyArgs {
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -75,7 +75,7 @@ struct BuyArgs {
 #[derive(Clone, Debug, Args)]
 struct ApproveArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
@@ -94,7 +94,7 @@ struct ApproveArgs {
     #[arg(long)]
     ttl: Option<ChainEpoch>,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -103,7 +103,7 @@ struct ApproveArgs {
 #[derive(Clone, Debug, Args)]
 struct RevokeArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
@@ -113,7 +113,7 @@ struct RevokeArgs {
     #[arg(long, value_parser = parse_address)]
     caller: Option<Address>,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,

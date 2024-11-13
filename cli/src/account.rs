@@ -74,7 +74,7 @@ struct InfoArgs {
 #[derive(Clone, Debug, Args)]
 struct FundArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
@@ -89,7 +89,7 @@ struct FundArgs {
 #[derive(Clone, Debug, Args)]
 struct TransferArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env, value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
     /// The recipient account address.
     #[arg(long, value_parser = parse_address)]
