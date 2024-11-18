@@ -18,7 +18,7 @@ use crate::ipc::subnet::EVMSubnet;
 const TESTNET_SUBNET_ID: &str = "/r314159/t410fvamrbjioufgzoyojg2x3nwdo26t6xucxoxl47yq"; // chain ID: 2938118273996536
 const LOCALNET_SUBNET_ID: &str = "/r31337/t410fkzrz3mlkyufisiuae3scumllgalzuu3wxlxa2ly"; // chain ID: 4362550583360910
 const DEVNET_SUBNET_ID: &str = "test";
-const IGNITION_SUBNET_ID: &str = "/r314159/t410f2x3jiwcg6ju4bvy2lpdzc6xjo5okoktdm63mwni"; // chain ID: 2009180146406958
+const IGNITION_SUBNET_ID: &str = "/r314159/t410f3oewkcvacaaydfn4v6diulzise26cpfolfj7heq"; // chain ID: 3258443211374980
 
 const TESTNET_RPC_URL: &str = "https://api.n1.hoku.sh";
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
