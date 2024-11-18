@@ -230,7 +230,7 @@ async fn client_send<T: ethers::abi::Detokenize>(
     client: Arc<DefaultSignerMiddleware>,
     call: ContractCall<DefaultSignerMiddleware, T>,
 ) -> anyhow::Result<TransactionReceipt> {
-    let call = call_with_premium_and_gas(client, call).await?;
+    let call = call_with_premium_and_pending_block(client, call).await?;
     let tx = call.send().await?;
     match tx.retries(TRANSACTION_RECEIPT_RETRIES).await? {
         Some(receipt) => Ok(receipt),
@@ -240,9 +240,10 @@ async fn client_send<T: ethers::abi::Detokenize>(
     }
 }
 
-/// Receives an input `FunctionCall` and returns a new instance
-/// after estimating an optimal `gas_premium` for the transaction
-async fn call_with_premium_and_gas<B, D, M>(
+/// Takes a `FunctionCall` input and returns a new instance with an estimated optimal `gas_premium`.
+/// The function also uses the pending block number to help retrieve the latest nonce
+/// via `get_transaction_count` with the `pending` parameter.
+async fn call_with_premium_and_pending_block<B, D, M>(
     signer: Arc<DefaultSignerMiddleware>,
     mut call: ethers_contract::FunctionCall<B, D, M>,
 ) -> anyhow::Result<ethers_contract::FunctionCall<B, D, M>>
