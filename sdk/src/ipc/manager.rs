@@ -230,7 +230,7 @@ async fn client_send<T: ethers::abi::Detokenize>(
     client: Arc<DefaultSignerMiddleware>,
     call: ContractCall<DefaultSignerMiddleware, T>,
 ) -> anyhow::Result<TransactionReceipt> {
-    let call = call_with_premium_estimation(client, call).await?;
+    let call = call_with_premium_and_gas(client, call).await?;
     let tx = call.send().await?;
     match tx.retries(TRANSACTION_RECEIPT_RETRIES).await? {
         Some(receipt) => Ok(receipt),
@@ -242,30 +242,35 @@ async fn client_send<T: ethers::abi::Detokenize>(
 
 /// Receives an input `FunctionCall` and returns a new instance
 /// after estimating an optimal `gas_premium` for the transaction
-async fn call_with_premium_estimation<B, D, M>(
+async fn call_with_premium_and_gas<B, D, M>(
     signer: Arc<DefaultSignerMiddleware>,
-    call: ethers_contract::FunctionCall<B, D, M>,
+    mut call: ethers_contract::FunctionCall<B, D, M>,
 ) -> anyhow::Result<ethers_contract::FunctionCall<B, D, M>>
 where
     B: std::borrow::Borrow<D>,
     M: ethers::abi::Detokenize,
 {
     let (max_priority_fee_per_gas, max_fee_per_gas) = premium_estimation(signer).await?;
-    match call.tx.clone() {
+    let call_with_gas = match call.tx.clone() {
         TypedTransaction::Eip1559(mut tx) => {
             tx.max_fee_per_gas = Some(max_fee_per_gas);
             tx.max_priority_fee_per_gas = Some(max_priority_fee_per_gas);
-            Ok(call)
+            call.tx = TypedTransaction::Eip1559(tx);
+            call
         }
         TypedTransaction::Legacy(mut tx) => {
             tx.gas_price = Some(max_fee_per_gas);
-            Ok(call)
+            call.tx = TypedTransaction::Legacy(tx);
+            call
         }
         TypedTransaction::Eip2930(mut wrapped_tx) => {
             wrapped_tx.tx.gas_price = Some(max_fee_per_gas);
-            Ok(call)
+            call.tx = TypedTransaction::Eip2930(wrapped_tx);
+            call
         }
-    }
+    };
+
+    Ok(call_with_gas.block(ethers::types::BlockNumber::Pending))
 }
 
 /// Returns an estimation of an optimal `gas_premium` and `gas_fee_cap`
