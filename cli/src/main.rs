@@ -141,6 +141,9 @@ struct TxArgs {
     /// 1FIL = 10**18 attoFIL.
     #[arg(long, env = "HOKU_GAS_PREMIUM", value_parser = parse_token_amount_from_atto)]
     gas_premium: Option<TokenAmount>,
+    /// Gas sponsor address.
+    #[arg(long, env = "HOKU_GAS_SPONSOR", value_parser = parse_address)]
+    gas_sponsor: Option<Address>,
     /// Sequence for the transaction.
     #[arg(long)]
     sequence: Option<u64>,
@@ -155,6 +158,7 @@ impl TxArgs {
                 gas_limit: self.gas_limit.unwrap_or(fvm_shared::BLOCK_GAS_LIMIT),
                 gas_fee_cap: self.gas_fee_cap.clone().unwrap_or_default(),
                 gas_premium: self.gas_premium.clone().unwrap_or_default(),
+                gas_sponsor: self.gas_sponsor,
             },
         }
     }
@@ -206,7 +210,7 @@ fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Addres
     let address = if let Some(addr) = args.address {
         addr
     } else if let Some(sk) = args.private_key.clone() {
-        let signer = Wallet::new_secp256k1(sk, AccountKind::Ethereum, subnet_id.clone())?;
+        let signer = Wallet::new_secp256k1(sk, AccountKind::Ethereum, subnet_id.clone(), None)?;
         signer.address()
     } else {
         Cli::command()

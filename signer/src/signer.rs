@@ -37,6 +37,9 @@ pub trait Signer: Clone + Send + Sync {
     /// This is used to derive a chain ID associated with a message.
     fn subnet_id(&self) -> Option<SubnetID>;
 
+    /// Returns the transaction gas sponsor if it exists.
+    fn sponsor(&self) -> Option<Address>;
+
     /// Returns a [`ChainMessage`] that can be submitted to a provider.
     async fn transaction(
         &mut self,

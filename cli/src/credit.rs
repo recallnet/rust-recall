@@ -141,8 +141,12 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer =
-                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                subnet_id,
+                gas_params.gas_sponsor,
+            )?;
             signer.set_sequence(sequence, &provider).await?;
 
             let recipient = args.recipient.unwrap_or(signer.address());
@@ -167,8 +171,12 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer =
-                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                subnet_id,
+                gas_params.gas_sponsor,
+            )?;
             signer.set_sequence(sequence, &provider).await?;
 
             let from = signer.address();
@@ -196,8 +204,12 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer =
-                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                subnet_id,
+                gas_params.gas_sponsor,
+            )?;
             signer.set_sequence(sequence, &provider).await?;
 
             let from = signer.address();

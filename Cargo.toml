@@ -69,7 +69,7 @@ tendermint-rpc = { version = "0.31.1", features = [
     "websocket-client",
 ] }
 
-fvm_shared = "4.1.0"
+fvm_shared = "4.1.2"
 fvm_ipld_encoding = "0.4.0"
 
 fendermint_actor_blobs_shared = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "139782cff4edec919d021c31400661d4cb3ff946" }
@@ -82,6 +82,15 @@ fendermint_vm_message = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "1
 
 ipc_actors_abis = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "139782cff4edec919d021c31400661d4cb3ff946" }
 ipc-api = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "139782cff4edec919d021c31400661d4cb3ff946" }
+
+[patch.crates-io]
+fvm_shared = { path = "../ref-fvm/shared" }
+fvm_sdk = { path = "../ref-fvm/sdk" }
+fvm_ipld_blockstore = { path = "../ref-fvm/ipld/blockstore" }
+fvm_ipld_encoding = { path = "../ref-fvm/ipld/encoding" }
+fvm_ipld_hamt = { path = "../ref-fvm/ipld/hamt" }
+fvm_ipld_amt = { path = "../ref-fvm/ipld/amt" }
+frc42_dispatch = { path = "../actors-utils/frc42_dispatch" }
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.

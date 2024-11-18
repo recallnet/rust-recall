@@ -36,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
         JsonRpcProvider::new_http(network.rpc_url()?, None, Some(network.object_api_url()?))?;
 
     // Setup local wallet using private key from arg
-    let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?)?;
+    let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?, None)?;
     signer.init_sequence(&provider).await?;
 
     // Create a new bucket
