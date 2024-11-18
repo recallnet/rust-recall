@@ -102,12 +102,12 @@ There are two flags required for the majority of the `hoku` subcommands:
 
 As a best practice, you should create a `.env` file with the following and run `source .env` to ensure the commands
 load these variables.
-The default network is `testnet`, so it's not necessary to set the variable unless you're
+The default network is `ignition`, so it's not necessary to set the variable unless you're
 developing locally (`devnet`).
 
 ```
 HOKU_PRIVATE_KEY=your_private_key
-HOKU_NETWORK=testnet
+HOKU_NETWORK=devnet
 ```
 
 Each of the following sections includes examples that presume you've completed this setup step.
