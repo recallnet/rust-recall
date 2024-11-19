@@ -118,6 +118,9 @@ struct BucketPutArgs {
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
+    /// Encrypt/Decrypt objects using 256-bit encryption keys. Formats: RawBase64.
+    #[arg(long)]
+    enc_c: Option<String>,
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -173,6 +176,9 @@ struct BucketGetArgs {
     /// or a specific block height, e.g., "123".
     #[arg(long, value_parser = parse_query_height, default_value = "committed")]
     height: FvmQueryHeight,
+    /// Encrypt/Decrypt objects using 256-bit encryption keys. Formats: RawBase64.
+    #[arg(long)]
+    enc_c: Option<String>,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -302,6 +308,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                         broadcast_mode,
                         gas_params,
                         show_progress: !cli.quiet,
+                        enc_c: args.enc_c.clone(),
                     },
                 )
                 .await?;
@@ -363,6 +370,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                         range: args.range.clone(),
                         height: args.height,
                         show_progress: true,
+                        enc_c: args.enc_c.clone(),
                     },
                 )
                 .await

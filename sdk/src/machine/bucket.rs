@@ -11,7 +11,8 @@ use std::{cmp::min, collections::HashMap};
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use base64::{engine::general_purpose, Engine};
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+use dare::{DAREDecryptor, MAX_PAYLOAD_SIZE};
 use fendermint_actor_bucket::{
     AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
     Method::{AddObject, DeleteObject, GetObject, ListObjects},
@@ -49,7 +50,11 @@ use hoku_provider::{
 };
 use hoku_signer::Signer;
 
+use crate::encryption::decryptor::{DecryptWriter, Filter};
+use crate::encryption::object::EncryptedObjectExt;
+use crate::encryption::sse_c::encrypt_reader;
 use crate::progress::{new_message_bar, new_multi_bar, SPARKLE};
+use crate::range::Range;
 use crate::{
     machine::{deploy_machine, DeployTxReceipt, Machine},
     progress::new_progress_bar,
@@ -74,6 +79,8 @@ pub struct AddOptions {
     pub gas_params: GasParams,
     /// Whether to show progress-related output (useful for command-line interfaces).
     pub show_progress: bool,
+    /// Client provided 256-bit encryption key. Formats: RawBase64.
+    pub enc_c: Option<String>,
 }
 
 /// Object delete options.
@@ -98,6 +105,8 @@ pub struct GetOptions {
     pub height: FvmQueryHeight,
     /// Whether to show progress-related output (useful for command-line interfaces).
     pub show_progress: bool,
+    /// Client provided 256-bit encryption key to decrypt the object. Formats: RawBase64.
+    pub enc_c: Option<String>,
 }
 
 /// Object query options.
@@ -273,6 +282,8 @@ impl Bucket {
         let bars = new_multi_bar(!options.show_progress);
         let msg_bar = bars.add(new_message_bar());
 
+        let (reader, options) = self.encrypt_reader_if_necessary(reader, options, key)?;
+
         let progress = self
             .iroh
             .blobs()
@@ -310,11 +321,34 @@ impl Bucket {
         let bars = new_multi_bar(!options.show_progress);
         let msg_bar = bars.add(new_message_bar());
 
-        let progress = self
-            .iroh
-            .blobs()
-            .add_from_path(path.into(), true, SetTagOption::Auto, WrapOption::NoWrap)
-            .await?;
+        let (progress, options) = if let Some(kek) = &options.enc_c {
+            let file = tokio::fs::File::open(path).await?;
+            let (reader, encryption_metadata) = encrypt_reader(file, kek, key)?;
+
+            let mut metadata = options.metadata;
+            metadata.extend(encryption_metadata);
+
+            let options = AddOptions {
+                metadata,
+                ..options
+            };
+
+            (
+                self.iroh
+                    .blobs()
+                    .add_reader(reader, SetTagOption::Auto)
+                    .await?,
+                options,
+            )
+        } else {
+            (
+                self.iroh
+                    .blobs()
+                    .add_from_path(path.into(), true, SetTagOption::Auto, WrapOption::NoWrap)
+                    .await?,
+                options,
+            )
+        };
 
         self.add_inner(
             provider, signer, key, options, started, bars, msg_bar, progress,
@@ -544,7 +578,7 @@ impl Bucket {
                 hash,
                 node_addr,
                 size,
-                general_purpose::URL_SAFE.encode(&serialized_signed_message),
+                URL_SAFE.encode(&serialized_signed_message),
                 chain_id.into(),
             )
             .await?;
@@ -590,7 +624,7 @@ impl Bucket {
         &self,
         provider: &(impl QueryProvider + ObjectProvider),
         key: &str,
-        mut writer: W,
+        writer: W,
         options: GetOptions,
     ) -> anyhow::Result<()>
     where
@@ -619,9 +653,20 @@ impl Bucket {
         let object_size = provider
             .size(self.address, key, options.height.into())
             .await?;
+
+        let range = match options.range {
+            Some(str) => Some(Range::parse(&str)?),
+            None => None,
+        };
+        let range_str =
+            range.map(|range| range.get_range(object.size_decrypted(), object.is_encrypted()));
+
+        let mut writer =
+            self.decrypt_writer_if_necessary(writer, &object, range, options.enc_c.clone(), key)?;
+
         let pro_bar = bars.add(new_progress_bar(object_size));
         let response = provider
-            .download(self.address, key, options.range, options.height.into())
+            .download(self.address, key, range_str, options.height.into())
             .await?;
         let mut stream = response.bytes_stream();
         let mut progress = 0;
@@ -685,6 +730,78 @@ impl Bucket {
             metadata,
             ..options
         }
+    }
+
+    fn encrypt_reader_if_necessary<R: AsyncRead + Unpin + Send + 'static>(
+        &self,
+        reader: R,
+        options: AddOptions,
+        key: &str,
+    ) -> anyhow::Result<(Box<dyn AsyncRead + Unpin + Send + 'static>, AddOptions)> {
+        if let Some(kek) = &options.enc_c {
+            let (reader, encryption_metadata) = encrypt_reader(reader, kek, key)?;
+
+            let mut metadata = options.metadata;
+            metadata.extend(encryption_metadata);
+
+            return Ok((
+                Box::new(reader) as Box<dyn AsyncRead + Unpin + Send + 'static>,
+                AddOptions {
+                    metadata,
+                    ..options
+                },
+            ));
+        }
+
+        Ok((
+            Box::new(reader) as Box<dyn AsyncRead + Unpin + Send + 'static>,
+            options,
+        ))
+    }
+
+    fn decrypt_writer_if_necessary<W: AsyncWrite + Unpin + Send + 'static>(
+        &self,
+        writer: W,
+        object: &Object,
+        range: Option<Range>,
+        enc_c: Option<String>,
+        key: &str,
+    ) -> anyhow::Result<Box<dyn AsyncWrite + Unpin + Send + 'static>> {
+        if object.is_encrypted() && enc_c.is_some() {
+            let enc_c = enc_c.unwrap();
+            let sealed_object_key = object.sealed_object_key()?;
+            let object_encryption_key = sealed_object_key.unseal(enc_c.to_owned(), key)?;
+
+            if range.is_none() {
+                let decryptor = DAREDecryptor::new(object_encryption_key.key);
+                let writer = DecryptWriter::new(writer, decryptor);
+                return Ok(Box::new(writer));
+            }
+
+            let range = range.unwrap();
+            let (offset, length) = range.get_offset_length(object.size_decrypted());
+
+            let package_index = offset / MAX_PAYLOAD_SIZE as u64;
+            let consumed = package_index * MAX_PAYLOAD_SIZE as u64;
+
+            // TODO: check if this conversion is safe
+            let sequence_number = package_index as u32;
+
+            let decryptor =
+                DAREDecryptor::with_sequence_number(object_encryption_key.key, sequence_number);
+            let writer = DecryptWriter::with_filter(
+                writer,
+                decryptor,
+                Filter {
+                    offset,
+                    length,
+                    consumed,
+                },
+            );
+            return Ok(Box::new(writer));
+        }
+
+        Ok(Box::new(writer))
     }
 }
 

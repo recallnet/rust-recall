@@ -41,6 +41,7 @@ futures-core = "0.3.30"
 futures-util = "0.3.17"
 humantime = "2.1.0"
 hex = "0.4.3"
+hmac = "0.12"
 indicatif = "0.17.8"
 infer = "0.16.0"
 iroh = "0.26.0"
@@ -48,6 +49,7 @@ lazy_static = "1.4.0"
 log = "0.4.22"
 num-traits = "0.2.18"
 peekable = { version = "0.2.3", features = ["tokio"] }
+pin-project = "1.0"
 prost = "0.11.9"
 reqwest = { version = "0.11.27", features = ["json", "stream", "multipart"] }
 serde = { version = "1.0.197", features = ["derive"] }
@@ -58,6 +60,7 @@ tokio-util = "0.7.1"
 tokio-stream = "0.1.0"
 tracing = "0.1.40"
 rand = "0.8.4"
+sha2 = "0.10"
 warp = "0.3.7"
 
 # Using the same tendermint-rs dependency as tower-abci. For both, we are interested in v037 modules.
@@ -82,6 +85,8 @@ fendermint_vm_message = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "1
 
 ipc_actors_abis = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "139782cff4edec919d021c31400661d4cb3ff946" }
 ipc-api = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "139782cff4edec919d021c31400661d4cb3ff946" }
+
+dare = {git = "ssh://git@github.com/hokunet/dare.git"}
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.

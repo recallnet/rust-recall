@@ -94,7 +94,7 @@ async fn main() -> anyhow::Result<()> {
         if let Some(object) = object {
             println!("Query result for key {}: {}", key, object.hash);
         } else {
-            println!("Query result for key {}: {}", key, "blob is not resolved");
+            println!("Query result for key {}: blob is not resolved", key);
         }
     }
 
@@ -108,17 +108,17 @@ async fn main() -> anyhow::Result<()> {
     };
     {
         let open_file = obj_file.open_rw().await?;
-        machine.get(&provider, &key, open_file, options).await?;
+        machine.get(&provider, key, open_file, options).await?;
     }
     // Read the first 10 bytes of your downloaded 100 bytes
     let mut read_file = tokio::fs::File::open(&obj_path).await?;
     let mut contents = vec![0; 10];
-    read_file.read(&mut contents).await?;
+    let _ = read_file.read(&mut contents).await?;
     println!("Successfully read first 10 bytes of {}", obj_path.display());
 
     // Now, delete the object
     let tx = machine
-        .delete(&provider, &mut signer, &key, Default::default())
+        .delete(&provider, &mut signer, key, Default::default())
         .await?;
     println!("Deleted object with key {} at tx 0x{}", key, tx.hash);
 
