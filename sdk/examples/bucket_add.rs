@@ -29,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    let network = Network::Localnet.init();
+    let network = Network::Localnet.init().await?;
 
     // Setup network provider
     let provider =

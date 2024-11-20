@@ -19,14 +19,14 @@ async fn main() -> anyhow::Result<()> {
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    let network = Network::Testnet.init();
+    let network_cfg = Network::Testnet.get_config().await?;
 
     // Setup local wallet using private key from arg
-    let signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?.parent()?)?;
+    let signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network_cfg.subnet_id.parent()?)?;
 
     // Deposit some calibration funds into the subnet
     // Note: The debit account _must_ have Calibration
-    let balance = Account::balance(&signer, network.subnet_config(Default::default())?).await?;
+    let balance = Account::balance(&signer, network_cfg.subnet_config(Default::default())).await?;
 
     println!(
         "Balance of {}: {}",

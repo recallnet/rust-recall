@@ -11,7 +11,7 @@ use hoku_signer::key::random_secretkey;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // Use testnet network defaults
-    Network::Testnet.init();
+    Network::Testnet.init().await?;
 
     let sk = random_secretkey();
     let pk = sk.public_key().serialize();

@@ -1,17 +1,19 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::fmt::Display;
 use std::str::FromStr;
 use std::time::Duration;
+use std::{collections::HashMap, fmt::Display};
 
-use anyhow::anyhow;
-use fvm_shared::address::{set_current_network, Address, Error, Network as FvmNetwork};
+use anyhow::{anyhow, Context};
+use fvm_shared::address::{self, Address, Error, Network as FvmNetwork};
+use lazy_static::lazy_static;
 use serde::{Deserialize, Deserializer};
 use tendermint_rpc::Url;
 
 use hoku_provider::util::parse_address;
 use hoku_signer::SubnetID;
+use tokio::sync::OnceCell;
 
 use crate::ipc::subnet::EVMSubnet;
 
@@ -57,6 +59,8 @@ const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.hoku.sh";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 const IGNITION_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 
+const HOKU_NETWORK_CONFIGS_URL: &str = "http://127.0.0.1:3000/network-definitions.json";
+
 /// Options for [`EVMSubnet`] configurations.
 #[derive(Debug, Clone)]
 pub struct SubnetOptions {
@@ -75,8 +79,139 @@ impl Default for SubnetOptions {
     }
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct NetworkConfig {
+    #[serde(deserialize_with = "deserialize_subnet_id")]
+    pub subnet_id: SubnetID,
+    pub rpc_url: Url,
+    pub object_api_url: Url,
+    pub evm_rpc_url: reqwest::Url,
+    pub evm_gateway_address: Address,
+    pub evm_registry_address: Address,
+    pub parent_network_config: Option<ParentNetworkConfig>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ParentNetworkConfig {
+    pub evm_rpc_url: reqwest::Url,
+    pub evm_gateway_address: Address,
+    pub evm_registry_address: Address,
+    pub evm_supply_source_address: Address,
+}
+
+fn deserialize_subnet_id<'de, D>(deserializer: D) -> Result<SubnetID, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let x = String::deserialize(deserializer)?;
+    SubnetID::from_str(&x).map_err(serde::de::Error::custom)
+}
+
+impl NetworkConfig {
+    pub async fn get_remote(network_name: &str) -> anyhow::Result<Self> {
+        let resp = reqwest::get(HOKU_NETWORK_CONFIGS_URL)
+            .await
+            .context(format!(
+                "failed to download network definitions from {}",
+                HOKU_NETWORK_CONFIGS_URL
+            ))?;
+        let mut network_configs: HashMap<String, NetworkConfig> =
+            resp.json().await.context(format!(
+                "invalid JSON content downloaded from {}",
+                HOKU_NETWORK_CONFIGS_URL
+            ))?;
+        network_configs.remove(network_name).ok_or(anyhow!(
+            "no such network '{}' at {}",
+            network_name,
+            HOKU_NETWORK_CONFIGS_URL
+        ))
+    }
+
+    pub fn subnet_config(&self, options: SubnetOptions) -> EVMSubnet {
+        EVMSubnet {
+            id: self.subnet_id.clone(),
+            provider_http: self.evm_rpc_url.clone(),
+            provider_timeout: Some(options.evm_rpc_timeout),
+            auth_token: options.evm_rpc_auth_token,
+            registry_addr: self.evm_registry_address,
+            gateway_addr: self.evm_gateway_address,
+            supply_source: None,
+        }
+    }
+
+    pub fn parent_subnet_config(&self, options: SubnetOptions) -> Option<EVMSubnet> {
+        self.parent_network_config.as_ref().map(|parent| EVMSubnet {
+            id: self
+                .subnet_id
+                .parent()
+                .expect("subnet does not have parent"),
+            provider_http: parent.evm_rpc_url.clone(),
+            provider_timeout: Some(options.evm_rpc_timeout),
+            auth_token: options.evm_rpc_auth_token,
+            registry_addr: parent.evm_registry_address,
+            gateway_addr: parent.evm_gateway_address,
+            supply_source: Some(parent.evm_supply_source_address),
+        })
+    }
+}
+
+lazy_static! {
+    static ref NETWORK_CONFIG_DEVNET: NetworkConfig = NetworkConfig {
+        subnet_id: SubnetID::from_str(DEVNET_SUBNET_ID).unwrap(),
+        rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
+        object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
+        evm_rpc_url: reqwest::Url::from_str(DEVNET_EVM_RPC_URL).unwrap(),
+        evm_gateway_address: parse_address(DEVNET_EVM_GATEWAY_ADDRESS).unwrap(),
+        evm_registry_address: parse_address(DEVNET_EVM_REGISTRY_ADDRESS).unwrap(),
+        parent_network_config: None,
+    };
+    static ref NETWORK_CONFIG_TESTNET: NetworkConfig = NetworkConfig {
+        subnet_id: SubnetID::from_str(TESTNET_SUBNET_ID).unwrap(),
+        rpc_url: Url::from_str(TESTNET_RPC_URL).unwrap(),
+        object_api_url: Url::from_str(TESTNET_OBJECT_API_URL).unwrap(),
+        evm_rpc_url: reqwest::Url::from_str(TESTNET_EVM_RPC_URL).unwrap(),
+        evm_gateway_address: parse_address(TESTNET_EVM_GATEWAY_ADDRESS).unwrap(),
+        evm_registry_address: parse_address(TESTNET_EVM_REGISTRY_ADDRESS).unwrap(),
+        parent_network_config: Some(ParentNetworkConfig {
+            evm_rpc_url: reqwest::Url::from_str(TESTNET_PARENT_EVM_RPC_URL).unwrap(),
+            evm_gateway_address: parse_address(TESTNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
+            evm_registry_address: parse_address(TESTNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
+            evm_supply_source_address: parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS).unwrap(),
+        }),
+    };
+    static ref NETWORK_CONFIG_LOCALNET: NetworkConfig = NetworkConfig {
+        subnet_id: SubnetID::from_str(LOCALNET_SUBNET_ID).unwrap(),
+        rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
+        object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
+        evm_rpc_url: reqwest::Url::from_str(LOCALNET_EVM_RPC_URL).unwrap(),
+        evm_gateway_address: parse_address(LOCALNET_EVM_GATEWAY_ADDRESS).unwrap(),
+        evm_registry_address: parse_address(LOCALNET_EVM_REGISTRY_ADDRESS).unwrap(),
+        parent_network_config: Some(ParentNetworkConfig {
+            evm_rpc_url: reqwest::Url::from_str(LOCALNET_PARENT_EVM_RPC_URL).unwrap(),
+            evm_gateway_address: parse_address(LOCALNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
+            evm_registry_address: parse_address(LOCALNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
+            evm_supply_source_address: parse_address(LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS).unwrap(),
+        }),
+    };
+    static ref NETWORK_CONFIG_IGNITION: NetworkConfig = NetworkConfig {
+        subnet_id: SubnetID::from_str(IGNITION_SUBNET_ID).unwrap(),
+        rpc_url: Url::from_str(IGNITION_RPC_URL).unwrap(),
+        object_api_url: Url::from_str(IGNITION_OBJECT_API_URL).unwrap(),
+        evm_rpc_url: reqwest::Url::from_str(IGNITION_EVM_RPC_URL).unwrap(),
+        evm_gateway_address: parse_address(IGNITION_EVM_GATEWAY_ADDRESS).unwrap(),
+        evm_registry_address: parse_address(IGNITION_EVM_REGISTRY_ADDRESS).unwrap(),
+        parent_network_config: Some(ParentNetworkConfig {
+            evm_rpc_url: reqwest::Url::from_str(IGNITION_PARENT_EVM_RPC_URL).unwrap(),
+            evm_gateway_address: parse_address(IGNITION_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
+            evm_registry_address: parse_address(IGNITION_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
+            evm_supply_source_address: parse_address(IGNITION_EVM_SUPPLY_SOURCE_ADDRESS).unwrap(),
+        }),
+    };
+    static ref CURRENT_NETWORK_CONFIG: OnceCell<NetworkConfig> = OnceCell::new();
+}
+
 /// Network presets for a subnet configuration and RPC URLs.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Network {
     /// Network presets for mainnet.
     Mainnet,
@@ -88,165 +223,130 @@ pub enum Network {
     Devnet,
     /// Network presets for Ignition testnet.
     Ignition,
+    // /// Network presets will be downloaded from HOKU_NETWORK_CONFIGS_URL
+    Remote(String),
 }
 
 impl Network {
     /// Sets the current [`FvmNetwork`].
     /// Note: This _must_ be called before using the SDK.
-    pub fn init(&self) -> &Self {
+    pub async fn init(&self) -> anyhow::Result<&Self> {
         match self {
-            Network::Mainnet => set_current_network(FvmNetwork::Mainnet),
-            Network::Testnet | Network::Localnet | Network::Devnet | Network::Ignition => {
-                set_current_network(FvmNetwork::Testnet)
-            }
+            Network::Mainnet => address::set_current_network(FvmNetwork::Mainnet),
+            _ => address::set_current_network(FvmNetwork::Testnet),
         }
-        self
+        CURRENT_NETWORK_CONFIG.set(self.get_config().await?)?;
+        Ok(self)
+    }
+
+    pub async fn get_config(&self) -> anyhow::Result<NetworkConfig> {
+        Ok(match self {
+            Network::Mainnet => todo!(),
+            Network::Testnet => NETWORK_CONFIG_TESTNET.clone(),
+            Network::Localnet => NETWORK_CONFIG_LOCALNET.clone(),
+            Network::Devnet => NETWORK_CONFIG_DEVNET.clone(),
+            Network::Ignition => NETWORK_CONFIG_IGNITION.clone(),
+            Network::Remote(name) => NetworkConfig::get_remote(name).await?,
+        })
+    }
+
+    // #[deprecated(note = "Use get_config")]
+    fn static_config(&self) -> &'static NetworkConfig {
+        CURRENT_NETWORK_CONFIG.get().unwrap()
     }
 
     /// Returns the network [`SubnetID`].
     pub fn subnet_id(&self) -> anyhow::Result<SubnetID> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(SubnetID::from_str(TESTNET_SUBNET_ID)?),
-            Network::Localnet => Ok(SubnetID::from_str(LOCALNET_SUBNET_ID)?),
-            Network::Devnet => Ok(SubnetID::from_str(DEVNET_SUBNET_ID)?),
-            Network::Ignition => Ok(SubnetID::from_str(IGNITION_SUBNET_ID)?),
-        }
+        Ok(self.static_config().subnet_id.clone())
     }
 
     /// Returns the network [`EVMSubnet`] configuration.
+    #[deprecated(note = "Use get_config")]
     pub fn subnet_config(&self, options: SubnetOptions) -> anyhow::Result<EVMSubnet> {
-        Ok(EVMSubnet {
-            id: self.subnet_id()?,
-            provider_http: self.evm_rpc_url()?,
-            provider_timeout: Some(options.evm_rpc_timeout),
-            auth_token: options.evm_rpc_auth_token,
-            registry_addr: self.evm_registry()?,
-            gateway_addr: self.evm_gateway()?,
-            supply_source: None,
-        })
+        Ok(self.static_config().subnet_config(options))
     }
 
     /// Returns whether this network type has a parent chain.
     pub fn has_parent(&self) -> bool {
-        match self {
-            Network::Mainnet => true,
-            Network::Testnet => true,
-            Network::Localnet => true,
-            Network::Ignition => true,
-            Network::Devnet => false,
-        }
+        self.static_config().parent_network_config.is_some()
     }
 
     /// Returns the network [`Url`] of the CometBFT RPC API.
     pub fn rpc_url(&self) -> anyhow::Result<Url> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(Url::from_str(TESTNET_RPC_URL)?),
-            Network::Localnet | Network::Devnet => Ok(Url::from_str(LOCALNET_RPC_URL)?),
-            Network::Ignition => Ok(Url::from_str(IGNITION_RPC_URL)?),
-        }
+        Ok(self.static_config().rpc_url.clone())
     }
 
     /// Returns the network [`Url`] of the Object API.
     pub fn object_api_url(&self) -> anyhow::Result<Url> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(Url::from_str(TESTNET_OBJECT_API_URL)?),
-            Network::Localnet | Network::Devnet => Ok(Url::from_str(LOCALNET_OBJECT_API_URL)?),
-            Network::Ignition => Ok(Url::from_str(IGNITION_OBJECT_API_URL)?),
-        }
+        Ok(self.static_config().object_api_url.clone())
     }
 
     /// Returns the network [`reqwest::Url`] of the EVM RPC API.
     pub fn evm_rpc_url(&self) -> anyhow::Result<reqwest::Url> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(reqwest::Url::from_str(TESTNET_EVM_RPC_URL)?),
-            Network::Localnet => Ok(reqwest::Url::from_str(LOCALNET_EVM_RPC_URL)?),
-            Network::Devnet => Ok(reqwest::Url::from_str(DEVNET_EVM_RPC_URL)?),
-            Network::Ignition => Ok(reqwest::Url::from_str(IGNITION_EVM_RPC_URL)?),
-        }
+        Ok(self.static_config().evm_rpc_url.clone())
     }
 
     /// Returns the network [`Address`] of the EVM Gateway contract.
     pub fn evm_gateway(&self) -> anyhow::Result<Address> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(parse_address(TESTNET_EVM_GATEWAY_ADDRESS)?),
-            Network::Localnet => Ok(parse_address(LOCALNET_EVM_GATEWAY_ADDRESS)?),
-            Network::Devnet => Ok(parse_address(DEVNET_EVM_GATEWAY_ADDRESS)?),
-            Network::Ignition => Ok(parse_address(IGNITION_EVM_GATEWAY_ADDRESS)?),
-        }
+        Ok(self.static_config().evm_gateway_address)
     }
 
     /// Returns the network [`Address`] of the EVM Registry contract.
     pub fn evm_registry(&self) -> anyhow::Result<Address> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(parse_address(TESTNET_EVM_REGISTRY_ADDRESS)?),
-            Network::Localnet => Ok(parse_address(LOCALNET_EVM_REGISTRY_ADDRESS)?),
-            Network::Devnet => Ok(parse_address(DEVNET_EVM_REGISTRY_ADDRESS)?),
-            Network::Ignition => Ok(parse_address(IGNITION_EVM_REGISTRY_ADDRESS)?),
-        }
+        Ok(self.static_config().evm_registry_address)
     }
 
     /// Returns the network [`EVMSubnet`] parent configuration.
     pub fn parent_subnet_config(&self, options: SubnetOptions) -> anyhow::Result<EVMSubnet> {
-        Ok(EVMSubnet {
-            id: self.subnet_id()?,
-            provider_http: self.parent_evm_rpc_url()?,
-            provider_timeout: Some(options.evm_rpc_timeout),
-            auth_token: options.evm_rpc_auth_token,
-            registry_addr: self.parent_evm_registry()?,
-            gateway_addr: self.parent_evm_gateway()?,
-            supply_source: Some(self.parent_evm_supply_source()?),
-        })
+        self.static_config()
+            .parent_subnet_config(options)
+            .ok_or(anyhow!("network is pre-mainnet"))
     }
 
     /// Returns the network [`reqwest::Url`] of the parent EVM RPC API.
     pub fn parent_evm_rpc_url(&self) -> anyhow::Result<reqwest::Url> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(reqwest::Url::from_str(TESTNET_PARENT_EVM_RPC_URL)?),
-            Network::Localnet => Ok(reqwest::Url::from_str(LOCALNET_PARENT_EVM_RPC_URL)?),
-            Network::Devnet => Err(anyhow!("network has no parent")),
-            Network::Ignition => Ok(reqwest::Url::from_str(IGNITION_PARENT_EVM_RPC_URL)?),
-        }
+        self.static_config()
+            .parent_network_config
+            .as_ref()
+            .ok_or(anyhow!("network is pre-mainnet"))
+            .map(|x| x.evm_rpc_url.clone())
     }
 
     /// Returns the network [`Address`] of the parent EVM Gateway contract.
     pub fn parent_evm_gateway(&self) -> anyhow::Result<Address> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(parse_address(TESTNET_PARENT_EVM_GATEWAY_ADDRESS)?),
-            Network::Localnet => Ok(parse_address(LOCALNET_PARENT_EVM_GATEWAY_ADDRESS)?),
-            Network::Devnet => Err(anyhow!("network has no parent")),
-            Network::Ignition => Ok(parse_address(IGNITION_PARENT_EVM_GATEWAY_ADDRESS)?),
-        }
+        self.static_config()
+            .parent_network_config
+            .as_ref()
+            .ok_or(anyhow!("network is pre-mainnet"))
+            .map(|x| x.evm_gateway_address)
     }
 
     /// Returns the network [`Address`] of the parent EVM Registry contract.
     pub fn parent_evm_registry(&self) -> anyhow::Result<Address> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(parse_address(TESTNET_PARENT_EVM_REGISTRY_ADDRESS)?),
-            Network::Localnet => Ok(parse_address(LOCALNET_PARENT_EVM_REGISTRY_ADDRESS)?),
-            Network::Devnet => Err(anyhow!("network has no parent")),
-            Network::Ignition => Ok(parse_address(IGNITION_PARENT_EVM_REGISTRY_ADDRESS)?),
-        }
+        self.static_config()
+            .parent_network_config
+            .as_ref()
+            .ok_or(anyhow!("network is pre-mainnet"))
+            .map(|x| x.evm_registry_address)
     }
 
     /// Returns the network [`Address`] of the EVM Supply Source contract.
     pub fn parent_evm_supply_source(&self) -> anyhow::Result<Address> {
-        match self {
-            Network::Mainnet => Err(anyhow!("network is pre-mainnet")),
-            Network::Testnet => Ok(parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
-            Network::Localnet => Ok(parse_address(LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS)?),
-            Network::Devnet => Err(anyhow!("network has no parent")),
-            Network::Ignition => Ok(parse_address(IGNITION_EVM_SUPPLY_SOURCE_ADDRESS)?),
-        }
+        self.static_config()
+            .parent_network_config
+            .as_ref()
+            .ok_or(anyhow!("network is pre-mainnet"))
+            .map(|x| x.evm_supply_source_address)
     }
+}
+
+#[tokio::test]
+async fn correct_network_definitions() -> anyhow::Result<()> {
+    let _ = Network::Devnet.get_config().await?;
+    let _ = Network::Localnet.get_config().await?;
+    let _ = Network::Testnet.get_config().await?;
+    let _ = Network::Ignition.get_config().await?;
+    Ok(())
 }
 
 impl FromStr for Network {
@@ -259,9 +359,24 @@ impl FromStr for Network {
             "localnet" => Ok(Network::Localnet),
             "devnet" => Ok(Network::Devnet),
             "ignition" => Ok(Network::Ignition),
-            _ => Err(Error::UnknownNetwork.to_string()),
+            s => {
+                const PREFIX: &str = "remote:";
+                if s.starts_with(PREFIX) {
+                    Ok(Network::Remote(s[PREFIX.len()..].to_owned()))
+                } else {
+                    Err(Error::UnknownNetwork.to_string())
+                }
+            }
         }
     }
+}
+
+#[test]
+fn parse_network_name() {
+    assert_eq!(
+        Network::from_str("remote:abc").unwrap(),
+        Network::Remote("abc".to_owned())
+    );
 }
 
 impl Display for Network {
@@ -272,6 +387,7 @@ impl Display for Network {
             Network::Localnet => write!(f, "localnet"),
             Network::Devnet => write!(f, "devnet"),
             Network::Ignition => write!(f, "ignition"),
+            Network::Remote(name) => write!(f, "{}", name),
         }
     }
 }
