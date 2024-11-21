@@ -40,8 +40,9 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
     /// Network presets for subnet and RPC URLs.
-    #[arg(short, long, env = "HOKU_NETWORK", value_enum, default_value_t = Network::Ignition)]
-    network: Network,
+    #[arg(short, long, env = "HOKU_NETWORK", default_value_t = SdkNetwork::Ignition, help = "Possible values: mainnet, testnet, localnet, devnet, ignition, remote:<config name>")]
+    network: SdkNetwork,
+
     /// The ID of the target subnet.
     #[arg(short, long, env = "HOKU_SUBNET")]
     subnet: Option<SubnetID>,
@@ -78,32 +79,6 @@ enum Commands {
     /// Timehub related commands (alias: th).
     #[clap(alias = "th")]
     Timehub(TimehubArgs),
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum Network {
-    /// Network presets for mainnet.
-    Mainnet,
-    /// Network presets for Calibration (default pre-mainnet).
-    Testnet,
-    /// Network presets for a local three-node network.
-    Localnet,
-    /// Network presets for local development.
-    Devnet,
-    /// Network presets for Ignition testnet.
-    Ignition,
-}
-
-impl Network {
-    pub fn get(&self) -> SdkNetwork {
-        match self {
-            Network::Mainnet => SdkNetwork::Mainnet,
-            Network::Testnet => SdkNetwork::Testnet,
-            Network::Localnet => SdkNetwork::Localnet,
-            Network::Devnet => SdkNetwork::Devnet,
-            Network::Ignition => SdkNetwork::Ignition,
-        }
-    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -186,7 +161,7 @@ async fn main() -> anyhow::Result<()> {
         .timestamp(Timestamp::Millisecond)
         .init()?;
 
-    cli.network.get().init();
+    cli.network.init().await?;
 
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cli, args).await,
@@ -198,6 +173,18 @@ async fn main() -> anyhow::Result<()> {
         Commands::Machine(args) => handle_machine(cli, args).await,
     }
 }
+
+// pub(crate) async fn get_network_config(cli: &Cli) -> anyhow::Result<&'static NetworkConfig> {
+//     let mut config = cli.network.get().get_config();
+//     if let Some(ref subnet_id) = cli.subnet {
+//         config.subnet_id = subnet_id.clone();
+//     }
+//     if let Some(ref rpc_url) = cli.rpc_url {
+//         config.rpc_url = rpc_url.clone();
+//     }
+
+//     Ok(config)
+// }
 
 /// Returns address from private key or address arg.
 fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Address> {
@@ -219,12 +206,12 @@ fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Addres
 
 /// Returns subnet ID from the override or network preset.
 fn get_subnet_id(cli: &Cli) -> anyhow::Result<SubnetID> {
-    Ok(cli.subnet.clone().unwrap_or(cli.network.get().subnet_id()?))
+    Ok(cli.subnet.clone().unwrap_or(cli.network.subnet_id()?))
 }
 
 /// Returns rpc url from the override or network preset.
 fn get_rpc_url(cli: &Cli) -> anyhow::Result<Url> {
-    Ok(cli.rpc_url.clone().unwrap_or(cli.network.get().rpc_url()?))
+    Ok(cli.rpc_url.clone().unwrap_or(cli.network.rpc_url()?))
 }
 
 /// Print serializable to stdout as pretty formatted JSON.

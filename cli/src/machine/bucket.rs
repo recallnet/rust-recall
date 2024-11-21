@@ -270,7 +270,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             let object_api_url = args
                 .object_api_url
                 .clone()
-                .unwrap_or(cli.network.get().object_api_url()?);
+                .unwrap_or(cli.network.object_api_url()?);
             let provider =
                 JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, Some(object_api_url))?;
 
@@ -349,7 +349,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             let object_api_url = args
                 .object_api_url
                 .clone()
-                .unwrap_or(cli.network.get().object_api_url()?);
+                .unwrap_or(cli.network.object_api_url()?);
             let provider =
                 JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, Some(object_api_url))?;
 

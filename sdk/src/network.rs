@@ -1,6 +1,7 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::env;
 use std::str::FromStr;
 use std::time::Duration;
 use std::{collections::HashMap, fmt::Display};
@@ -60,6 +61,7 @@ const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 const IGNITION_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 
 const HOKU_NETWORK_CONFIGS_URL: &str = "http://127.0.0.1:3000/network-definitions.json";
+const HOKU_NETWORK_CONFIGS_URL_ENVVAR: &str = "HOKU_NETWORK_CONFIGS_URL";
 
 /// Options for [`EVMSubnet`] configurations.
 #[derive(Debug, Clone)]
@@ -108,23 +110,28 @@ where
 }
 
 impl NetworkConfig {
-    pub async fn get_remote(network_name: &str) -> anyhow::Result<Self> {
-        let resp = reqwest::get(HOKU_NETWORK_CONFIGS_URL)
+    async fn get_remote(network_name: &str) -> anyhow::Result<Self> {
+        let url = NetworkConfig::network_definitions_url();
+
+        let resp = reqwest::get(&url).await.context(format!(
+            "failed to download network definitions from {}",
+            &url
+        ))?;
+        let mut network_configs: HashMap<String, NetworkConfig> = resp
+            .json()
             .await
-            .context(format!(
-                "failed to download network definitions from {}",
-                HOKU_NETWORK_CONFIGS_URL
-            ))?;
-        let mut network_configs: HashMap<String, NetworkConfig> =
-            resp.json().await.context(format!(
-                "invalid JSON content downloaded from {}",
-                HOKU_NETWORK_CONFIGS_URL
-            ))?;
+            .context(format!("invalid JSON content downloaded from {}", &url))?;
         network_configs.remove(network_name).ok_or(anyhow!(
             "no such network '{}' at {}",
             network_name,
-            HOKU_NETWORK_CONFIGS_URL
+            &url
         ))
+    }
+
+    /// Returns the URL read from HOKU_NETWORK_CONFIGS_URL envvar or the default URL.
+    /// This feature is intended for development use, and the environment variable is intentionally undocumented for end users.
+    fn network_definitions_url() -> String {
+        env::var(HOKU_NETWORK_CONFIGS_URL_ENVVAR).unwrap_or(HOKU_NETWORK_CONFIGS_URL.to_owned())
     }
 
     pub fn subnet_config(&self, options: SubnetOptions) -> EVMSubnet {
@@ -156,57 +163,8 @@ impl NetworkConfig {
 }
 
 lazy_static! {
-    static ref NETWORK_CONFIG_DEVNET: NetworkConfig = NetworkConfig {
-        subnet_id: SubnetID::from_str(DEVNET_SUBNET_ID).unwrap(),
-        rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
-        object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
-        evm_rpc_url: reqwest::Url::from_str(DEVNET_EVM_RPC_URL).unwrap(),
-        evm_gateway_address: parse_address(DEVNET_EVM_GATEWAY_ADDRESS).unwrap(),
-        evm_registry_address: parse_address(DEVNET_EVM_REGISTRY_ADDRESS).unwrap(),
-        parent_network_config: None,
-    };
-    static ref NETWORK_CONFIG_TESTNET: NetworkConfig = NetworkConfig {
-        subnet_id: SubnetID::from_str(TESTNET_SUBNET_ID).unwrap(),
-        rpc_url: Url::from_str(TESTNET_RPC_URL).unwrap(),
-        object_api_url: Url::from_str(TESTNET_OBJECT_API_URL).unwrap(),
-        evm_rpc_url: reqwest::Url::from_str(TESTNET_EVM_RPC_URL).unwrap(),
-        evm_gateway_address: parse_address(TESTNET_EVM_GATEWAY_ADDRESS).unwrap(),
-        evm_registry_address: parse_address(TESTNET_EVM_REGISTRY_ADDRESS).unwrap(),
-        parent_network_config: Some(ParentNetworkConfig {
-            evm_rpc_url: reqwest::Url::from_str(TESTNET_PARENT_EVM_RPC_URL).unwrap(),
-            evm_gateway_address: parse_address(TESTNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
-            evm_registry_address: parse_address(TESTNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
-            evm_supply_source_address: parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS).unwrap(),
-        }),
-    };
-    static ref NETWORK_CONFIG_LOCALNET: NetworkConfig = NetworkConfig {
-        subnet_id: SubnetID::from_str(LOCALNET_SUBNET_ID).unwrap(),
-        rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
-        object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
-        evm_rpc_url: reqwest::Url::from_str(LOCALNET_EVM_RPC_URL).unwrap(),
-        evm_gateway_address: parse_address(LOCALNET_EVM_GATEWAY_ADDRESS).unwrap(),
-        evm_registry_address: parse_address(LOCALNET_EVM_REGISTRY_ADDRESS).unwrap(),
-        parent_network_config: Some(ParentNetworkConfig {
-            evm_rpc_url: reqwest::Url::from_str(LOCALNET_PARENT_EVM_RPC_URL).unwrap(),
-            evm_gateway_address: parse_address(LOCALNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
-            evm_registry_address: parse_address(LOCALNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
-            evm_supply_source_address: parse_address(LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS).unwrap(),
-        }),
-    };
-    static ref NETWORK_CONFIG_IGNITION: NetworkConfig = NetworkConfig {
-        subnet_id: SubnetID::from_str(IGNITION_SUBNET_ID).unwrap(),
-        rpc_url: Url::from_str(IGNITION_RPC_URL).unwrap(),
-        object_api_url: Url::from_str(IGNITION_OBJECT_API_URL).unwrap(),
-        evm_rpc_url: reqwest::Url::from_str(IGNITION_EVM_RPC_URL).unwrap(),
-        evm_gateway_address: parse_address(IGNITION_EVM_GATEWAY_ADDRESS).unwrap(),
-        evm_registry_address: parse_address(IGNITION_EVM_REGISTRY_ADDRESS).unwrap(),
-        parent_network_config: Some(ParentNetworkConfig {
-            evm_rpc_url: reqwest::Url::from_str(IGNITION_PARENT_EVM_RPC_URL).unwrap(),
-            evm_gateway_address: parse_address(IGNITION_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
-            evm_registry_address: parse_address(IGNITION_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
-            evm_supply_source_address: parse_address(IGNITION_EVM_SUPPLY_SOURCE_ADDRESS).unwrap(),
-        }),
-    };
+    // This is a temporary workaround to be able to use network configurations downloaded from a URL and not breaking current code.
+    // Remove it after Network::static_config has been removed.
     static ref CURRENT_NETWORK_CONFIG: OnceCell<NetworkConfig> = OnceCell::new();
 }
 
@@ -242,10 +200,65 @@ impl Network {
     pub async fn get_config(&self) -> anyhow::Result<NetworkConfig> {
         Ok(match self {
             Network::Mainnet => todo!(),
-            Network::Testnet => NETWORK_CONFIG_TESTNET.clone(),
-            Network::Localnet => NETWORK_CONFIG_LOCALNET.clone(),
-            Network::Devnet => NETWORK_CONFIG_DEVNET.clone(),
-            Network::Ignition => NETWORK_CONFIG_IGNITION.clone(),
+            Network::Testnet => NetworkConfig {
+                subnet_id: SubnetID::from_str(TESTNET_SUBNET_ID).unwrap(),
+                rpc_url: Url::from_str(TESTNET_RPC_URL).unwrap(),
+                object_api_url: Url::from_str(TESTNET_OBJECT_API_URL).unwrap(),
+                evm_rpc_url: reqwest::Url::from_str(TESTNET_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(TESTNET_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(TESTNET_EVM_REGISTRY_ADDRESS).unwrap(),
+                parent_network_config: Some(ParentNetworkConfig {
+                    evm_rpc_url: reqwest::Url::from_str(TESTNET_PARENT_EVM_RPC_URL).unwrap(),
+                    evm_gateway_address: parse_address(TESTNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
+                    evm_registry_address: parse_address(TESTNET_PARENT_EVM_REGISTRY_ADDRESS)
+                        .unwrap(),
+                    evm_supply_source_address: parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS)
+                        .unwrap(),
+                }),
+            },
+            Network::Localnet => NetworkConfig {
+                subnet_id: SubnetID::from_str(LOCALNET_SUBNET_ID).unwrap(),
+                rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
+                object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
+                evm_rpc_url: reqwest::Url::from_str(LOCALNET_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(LOCALNET_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(LOCALNET_EVM_REGISTRY_ADDRESS).unwrap(),
+                parent_network_config: Some(ParentNetworkConfig {
+                    evm_rpc_url: reqwest::Url::from_str(LOCALNET_PARENT_EVM_RPC_URL).unwrap(),
+                    evm_gateway_address: parse_address(LOCALNET_PARENT_EVM_GATEWAY_ADDRESS)
+                        .unwrap(),
+                    evm_registry_address: parse_address(LOCALNET_PARENT_EVM_REGISTRY_ADDRESS)
+                        .unwrap(),
+                    evm_supply_source_address: parse_address(LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS)
+                        .unwrap(),
+                }),
+            },
+            Network::Devnet => NetworkConfig {
+                subnet_id: SubnetID::from_str(DEVNET_SUBNET_ID).unwrap(),
+                rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
+                object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
+                evm_rpc_url: reqwest::Url::from_str(DEVNET_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(DEVNET_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(DEVNET_EVM_REGISTRY_ADDRESS).unwrap(),
+                parent_network_config: None,
+            },
+            Network::Ignition => NetworkConfig {
+                subnet_id: SubnetID::from_str(IGNITION_SUBNET_ID).unwrap(),
+                rpc_url: Url::from_str(IGNITION_RPC_URL).unwrap(),
+                object_api_url: Url::from_str(IGNITION_OBJECT_API_URL).unwrap(),
+                evm_rpc_url: reqwest::Url::from_str(IGNITION_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(IGNITION_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(IGNITION_EVM_REGISTRY_ADDRESS).unwrap(),
+                parent_network_config: Some(ParentNetworkConfig {
+                    evm_rpc_url: reqwest::Url::from_str(IGNITION_PARENT_EVM_RPC_URL).unwrap(),
+                    evm_gateway_address: parse_address(IGNITION_PARENT_EVM_GATEWAY_ADDRESS)
+                        .unwrap(),
+                    evm_registry_address: parse_address(IGNITION_PARENT_EVM_REGISTRY_ADDRESS)
+                        .unwrap(),
+                    evm_supply_source_address: parse_address(IGNITION_EVM_SUPPLY_SOURCE_ADDRESS)
+                        .unwrap(),
+                }),
+            },
             Network::Remote(name) => NetworkConfig::get_remote(name).await?,
         })
     }

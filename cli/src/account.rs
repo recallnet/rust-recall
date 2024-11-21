@@ -128,7 +128,7 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
                 get_subnet_config(&cli, &subnet_id, args.subnet.clone())?,
             )
             .await?;
-            if cli.network.get().has_parent() {
+            if cli.network.has_parent() {
                 let parent_balance = Account::balance(
                     &Void::new(address),
                     get_parent_subnet_config(&cli, &subnet_id, args.subnet.clone())?,
@@ -195,7 +195,7 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
 
 /// Returns the subnet configuration from args.
 fn get_subnet_config(cli: &Cli, id: &SubnetID, args: SubnetArgs) -> anyhow::Result<EVMSubnet> {
-    let network = cli.network.get();
+    let network = &cli.network;
     Ok(EVMSubnet {
         id: id.clone(),
         provider_http: args.evm_rpc_url.unwrap_or(network.evm_rpc_url()?),
@@ -213,7 +213,7 @@ fn get_parent_subnet_config(
     id: &SubnetID,
     args: SubnetArgs,
 ) -> anyhow::Result<EVMSubnet> {
-    let network = cli.network.get();
+    let network = &cli.network;
     Ok(EVMSubnet {
         id: id.clone(),
         provider_http: args.evm_rpc_url.unwrap_or(network.parent_evm_rpc_url()?),
