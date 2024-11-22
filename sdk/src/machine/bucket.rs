@@ -55,6 +55,9 @@ use crate::{
     progress::new_progress_bar,
 };
 
+/// Maximum allowed object size in bytes.
+const MAX_OBJECT_LENGTH: u64 = 1024 * 1024 * 1024;
+
 /// Object add options.
 #[derive(Clone, Default, Debug)]
 pub struct AddOptions {
@@ -297,13 +300,19 @@ impl Bucket {
     where
         C: Client + Send + Sync,
     {
-        let path = path.as_ref();
-        let md = tokio::fs::metadata(path).await?;
+        let path = path
+            .as_ref()
+            .canonicalize()
+            .map_err(|e| anyhow!("failed to resolve path: {}", e))?;
+        let md = tokio::fs::metadata(&path).await?;
         if !md.is_file() {
             return Err(anyhow!("input must be a file"));
         }
+        if md.len() > MAX_OBJECT_LENGTH {
+            return Err(anyhow!("file exceeds maximum allowed size of 1 GiB"));
+        }
 
-        let content_type = infer::get_from_path(path)?;
+        let content_type = infer::get_from_path(&path)?;
         let options = self.add_content_type_to_metadata(options, content_type);
 
         let started = Instant::now();
@@ -313,7 +322,7 @@ impl Bucket {
         let progress = self
             .iroh
             .blobs()
-            .add_from_path(path.into(), true, SetTagOption::Auto, WrapOption::NoWrap)
+            .add_from_path(path, true, SetTagOption::Auto, WrapOption::NoWrap)
             .await?;
 
         self.add_inner(
