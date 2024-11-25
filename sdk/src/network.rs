@@ -372,20 +372,17 @@ impl FromStr for Network {
             "localnet" => Ok(Network::Localnet),
             "devnet" => Ok(Network::Devnet),
             "ignition" => Ok(Network::Ignition),
-            s => {
-                const PREFIX: &str = "remote:";
-                if s.starts_with(PREFIX) {
-                    Ok(Network::Remote(s[PREFIX.len()..].to_owned()))
-                } else {
-                    Err(Error::UnknownNetwork.to_string())
-                }
-            }
+            s => s
+                .strip_prefix("remote:")
+                .map(|network_name| Network::Remote(network_name.to_owned()))
+                .ok_or(Error::UnknownNetwork.to_string()),
         }
     }
 }
 
 #[test]
 fn parse_network_name() {
+    assert_eq!(Network::from_str("mainnet").unwrap(), Network::Mainnet);
     assert_eq!(
         Network::from_str("remote:abc").unwrap(),
         Network::Remote("abc".to_owned())
