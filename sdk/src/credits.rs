@@ -1,6 +1,8 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashSet;
+
 use anyhow::anyhow;
 use fendermint_actor_blobs_shared::params::{
     ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
@@ -38,9 +40,10 @@ pub struct BuyOptions {
 /// Options for approving credit.
 #[derive(Clone, Default, Debug)]
 pub struct ApproveOptions {
-    /// Restrict the approval to a caller address, e.g., a bucket.
+    /// Restrict the approval to one or more caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
-    pub caller: Option<Address>,
+    /// If not set, any caller is allowed.
+    pub caller: Option<HashSet<Address>>,
     /// Credit approval limit.
     /// If specified, the approval becomes invalid once the committed credits reach the
     /// specified limit.
@@ -57,8 +60,8 @@ pub struct ApproveOptions {
 /// Options for revoke credit.
 #[derive(Clone, Default, Debug)]
 pub struct RevokeOptions {
-    /// Restrict the approval to a caller address, e.g., a bucket.
-    /// The receiver will only be able to use the approval via a caller contract.
+    /// Revoke the approval for the caller address.
+    /// The address must be part of the existing caller allowlist.
     pub caller: Option<Address>,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
@@ -197,14 +200,14 @@ impl Credits {
     pub async fn buy<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        recipient: Address,
+        to: Address,
         amount: TokenAmount,
         options: BuyOptions,
     ) -> anyhow::Result<TxReceipt<Balance>>
     where
         C: Client + Send + Sync,
     {
-        let params = BuyCreditParams(recipient);
+        let params = BuyCreditParams(to);
         let params = RawBytes::serialize(params)?;
         let message = signer
             .transaction(
@@ -224,7 +227,7 @@ impl Credits {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         from: Address,
-        receiver: Address,
+        to: Address,
         options: ApproveOptions,
     ) -> anyhow::Result<TxReceipt<Approval>>
     where
@@ -232,8 +235,8 @@ impl Credits {
     {
         let params = ApproveCreditParams {
             from,
-            receiver,
-            required_caller: options.caller,
+            to,
+            caller_allowlist: options.caller,
             limit: options.limit,
             ttl: options.ttl,
         };
@@ -256,7 +259,7 @@ impl Credits {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         from: Address,
-        receiver: Address,
+        to: Address,
         options: RevokeOptions,
     ) -> anyhow::Result<TxReceipt<()>>
     where
@@ -264,8 +267,8 @@ impl Credits {
     {
         let params = RevokeCreditParams {
             from,
-            receiver,
-            required_caller: options.caller,
+            to,
+            for_caller: options.caller,
         };
         let params = RawBytes::serialize(params)?;
         let message = signer

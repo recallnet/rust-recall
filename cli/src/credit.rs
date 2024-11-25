@@ -1,6 +1,8 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashSet;
+
 use clap::{Args, Subcommand};
 use fendermint_crypto::SecretKey;
 use fvm_shared::address::Address;
@@ -61,7 +63,7 @@ struct BuyArgs {
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
-    recipient: Option<Address>,
+    to: Option<Address>,
     /// The amount of FIL to spend.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
@@ -79,11 +81,12 @@ struct ApproveArgs {
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
-    receiver: Address,
-    /// Restrict the approval to a caller address, e.g., a bucket.
+    to: Address,
+    /// Restrict the approval to one or more caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
+    /// If not set, any caller is allowed.
     #[arg(long, value_parser = parse_address)]
-    caller: Option<Address>,
+    caller: Option<HashSet<Address>>,
     /// Credit approval limit.
     /// If specified, the approval becomes invalid once the committed credits reach the
     /// specified limit.
@@ -107,9 +110,9 @@ struct RevokeArgs {
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
-    receiver: Address,
-    /// Restrict the approval to a caller address, e.g., a bucket.
-    /// The receiver will only be able to use the approval via a caller contract.
+    to: Address,
+    /// Revoke the approval for the caller address.
+    /// The address must be part of the existing caller allowlist.
     #[arg(long, value_parser = parse_address)]
     caller: Option<Address>,
     /// Broadcast mode for the transaction.
@@ -149,11 +152,11 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let recipient = args.recipient.unwrap_or(signer.address());
+            let to = args.to.unwrap_or(signer.address());
             let tx = Credits::buy(
                 &provider,
                 &mut signer,
-                recipient,
+                to,
                 args.amount.clone(),
                 BuyOptions {
                     broadcast_mode,
@@ -184,9 +187,9 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 &provider,
                 &mut signer,
                 from,
-                args.receiver,
+                args.to,
                 ApproveOptions {
-                    caller: args.caller,
+                    caller: args.caller.clone(),
                     limit: args.limit.clone(),
                     ttl: args.ttl,
                     broadcast_mode,
@@ -217,7 +220,7 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 &provider,
                 &mut signer,
                 from,
-                args.receiver,
+                args.to,
                 RevokeOptions {
                     caller: args.caller,
                     broadcast_mode,
