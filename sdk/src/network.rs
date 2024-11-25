@@ -8,6 +8,7 @@ use std::{collections::HashMap, fmt::Display};
 
 use anyhow::{anyhow, Context};
 use fvm_shared::address::{self, Address, Error, Network as FvmNetwork};
+use reqwest::StatusCode;
 use serde::{Deserialize, Deserializer};
 use tendermint_rpc::Url;
 
@@ -68,7 +69,9 @@ pub struct NetworkConfig {
     pub rpc_url: Url,
     pub object_api_url: Url,
     pub evm_rpc_url: reqwest::Url,
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_gateway_address: Address,
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_registry_address: Address,
     pub parent_network_config: Option<ParentNetworkConfig>,
 }
@@ -76,8 +79,11 @@ pub struct NetworkConfig {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ParentNetworkConfig {
     pub evm_rpc_url: reqwest::Url,
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_gateway_address: Address,
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_registry_address: Address,
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_supply_source_address: Address,
 }
 
@@ -89,6 +95,16 @@ where
     SubnetID::from_str(&x).map_err(serde::de::Error::custom)
 }
 
+fn deserialize_address<'de, D>(deserializer: D) -> Result<Address, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let x = String::deserialize(deserializer)?;
+    parse_address(&x)
+        .map_err(|err| format!("invalid address {x}: {err}"))
+        .map_err(serde::de::Error::custom)
+}
+
 impl NetworkConfig {
     async fn get_remote(network_name: &str) -> anyhow::Result<Self> {
         let url = NetworkConfig::network_definitions_url();
@@ -97,6 +113,12 @@ impl NetworkConfig {
             "failed to download network definitions from {}",
             &url
         ))?;
+        anyhow::ensure!(
+            resp.status() == StatusCode::OK,
+            "Invalid status code for network definitions URL {url}: {}",
+            resp.status().to_string()
+        );
+
         let mut network_configs: HashMap<String, NetworkConfig> = resp
             .json()
             .await
