@@ -30,10 +30,10 @@ async fn main() -> anyhow::Result<()> {
 
     // Use testnet network defaults
     let network = Network::Localnet.init().await?;
+    let cfg = network.get_config().await?;
 
     // Setup network provider
-    let provider =
-        JsonRpcProvider::new_http(network.rpc_url()?, None, Some(network.object_api_url()?))?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(cfg.object_api_url))?;
 
     // Setup local wallet using private key from arg
     let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?)?;

@@ -162,29 +162,18 @@ async fn main() -> anyhow::Result<()> {
         .init()?;
 
     cli.network.init().await?;
+    let cfg = cli.network.get_config().await?;
 
     match &cli.command.clone() {
-        Commands::Account(args) => handle_account(cli, args).await,
-        Commands::Subnet(args) => handle_subnet(cli, args).await,
-        Commands::Credit(args) => handle_credit(cli, args).await,
-        Commands::Storage(args) => handle_storage(cli, args).await,
-        Commands::Bucket(args) => handle_bucket(cli, args).await,
-        Commands::Timehub(args) => handle_timehub(cli, args).await,
-        Commands::Machine(args) => handle_machine(cli, args).await,
+        Commands::Account(args) => handle_account(cfg, args).await,
+        Commands::Subnet(args) => handle_subnet(cfg, args).await,
+        Commands::Credit(args) => handle_credit(cfg, args).await,
+        Commands::Storage(args) => handle_storage(cfg, args).await,
+        Commands::Bucket(args) => handle_bucket(cfg, !cli.quiet, args).await,
+        Commands::Timehub(args) => handle_timehub(cfg, args).await,
+        Commands::Machine(args) => handle_machine(cfg, args).await,
     }
 }
-
-// pub(crate) async fn get_network_config(cli: &Cli) -> anyhow::Result<&'static NetworkConfig> {
-//     let mut config = cli.network.get().get_config();
-//     if let Some(ref subnet_id) = cli.subnet {
-//         config.subnet_id = subnet_id.clone();
-//     }
-//     if let Some(ref rpc_url) = cli.rpc_url {
-//         config.rpc_url = rpc_url.clone();
-//     }
-
-//     Ok(config)
-// }
 
 /// Returns address from private key or address arg.
 fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Address> {
@@ -202,16 +191,6 @@ fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Addres
             .exit();
     };
     Ok(address)
-}
-
-/// Returns subnet ID from the override or network preset.
-fn get_subnet_id(cli: &Cli) -> anyhow::Result<SubnetID> {
-    Ok(cli.subnet.clone().unwrap_or(cli.network.subnet_id()?))
-}
-
-/// Returns rpc url from the override or network preset.
-fn get_rpc_url(cli: &Cli) -> anyhow::Result<Url> {
-    Ok(cli.rpc_url.clone().unwrap_or(cli.network.rpc_url()?))
 }
 
 /// Print serializable to stdout as pretty formatted JSON.

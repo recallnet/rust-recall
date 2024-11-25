@@ -263,7 +263,7 @@ impl Network {
         })
     }
 
-    // #[deprecated(note = "Use get_config")]
+    #[deprecated(note = "Use get_config")]
     fn static_config(&self) -> &'static NetworkConfig {
         CURRENT_NETWORK_CONFIG.get().unwrap()
     }
@@ -273,83 +273,11 @@ impl Network {
         Ok(self.static_config().subnet_id.clone())
     }
 
-    /// Returns the network [`EVMSubnet`] configuration.
-    #[deprecated(note = "Use get_config")]
-    pub fn subnet_config(&self, options: SubnetOptions) -> anyhow::Result<EVMSubnet> {
-        Ok(self.static_config().subnet_config(options))
-    }
-
-    /// Returns whether this network type has a parent chain.
-    pub fn has_parent(&self) -> bool {
-        self.static_config().parent_network_config.is_some()
-    }
-
-    /// Returns the network [`Url`] of the CometBFT RPC API.
-    pub fn rpc_url(&self) -> anyhow::Result<Url> {
-        Ok(self.static_config().rpc_url.clone())
-    }
-
-    /// Returns the network [`Url`] of the Object API.
-    pub fn object_api_url(&self) -> anyhow::Result<Url> {
-        Ok(self.static_config().object_api_url.clone())
-    }
-
-    /// Returns the network [`reqwest::Url`] of the EVM RPC API.
-    pub fn evm_rpc_url(&self) -> anyhow::Result<reqwest::Url> {
-        Ok(self.static_config().evm_rpc_url.clone())
-    }
-
-    /// Returns the network [`Address`] of the EVM Gateway contract.
-    pub fn evm_gateway(&self) -> anyhow::Result<Address> {
-        Ok(self.static_config().evm_gateway_address)
-    }
-
-    /// Returns the network [`Address`] of the EVM Registry contract.
-    pub fn evm_registry(&self) -> anyhow::Result<Address> {
-        Ok(self.static_config().evm_registry_address)
-    }
-
     /// Returns the network [`EVMSubnet`] parent configuration.
     pub fn parent_subnet_config(&self, options: SubnetOptions) -> anyhow::Result<EVMSubnet> {
         self.static_config()
             .parent_subnet_config(options)
             .ok_or(anyhow!("network is pre-mainnet"))
-    }
-
-    /// Returns the network [`reqwest::Url`] of the parent EVM RPC API.
-    pub fn parent_evm_rpc_url(&self) -> anyhow::Result<reqwest::Url> {
-        self.static_config()
-            .parent_network_config
-            .as_ref()
-            .ok_or(anyhow!("network is pre-mainnet"))
-            .map(|x| x.evm_rpc_url.clone())
-    }
-
-    /// Returns the network [`Address`] of the parent EVM Gateway contract.
-    pub fn parent_evm_gateway(&self) -> anyhow::Result<Address> {
-        self.static_config()
-            .parent_network_config
-            .as_ref()
-            .ok_or(anyhow!("network is pre-mainnet"))
-            .map(|x| x.evm_gateway_address)
-    }
-
-    /// Returns the network [`Address`] of the parent EVM Registry contract.
-    pub fn parent_evm_registry(&self) -> anyhow::Result<Address> {
-        self.static_config()
-            .parent_network_config
-            .as_ref()
-            .ok_or(anyhow!("network is pre-mainnet"))
-            .map(|x| x.evm_registry_address)
-    }
-
-    /// Returns the network [`Address`] of the EVM Supply Source contract.
-    pub fn parent_evm_supply_source(&self) -> anyhow::Result<Address> {
-        self.static_config()
-            .parent_network_config
-            .as_ref()
-            .ok_or(anyhow!("network is pre-mainnet"))
-            .map(|x| x.evm_supply_source_address)
     }
 }
 
