@@ -8,13 +8,11 @@ use std::{collections::HashMap, fmt::Display};
 
 use anyhow::{anyhow, Context};
 use fvm_shared::address::{self, Address, Error, Network as FvmNetwork};
-use lazy_static::lazy_static;
 use serde::{Deserialize, Deserializer};
 use tendermint_rpc::Url;
 
 use hoku_provider::util::parse_address;
 use hoku_signer::SubnetID;
-use tokio::sync::OnceCell;
 
 use crate::ipc::subnet::EVMSubnet;
 
@@ -162,12 +160,6 @@ impl NetworkConfig {
     }
 }
 
-lazy_static! {
-    // This is a temporary workaround to be able to use network configurations downloaded from a URL and not breaking current code.
-    // Remove it after Network::static_config has been removed.
-    static ref CURRENT_NETWORK_CONFIG: OnceCell<NetworkConfig> = OnceCell::new();
-}
-
 /// Network presets for a subnet configuration and RPC URLs.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Network {
@@ -193,7 +185,6 @@ impl Network {
             Network::Mainnet => address::set_current_network(FvmNetwork::Mainnet),
             _ => address::set_current_network(FvmNetwork::Testnet),
         }
-        CURRENT_NETWORK_CONFIG.set(self.get_config().await?)?;
         Ok(self)
     }
 
@@ -261,23 +252,6 @@ impl Network {
             },
             Network::Remote(name) => NetworkConfig::get_remote(name).await?,
         })
-    }
-
-    #[deprecated(note = "Use get_config")]
-    fn static_config(&self) -> &'static NetworkConfig {
-        CURRENT_NETWORK_CONFIG.get().unwrap()
-    }
-
-    /// Returns the network [`SubnetID`].
-    pub fn subnet_id(&self) -> anyhow::Result<SubnetID> {
-        Ok(self.static_config().subnet_id.clone())
-    }
-
-    /// Returns the network [`EVMSubnet`] parent configuration.
-    pub fn parent_subnet_config(&self, options: SubnetOptions) -> anyhow::Result<EVMSubnet> {
-        self.static_config()
-            .parent_subnet_config(options)
-            .ok_or(anyhow!("network is pre-mainnet"))
     }
 }
 
