@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Deposit some calibration funds into the subnet
     // Note: The debit account _must_ have Calibration
-    let balance = Account::balance(&signer, network_cfg.subnet_config(Default::default())).await?;
+    let balance = Account::balance(&signer, network_cfg.subnet_config()).await?;
 
     println!(
         "Balance of {}: {}",

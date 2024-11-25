@@ -61,24 +61,6 @@ const IGNITION_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 const HOKU_NETWORK_CONFIGS_URL: &str = "http://127.0.0.1:3000/network-definitions.json";
 const HOKU_NETWORK_CONFIGS_URL_ENVVAR: &str = "HOKU_NETWORK_CONFIGS_URL";
 
-/// Options for [`EVMSubnet`] configurations.
-#[derive(Debug, Clone)]
-pub struct SubnetOptions {
-    /// The EVM RPC provider request timeout.
-    pub evm_rpc_timeout: Duration,
-    /// The EVM RPC provider authorization token.
-    pub evm_rpc_auth_token: Option<String>,
-}
-
-impl Default for SubnetOptions {
-    fn default() -> Self {
-        Self {
-            evm_rpc_timeout: RPC_TIMEOUT,
-            evm_rpc_auth_token: None,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Deserialize)]
 pub struct NetworkConfig {
     #[serde(deserialize_with = "deserialize_subnet_id")]
@@ -132,27 +114,27 @@ impl NetworkConfig {
         env::var(HOKU_NETWORK_CONFIGS_URL_ENVVAR).unwrap_or(HOKU_NETWORK_CONFIGS_URL.to_owned())
     }
 
-    pub fn subnet_config(&self, options: SubnetOptions) -> EVMSubnet {
+    pub fn subnet_config(&self) -> EVMSubnet {
         EVMSubnet {
             id: self.subnet_id.clone(),
             provider_http: self.evm_rpc_url.clone(),
-            provider_timeout: Some(options.evm_rpc_timeout),
-            auth_token: options.evm_rpc_auth_token,
+            provider_timeout: Some(RPC_TIMEOUT),
+            auth_token: None,
             registry_addr: self.evm_registry_address,
             gateway_addr: self.evm_gateway_address,
             supply_source: None,
         }
     }
 
-    pub fn parent_subnet_config(&self, options: SubnetOptions) -> Option<EVMSubnet> {
+    pub fn parent_subnet_config(&self) -> Option<EVMSubnet> {
         self.parent_network_config.as_ref().map(|parent| EVMSubnet {
             id: self
                 .subnet_id
                 .parent()
                 .expect("subnet does not have parent"),
             provider_http: parent.evm_rpc_url.clone(),
-            provider_timeout: Some(options.evm_rpc_timeout),
-            auth_token: options.evm_rpc_auth_token,
+            provider_timeout: Some(RPC_TIMEOUT),
+            auth_token: None,
             registry_addr: parent.evm_registry_address,
             gateway_addr: parent.evm_gateway_address,
             supply_source: Some(parent.evm_supply_source_address),

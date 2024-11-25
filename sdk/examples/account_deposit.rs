@@ -34,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
     let tx = Account::deposit(
         &signer,
         signer.address(),
-        cfg.parent_subnet_config(Default::default())
+        cfg.parent_subnet_config()
             .ok_or(anyhow!("network does not have parent"))?,
         TokenAmount::from_whole(1),
     )
