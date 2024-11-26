@@ -5,17 +5,18 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use cid::Cid;
-use fendermint_vm_message::query::{
-    ActorState, BuiltinActors, FvmQuery, FvmQueryHeight, GasEstimate, StateParams,
-};
-use fvm_shared::{address::Address, error::ExitCode, message::Message, ActorID};
 use prost::Message as ProstMessage;
 use serde::Serialize;
 use tendermint::{abci::response::DeliverTx, block::Height};
 use tendermint_proto::abci::ResponseDeliverTx;
 use tendermint_rpc::endpoint::abci_query::AbciQuery;
 
+use crate::fvm_shared::{address::Address, error::ExitCode, message::Message, ActorID};
 use crate::response::encode_data;
+
+pub use fendermint_vm_message::query::{
+    ActorState, BuiltinActors, FvmQuery, FvmQueryHeight, GasEstimate, StateParams,
+};
 
 /// The parsed query response.
 #[derive(Debug, Clone, Serialize)]

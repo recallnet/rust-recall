@@ -2,6 +2,8 @@
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::str::FromStr;
+
 use fendermint_actor_blobs_shared::state::Credit;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::{
@@ -10,7 +12,6 @@ use fvm_shared::{
     econ::TokenAmount,
 };
 use ipc_api::{ethers_address_to_fil_address, evm::payload_to_evm_address};
-use std::str::FromStr;
 
 /// Parse an f/eth-address from string.
 pub fn parse_address(s: &str) -> anyhow::Result<Address> {

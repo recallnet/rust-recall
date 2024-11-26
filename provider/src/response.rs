@@ -7,11 +7,13 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, bail, Context};
 use base64::Engine;
-use bytes::Bytes;
-use fvm_ipld_encoding::RawBytes;
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
-use tendermint::abci::response::DeliverTx;
 use tendermint::abci::Code;
+
+use crate::fvm_ipld_encoding::RawBytes;
+
+pub use bytes::Bytes;
+pub use tendermint::abci::response::DeliverTx;
 
 /// Apply the encoding that Tendermint does to the bytes inside [`DeliverTx`].
 pub(crate) fn encode_data(data: &[u8]) -> Bytes {

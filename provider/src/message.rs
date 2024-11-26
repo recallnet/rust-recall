@@ -3,14 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use fendermint_vm_actor_interface::system::SYSTEM_ACTOR_ADDR;
-use fendermint_vm_message::chain::ChainMessage;
-use fendermint_vm_message::signed::SignedMessage;
-use fvm_ipld_encoding::RawBytes;
-use fvm_shared::{address::Address, econ::TokenAmount, message::Message, MethodNum};
+use fvm_shared::{address::Address, econ::TokenAmount};
 
 const MIN_GAS_FEE_CAP: u64 = 100;
 const MIN_GAS_PREMIUM: u64 = 100_000;
 
+pub use crate::{
+    fvm_ipld_encoding::RawBytes,
+    fvm_shared::{message::Message, MethodNum},
+};
+pub use fendermint_vm_message::{chain::ChainMessage, signed::SignedMessage};
 /// Gas parameters for transactions.
 #[derive(Clone, Debug)]
 pub struct GasParams {

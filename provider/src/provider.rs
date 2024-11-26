@@ -2,7 +2,7 @@
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use tendermint_rpc::Client;
+pub use tendermint_rpc::Client;
 
 use crate::object::ObjectProvider;
 use crate::query::QueryProvider;
