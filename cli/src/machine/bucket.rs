@@ -186,9 +186,9 @@ struct BucketQueryArgs {
     /// The delimiter used to define object hierarchy.
     #[arg(short, long, default_value = "/")]
     delimiter: String,
-    /// The offset from which to start listing objects.
-    #[arg(short, long, default_value_t = 0)]
-    offset: u64,
+    /// The key from which to start listing objects.
+    #[arg(long)]
+    start_key: Option<String>,
     /// The maximum number of objects to list. '0' indicates max (10k).
     #[arg(short, long, default_value_t = 0)]
     limit: u64,
@@ -377,7 +377,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                     QueryOptions {
                         prefix: args.prefix.clone(),
                         delimiter: args.delimiter.clone(),
-                        offset: args.offset,
+                        start_key: args.start_key.clone().map(|key| key.into_bytes()),
                         limit: args.limit,
                         height: args.height,
                     },
@@ -400,7 +400,16 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 .map(|v| Value::String(core::str::from_utf8(v).unwrap_or_default().to_string()))
                 .collect::<Vec<Value>>();
 
-            print_json(&json!({"objects": objects, "common_prefixes": common_prefixes}))
+            let next_key = match list.next_key {
+                Some(key) => {
+                    Value::String(core::str::from_utf8(&key).unwrap_or_default().to_string())
+                }
+                None => Value::Null,
+            };
+
+            print_json(
+                &json!({"objects": objects, "common_prefixes": common_prefixes, "next_key" : next_key }),
+            )
         }
     }
 }

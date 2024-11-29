@@ -42,7 +42,7 @@ pub fn local_message(to: Address, method_num: MethodNum, params: RawBytes) -> Me
         value: Default::default(),
         method_num,
         params,
-        gas_limit: Default::default(),
+        gas_limit: i64::MAX as u64,
         gas_fee_cap: Default::default(),
         gas_premium: Default::default(),
     }
