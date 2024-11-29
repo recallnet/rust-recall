@@ -23,17 +23,18 @@ async fn main() -> anyhow::Result<()> {
     // Note: The debit account _must_ hold at least 1 Calibration tFIL for the deposit
     // plus enough to cover the transaction fee.
     // Go to the faucet at https://faucet.calibnet.chainsafe-fil.io/ to get yourself some tFIL.
-    let network = Network::Testnet.init();
+    let cfg = Network::Testnet.get_config();
 
     // Setup local wallet using private key from arg
-    let signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?.parent()?)?;
+    let signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, cfg.subnet_id.parent()?)?;
 
     // Deposit some calibration funds into the subnet
     // Note: The debit account _must_ have Calibration
     let tx = Account::deposit(
         &signer,
         signer.address(),
-        network.parent_subnet_config(Default::default())?,
+        cfg.parent_subnet_config()
+            .ok_or(anyhow!("network does not have parent"))?,
         TokenAmount::from_whole(1),
     )
     .await?;
