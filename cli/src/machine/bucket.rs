@@ -118,6 +118,9 @@ struct BucketPutArgs {
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
+    #[arg(short, long, value_parser = parse_token_amount)]
+    /// Amount of tokens to use for inline buying of credits
+    token_amount: Option<TokenAmount>,
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -294,6 +297,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             signer.set_sequence(sequence, &provider).await?;
 
             let machine = Bucket::attach(args.address).await?;
+            let token_amount = args.token_amount.clone();
             let tx = machine
                 .add_from_path(
                     &provider,
@@ -307,6 +311,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                         broadcast_mode,
                         gas_params,
                         show_progress: !cli.quiet,
+                        token_amount,
                     },
                 )
                 .await?;
