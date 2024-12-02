@@ -485,6 +485,7 @@ impl Bucket {
             overwrite: options.overwrite,
         };
         let serialized_params = RawBytes::serialize(params.clone())?;
+
         let token_amount = options.token_amount.unwrap_or(TokenAmount::zero());
         let message = signer
             .transaction(
