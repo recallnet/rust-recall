@@ -40,7 +40,7 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
     /// Network presets for subnet and RPC URLs.
-    #[arg(short, long, env = "HOKU_NETWORK", value_enum, default_value_t = Network::Ignition)]
+    #[arg(short, long, env = "HOKU_NETWORK", value_enum, default_value_t = Network::Testnet)]
     network: Network,
     /// The ID of the target subnet.
     #[arg(short, long, env = "HOKU_SUBNET")]
@@ -90,8 +90,6 @@ enum Network {
     Localnet,
     /// Network presets for local development.
     Devnet,
-    /// Network presets for Ignition testnet.
-    Ignition,
 }
 
 impl Network {
@@ -101,7 +99,6 @@ impl Network {
             Network::Testnet => SdkNetwork::Testnet,
             Network::Localnet => SdkNetwork::Localnet,
             Network::Devnet => SdkNetwork::Devnet,
-            Network::Ignition => SdkNetwork::Ignition,
         }
     }
 }
@@ -186,16 +183,16 @@ async fn main() -> anyhow::Result<()> {
         .timestamp(Timestamp::Millisecond)
         .init()?;
 
-    cli.network.get().init();
+    let cfg = cli.network.get().get_config();
 
     match &cli.command.clone() {
-        Commands::Account(args) => handle_account(cli, args).await,
-        Commands::Subnet(args) => handle_subnet(cli, args).await,
-        Commands::Credit(args) => handle_credit(cli, args).await,
-        Commands::Storage(args) => handle_storage(cli, args).await,
-        Commands::Bucket(args) => handle_bucket(cli, args).await,
-        Commands::Timehub(args) => handle_timehub(cli, args).await,
-        Commands::Machine(args) => handle_machine(cli, args).await,
+        Commands::Account(args) => handle_account(cfg, args).await,
+        Commands::Subnet(args) => handle_subnet(cfg, args).await,
+        Commands::Credit(args) => handle_credit(cfg, args).await,
+        Commands::Storage(args) => handle_storage(cfg, args).await,
+        Commands::Bucket(args) => handle_bucket(cfg, !cli.quiet, args).await,
+        Commands::Timehub(args) => handle_timehub(cfg, args).await,
+        Commands::Machine(args) => handle_machine(cfg, args).await,
     }
 }
 
@@ -215,16 +212,6 @@ fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Addres
             .exit();
     };
     Ok(address)
-}
-
-/// Returns subnet ID from the override or network preset.
-fn get_subnet_id(cli: &Cli) -> anyhow::Result<SubnetID> {
-    Ok(cli.subnet.clone().unwrap_or(cli.network.get().subnet_id()?))
-}
-
-/// Returns rpc url from the override or network preset.
-fn get_rpc_url(cli: &Cli) -> anyhow::Result<Url> {
-    Ok(cli.rpc_url.clone().unwrap_or(cli.network.get().rpc_url()?))
 }
 
 /// Print serializable to stdout as pretty formatted JSON.

@@ -29,14 +29,13 @@ async fn main() -> anyhow::Result<()> {
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    let network = Network::Localnet.init();
+    let cfg = Network::Testnet.get_config();
 
     // Setup network provider
-    let provider =
-        JsonRpcProvider::new_http(network.rpc_url()?, None, Some(network.object_api_url()?))?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(cfg.object_api_url))?;
 
     // Setup local wallet using private key from arg
-    let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?)?;
+    let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, cfg.subnet_id)?;
     signer.init_sequence(&provider).await?;
 
     // Create a new bucket

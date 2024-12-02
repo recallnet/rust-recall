@@ -11,9 +11,9 @@ use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{get_delegated_address, parse_address, parse_query_height},
 };
-use hoku_sdk::machine::info;
+use hoku_sdk::{machine::info, network::NetworkConfig};
 
-use crate::{get_rpc_url, print_json, Cli};
+use crate::print_json;
 
 pub mod bucket;
 pub mod timehub;
@@ -45,10 +45,10 @@ struct InfoArgs {
 }
 
 /// Machine commmands handler.
-pub async fn handle_machine(cli: Cli, args: &MachineArgs) -> anyhow::Result<()> {
+pub async fn handle_machine(cfg: NetworkConfig, args: &MachineArgs) -> anyhow::Result<()> {
     match &args.command {
         MachineCommands::Info(args) => {
-            let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
             let metadata = info(&provider, args.address, args.height).await?;
             let owner = get_delegated_address(metadata.owner)?.encode_hex_with_prefix();
 
