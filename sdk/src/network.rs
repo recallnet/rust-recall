@@ -14,47 +14,35 @@ use hoku_signer::SubnetID;
 
 use crate::ipc::subnet::EVMSubnet;
 
-const TESTNET_SUBNET_ID: &str = "/r314159/t410fvamrbjioufgzoyojg2x3nwdo26t6xucxoxl47yq"; // chain ID: 2938118273996536
-const LOCALNET_SUBNET_ID: &str = "/r31337/t410fkzrz3mlkyufisiuae3scumllgalzuu3wxlxa2ly"; // chain ID: 4362550583360910
+const DEFAULT_RPC_TIMEOUT: Duration = Duration::from_secs(60);
+
 const DEVNET_SUBNET_ID: &str = "test";
-const IGNITION_SUBNET_ID: &str = "/r314159/t410f3oewkcvacaaydfn4v6diulzise26cpfolfj7heq"; // chain ID: 3258443211374980
-
-const TESTNET_RPC_URL: &str = "https://api.n1.hoku.sh";
-const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
-const IGNITION_RPC_URL: &str = "https://api-ignition-0.hoku.sh";
-
-const RPC_TIMEOUT: Duration = Duration::from_secs(60);
-
-const TESTNET_EVM_RPC_URL: &str = "https://evm-api.n1.hoku.sh";
-const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
-const IGNITION_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
 const DEVNET_EVM_RPC_URL: &str = "http://127.0.0.1:8545";
-
-const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
-const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
-const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x8e3Fd2b47e564E7D636Fa80082f286eD038BE54b";
-const LOCALNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
-const LOCALNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
-const LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E";
-const IGNITION_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
-const IGNITION_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
-const IGNITION_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x20d8a696091153c4d4816ba1fdefe113f71e0905";
 const DEVNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const DEVNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
-const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
-const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xe17B86E7BEFC691DAEfe2086e56B86D4253f3294";
-const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0xe87AFBEC26f0fdAC69e4256dC1935bEab1e0855E";
+const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
+const LOCALNET_SUBNET_ID: &str = "/r31337/t410fkzrz3mlkyufisiuae3scumllgalzuu3wxlxa2ly"; // chain ID: 4362550583360910
+const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
+const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
+const LOCALNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
+const LOCALNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
+const LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xE6E340D132b5f46d1e472DebcD681B2aBc16e57E";
 const LOCALNET_PARENT_EVM_RPC_URL: &str = "http://127.0.0.1:8545";
 const LOCALNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x9A676e781A523b5d0C0e43731313A708CB607508";
 const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1";
-const IGNITION_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
-const IGNITION_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xF8Abf46A1114d3B44d18F2A96D850e36FC6Ee94E";
-const IGNITION_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x0bb143a180b61ae6b1872bbf99dBe261A2aDde40";
 
-const TESTNET_OBJECT_API_URL: &str = "https://object-api.n1.hoku.sh";
-const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
-const IGNITION_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
+// Ignition
+const TESTNET_RPC_URL: &str = "https://api-ignition-0.hoku.sh";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410f3oewkcvacaaydfn4v6diulzise26cpfolfj7heq"; // chain ID: 3258443211374980
+const TESTNET_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
+const TESTNET_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
+const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
+const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xF8Abf46A1114d3B44d18F2A96D850e36FC6Ee94E";
+const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x0bb143a180b61ae6b1872bbf99dBe261A2aDde40";
+const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
+const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
+const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x20d8a696091153c4d4816ba1fdefe113f71e0905";
 
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
@@ -80,7 +68,7 @@ impl NetworkConfig {
         EVMSubnet {
             id: self.subnet_id.clone(),
             provider_http: self.evm_rpc_url.clone(),
-            provider_timeout: Some(RPC_TIMEOUT),
+            provider_timeout: Some(DEFAULT_RPC_TIMEOUT),
             auth_token: None,
             registry_addr: self.evm_registry_address,
             gateway_addr: self.evm_gateway_address,
@@ -95,7 +83,7 @@ impl NetworkConfig {
                 .parent()
                 .expect("subnet does not have parent"),
             provider_http: parent.evm_rpc_url.clone(),
-            provider_timeout: Some(RPC_TIMEOUT),
+            provider_timeout: Some(DEFAULT_RPC_TIMEOUT),
             auth_token: None,
             registry_addr: parent.evm_registry_address,
             gateway_addr: parent.evm_gateway_address,
@@ -115,8 +103,6 @@ pub enum Network {
     Localnet,
     /// Network presets for local development.
     Devnet,
-    /// Network presets for Ignition testnet.
-    Ignition,
 }
 
 impl Network {
@@ -176,23 +162,6 @@ impl Network {
                 evm_registry_address: parse_address(DEVNET_EVM_REGISTRY_ADDRESS).unwrap(),
                 parent_network_config: None,
             },
-            Network::Ignition => NetworkConfig {
-                subnet_id: SubnetID::from_str(IGNITION_SUBNET_ID).unwrap(),
-                rpc_url: Url::from_str(IGNITION_RPC_URL).unwrap(),
-                object_api_url: Url::from_str(IGNITION_OBJECT_API_URL).unwrap(),
-                evm_rpc_url: reqwest::Url::from_str(IGNITION_EVM_RPC_URL).unwrap(),
-                evm_gateway_address: parse_address(IGNITION_EVM_GATEWAY_ADDRESS).unwrap(),
-                evm_registry_address: parse_address(IGNITION_EVM_REGISTRY_ADDRESS).unwrap(),
-                parent_network_config: Some(ParentNetworkConfig {
-                    evm_rpc_url: reqwest::Url::from_str(IGNITION_PARENT_EVM_RPC_URL).unwrap(),
-                    evm_gateway_address: parse_address(IGNITION_PARENT_EVM_GATEWAY_ADDRESS)
-                        .unwrap(),
-                    evm_registry_address: parse_address(IGNITION_PARENT_EVM_REGISTRY_ADDRESS)
-                        .unwrap(),
-                    evm_supply_source_address: parse_address(IGNITION_EVM_SUPPLY_SOURCE_ADDRESS)
-                        .unwrap(),
-                }),
-            },
         }
     }
 }
@@ -202,7 +171,6 @@ fn correct_network_definitions() {
     let _ = Network::Devnet.get_config();
     let _ = Network::Localnet.get_config();
     let _ = Network::Testnet.get_config();
-    let _ = Network::Ignition.get_config();
 }
 
 impl FromStr for Network {
@@ -214,7 +182,6 @@ impl FromStr for Network {
             "testnet" => Ok(Network::Testnet),
             "localnet" => Ok(Network::Localnet),
             "devnet" => Ok(Network::Devnet),
-            "ignition" => Ok(Network::Ignition),
             _ => Err(Error::UnknownNetwork.to_string()),
         }
     }
@@ -227,7 +194,6 @@ impl Display for Network {
             Network::Testnet => write!(f, "testnet"),
             Network::Localnet => write!(f, "localnet"),
             Network::Devnet => write!(f, "devnet"),
-            Network::Ignition => write!(f, "ignition"),
         }
     }
 }

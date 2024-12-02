@@ -227,7 +227,7 @@ fn get_parent_subnet_config(
     args: SubnetArgs,
 ) -> anyhow::Result<EVMSubnet> {
     Ok(EVMSubnet {
-        id: subnet_id.parent().unwrap(),
+        id: subnet_id.parent()?,
         provider_http: args.evm_rpc_url.unwrap_or(parent.evm_rpc_url),
         provider_timeout: Some(args.evm_rpc_timeout),
         auth_token: args.evm_rpc_auth_token,

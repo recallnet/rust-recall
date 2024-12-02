@@ -40,7 +40,7 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
     /// Network presets for subnet and RPC URLs.
-    #[arg(short, long, env = "HOKU_NETWORK", value_enum, default_value_t = Network::Ignition)]
+    #[arg(short, long, env = "HOKU_NETWORK", value_enum, default_value_t = Network::Testnet)]
     network: Network,
     /// The ID of the target subnet.
     #[arg(short, long, env = "HOKU_SUBNET")]
@@ -90,8 +90,6 @@ enum Network {
     Localnet,
     /// Network presets for local development.
     Devnet,
-    /// Network presets for Ignition testnet.
-    Ignition,
 }
 
 impl Network {
@@ -101,7 +99,6 @@ impl Network {
             Network::Testnet => SdkNetwork::Testnet,
             Network::Localnet => SdkNetwork::Localnet,
             Network::Devnet => SdkNetwork::Devnet,
-            Network::Ignition => SdkNetwork::Ignition,
         }
     }
 }
