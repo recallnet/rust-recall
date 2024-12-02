@@ -6,7 +6,7 @@ use std::env;
 use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
 
-use hoku_sdk::{account::Account, network::Network};
+use hoku_sdk::{account::Account, ipc::subnet::EVMSubnet, network::Network};
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
 #[tokio::main]
@@ -26,7 +26,14 @@ async fn main() -> anyhow::Result<()> {
 
     // Deposit some calibration funds into the subnet
     // Note: The debit account _must_ have Calibration
-    let balance = Account::balance(&signer, cfg.subnet_config()).await?;
+    let balance = Account::balance(
+        &signer,
+        EVMSubnet {
+            auth_token: Some("some-secret".to_owned()),
+            ..cfg.subnet_config()
+        },
+    )
+    .await?;
 
     println!(
         "Balance of {}: {}",
