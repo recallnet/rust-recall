@@ -56,7 +56,7 @@ use crate::{
 };
 
 /// Maximum allowed object size in bytes.
-const MAX_OBJECT_LENGTH: u64 = 1024 * 1024 * 1024;
+const MAX_OBJECT_LENGTH: u64 = 5_000_000_000; // 5GB
 
 /// Object add options.
 #[derive(Clone, Default, Debug)]
@@ -309,7 +309,7 @@ impl Bucket {
             return Err(anyhow!("input must be a file"));
         }
         if md.len() > MAX_OBJECT_LENGTH {
-            return Err(anyhow!("file exceeds maximum allowed size of 1 GiB"));
+            return Err(anyhow!("file exceeds maximum allowed size of 5 GB"));
         }
 
         let content_type = infer::get_from_path(&path)?;
