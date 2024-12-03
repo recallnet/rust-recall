@@ -145,7 +145,7 @@ address, which is used to identify the machine on the network.
 #### Bucket machine
 
 These are key-value stores that allow you to push and retrieve data in a familiar S3-like fashion.
-Buckets support byte range requests and advanced queries based on key prefix, delimiter, offset, and limit.
+Buckets support byte range requests and advanced queries based on key prefix, delimiter, start key, and limit.
 The bucket machine provides a set of methods for interacting with the store, including `put`, `get`, and `delete`,
 which allow users to store and retrieve data from the store.
 
