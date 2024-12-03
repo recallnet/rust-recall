@@ -221,10 +221,8 @@ found [here](https://chainlist.org/?search=filecoin&testnets=true).
 
 There are a few limitations and behaviors of which to be aware when using the Hoku network:
 
-- The maximum size for a single object is 1 GiB.
-- Objects that are less than or equal to 1024 bytes are "on-chain" objects that get stored fully onchain.
-- Objects that are greater than 1024 bytes are "detached" objects that get stored offchain and resolved as a CID.
-- The current throughput of Hoku is hundreds of transactions per second (TPS) (note: this is a rough estimate and may
+- The maximum size for a single object is 5 GB.
+- The current throughput of Hoku is hundreds of transactions per second (TPS) (note: this is an estimate and may
   vary based on network conditions. The node design is still under heavy development, and optimizations are being made).
 
 ## Development
