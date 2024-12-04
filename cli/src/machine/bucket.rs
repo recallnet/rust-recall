@@ -113,6 +113,9 @@ struct BucketPutArgs {
     metadata: Vec<(String, String)>,
     /// Input file (or stdin) containing the object to upload.
     input: PathBuf,
+    /// Amount of tokens to use for inline buying of credits
+    #[arg(long, value_parser = parse_token_amount)]
+    token_amount: Option<TokenAmount>,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -290,6 +293,7 @@ pub async fn handle_bucket(
             signer.set_sequence(sequence, &provider).await?;
 
             let machine = Bucket::attach(args.address).await?;
+            let token_amount = args.token_amount.clone();
             let tx = machine
                 .add_from_path(
                     &provider,
@@ -300,6 +304,7 @@ pub async fn handle_bucket(
                         ttl: args.ttl,
                         metadata,
                         overwrite: args.overwrite,
+                        token_amount,
                         broadcast_mode,
                         gas_params,
                         show_progress,
