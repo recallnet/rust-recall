@@ -34,7 +34,7 @@ const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x4ed7c70F96B99c776995fB6437
 
 // Ignition
 const TESTNET_RPC_URL: &str = "https://api-ignition-0.hoku.sh";
-const TESTNET_SUBNET_ID: &str = "/r314159/t410f3oewkcvacaaydfn4v6diulzise26cpfolfj7heq"; // chain ID: 3258443211374980
+const TESTNET_SUBNET_ID: &str = "/r314159/t410fhg7rz2ozasqfpooeaegftp2tralvggdhztleoqi";
 const TESTNET_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 const TESTNET_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
