@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand};
+use fendermint_actor_bucket::{Object, ObjectState};
 use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
@@ -35,8 +36,6 @@ use hoku_sdk::{
 use hoku_signer::{key::parse_secret_key, AccountKind, Void, Wallet};
 
 use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
-
-use fendermint_actor_bucket::Object;
 
 #[derive(Clone, Debug, Args)]
 pub struct BucketArgs {
@@ -389,7 +388,7 @@ pub async fn handle_bucket(
                     let key = core::str::from_utf8(key_bytes)
                         .unwrap_or_default()
                         .to_string();
-                    json!({"key": key, "value": object_to_json(object)})
+                    json!({"key": key, "value": object_state_to_json(object)})
                 })
                 .collect::<Vec<Value>>();
             let common_prefixes = list
@@ -424,4 +423,12 @@ fn object_to_json(object: &Option<Object>) -> Value {
     } else {
         json!("none")
     }
+}
+
+fn object_state_to_json(object: &ObjectState) -> Value {
+    json!({
+        "hash": object.hash.to_string(),
+        "size": object.size,
+        "metadata": object.metadata,
+    })
 }
