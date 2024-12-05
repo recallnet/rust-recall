@@ -12,6 +12,7 @@ use std::{cmp::min, collections::HashMap};
 use anyhow::anyhow;
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine};
+use fendermint_actor_blobs_shared::state::{Hash, PublicKey};
 use fendermint_actor_bucket::{
     AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
     Method::{AddObject, DeleteObject, GetObject, ListObjects},
@@ -25,11 +26,11 @@ use fvm_shared::address::Address;
 use fvm_shared::clock::ChainEpoch;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use infer::Type;
-use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash};
+use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash as IrohHash};
 use iroh::client::blobs::WrapOption;
 use iroh::net::NodeId;
 use peekable::tokio::AsyncPeekable;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 use tendermint_rpc::Client;
 use tokio::sync::{mpsc, Mutex};
@@ -249,6 +250,16 @@ struct UploadResponse {
     metadata_hash: String,
 }
 
+#[derive(Serialize)]
+pub struct UploadParams {
+    /// Source Iroh node ID used for ingestion.
+    pub source: PublicKey,
+    /// Object blake3 hash.
+    pub hash: Hash,
+    /// Object size.
+    pub size: u64,
+}
+
 impl Bucket {
     /// Add an object into the bucket with a reader.
     ///
@@ -451,16 +462,12 @@ impl Bucket {
                 provider,
                 node_addr.node_id,
                 signer,
-                key,
                 object_hash,
                 object_size,
-                options.ttl,
-                options.metadata.clone(),
-                options.overwrite,
             )
             .await?;
 
-        let metadata_hash = Hash::from_str(metadata_hash.as_str())?;
+        let metadata_hash = IrohHash::from_str(metadata_hash.as_str())?;
 
         cancel_s.send(()).ok();
         self.iroh_blob_events_handle
@@ -514,24 +521,14 @@ impl Bucket {
         provider: &impl ObjectProvider,
         provider_node_id: NodeId,
         signer: &mut impl Signer,
-        key: &str,
-        hash: Hash,
+        hash: IrohHash,
         size: u64,
-        ttl: Option<ChainEpoch>,
-        metadata: HashMap<String, String>,
-        overwrite: bool,
     ) -> anyhow::Result<String> {
         let from = signer.address();
-        let params = AddParams {
+        let params = UploadParams {
             source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
-            key: key.into(),
             hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
-            // We use dummy for now. This ticket should handle it https://github.com/hokunet/ipc/issues/300
-            recovery_hash: fendermint_actor_blobs_shared::state::Hash([0; 32]),
             size,
-            ttl,
-            metadata,
-            overwrite,
         };
         let serialized_params = RawBytes::serialize(params)?;
 
