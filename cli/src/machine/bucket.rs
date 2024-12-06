@@ -22,10 +22,7 @@ use hoku_provider::{
 };
 
 use hoku_sdk::machine::bucket::{AddOptions, DeleteOptions, GetOptions};
-use hoku_sdk::{
-    credits::{BuyOptions, Credits},
-    network::NetworkConfig,
-};
+use hoku_sdk::network::NetworkConfig;
 use hoku_sdk::{
     machine::{
         bucket::{Bucket, QueryOptions},

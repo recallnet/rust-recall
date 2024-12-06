@@ -187,8 +187,8 @@ pub struct CreditStats {
     pub credit_debited: String,
     /// The byte-blocks per atto token rate set at genesis.
     pub blob_credits_per_byte_block: u64,
-    /// Total number of debit accounts.
-    pub num_accounts: u64,
+    // Total number of debit accounts.
+    // pub num_accounts: u64,
 }
 
 impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats {
@@ -199,7 +199,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
             credit_committed: v.credit_committed.to_string(),
             credit_debited: v.credit_debited.to_string(),
             blob_credits_per_byte_block: v.blob_credits_per_byte_block,
-            num_accounts: v.num_accounts,
+            // num_accounts: v.num_accounts,
         }
     }
 }
@@ -262,7 +262,6 @@ impl Credits {
     pub async fn approve<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         to: Address,
         options: ApproveOptions,
     ) -> anyhow::Result<TxReceipt<Approval>>
@@ -270,7 +269,7 @@ impl Credits {
         C: Client + Send + Sync,
     {
         let params = ApproveCreditParams {
-            from,
+            from: signer.address(),
             to,
             caller_allowlist: options.caller,
             limit: options.limit,
@@ -294,7 +293,6 @@ impl Credits {
     pub async fn revoke<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         to: Address,
         options: RevokeOptions,
     ) -> anyhow::Result<TxReceipt<()>>
@@ -302,7 +300,7 @@ impl Credits {
         C: Client + Send + Sync,
     {
         let params = RevokeCreditParams {
-            from,
+            from: signer.address(),
             to,
             for_caller: options.caller,
         };
@@ -324,14 +322,16 @@ impl Credits {
     pub async fn set_sponsor<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         sponsor: Option<Address>,
         options: SetSponsorOptions,
     ) -> anyhow::Result<TxReceipt<()>>
     where
         C: Client + Send + Sync,
     {
-        let params = SetCreditSponsorParams { from, sponsor };
+        let params = SetCreditSponsorParams {
+            from: signer.address(),
+            sponsor,
+        };
         let params = RawBytes::serialize(params)?;
         let message = signer
             .transaction(

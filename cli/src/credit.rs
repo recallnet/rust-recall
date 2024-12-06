@@ -219,11 +219,9 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let from = signer.address();
             let tx = Credits::approve(
                 &provider,
                 &mut signer,
-                from,
                 args.to,
                 ApproveOptions {
                     caller: args.caller.clone(),
@@ -251,11 +249,9 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let from = signer.address();
             let tx = Credits::revoke(
                 &provider,
                 &mut signer,
-                from,
                 args.to,
                 RevokeOptions {
                     caller: args.caller,
@@ -282,11 +278,9 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
                 )?;
                 signer.set_sequence(sequence, &provider).await?;
 
-                let from = signer.address();
                 let tx = Credits::set_sponsor(
                     &provider,
                     &mut signer,
-                    from,
                     Some(args.sponsor),
                     SetSponsorOptions {
                         broadcast_mode,
@@ -311,11 +305,9 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
                 )?;
                 signer.set_sequence(sequence, &provider).await?;
 
-                let from = signer.address();
                 let tx = Credits::set_sponsor(
                     &provider,
                     &mut signer,
-                    from,
                     None,
                     SetSponsorOptions {
                         broadcast_mode,

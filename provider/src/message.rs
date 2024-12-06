@@ -42,7 +42,7 @@ impl GasParams {
     /// Sets limits on the gas params.
     ///
     /// Note: Currently a user could set gas_fee_cap and/or gas_premium to zero.
-    /// https://github.com/consensus-shipyard/ipc/pull/1185 fixes this.
+    /// <https://github.com/consensus-shipyard/ipc/pull/1185> fixes this.
     /// In the meantime, we enforce limits in the client.
     pub fn set_limits(&mut self) {
         if self.gas_limit == 0 || self.gas_limit > fvm_shared::BLOCK_GAS_LIMIT {

@@ -58,3 +58,4 @@ hoku_signer = { path = "../signer" }
 
 [dev-dependencies]
 hex = { workspace = true }
+rand_chacha = "0.3.1"
