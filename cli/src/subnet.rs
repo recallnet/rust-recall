@@ -1,7 +1,7 @@
-use crate::{get_rpc_url, print_json, Cli};
+use crate::print_json;
 use clap::{Args, Subcommand};
 use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_sdk::subnet::Subnet;
+use hoku_sdk::{network::NetworkConfig, subnet::Subnet};
 use serde_json::json;
 
 #[derive(Clone, Debug, Args)]
@@ -17,8 +17,8 @@ enum SubnetCommands {
 }
 
 /// Subnet commands handler.
-pub async fn handle_subnet(cli: Cli, args: &SubnetArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
+pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Result<()> {
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
 
     match &args.command {
         SubnetCommands::ChainId => {

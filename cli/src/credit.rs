@@ -15,13 +15,14 @@ use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_credit_amount, parse_token_amount},
 };
-use hoku_sdk::credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions, SetSponsorOptions};
 use hoku_sdk::TxParams;
+use hoku_sdk::{
+    credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions, SetSponsorOptions},
+    network::NetworkConfig,
+};
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
-use crate::{
-    get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,
-};
+use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct CreditArgs {
@@ -162,9 +163,8 @@ struct UnsetSponsorArgs {
 }
 
 /// Credit commands handler.
-pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
-    let subnet_id = get_subnet_id(&cli)?;
+pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Result<()> {
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
 
     match &args.command {
         CreditCommands::Stats(args) => {
@@ -172,7 +172,7 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
             print_json(&json!(stats))
         }
         CreditCommands::Balance(args) => {
-            let address = get_address(args.address.clone(), &subnet_id)?;
+            let address = get_address(args.address.clone(), &cfg.subnet_id)?;
             let balance = Credits::balance(&provider, address, args.address.height).await?;
             print_json(&json!(balance))
         }
@@ -183,8 +183,11 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer =
-                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                cfg.subnet_id,
+            )?;
             signer.set_sequence(sequence, &provider).await?;
 
             let to = args.to.unwrap_or(signer.address());
@@ -209,8 +212,11 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer =
-                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                cfg.subnet_id,
+            )?;
             signer.set_sequence(sequence, &provider).await?;
 
             let from = signer.address();
@@ -238,8 +244,11 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer =
-                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                cfg.subnet_id,
+            )?;
             signer.set_sequence(sequence, &provider).await?;
 
             let from = signer.address();
@@ -269,7 +278,7 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 let mut signer = Wallet::new_secp256k1(
                     args.private_key.clone(),
                     AccountKind::Ethereum,
-                    subnet_id,
+                    cfg.subnet_id,
                 )?;
                 signer.set_sequence(sequence, &provider).await?;
 
@@ -298,7 +307,7 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 let mut signer = Wallet::new_secp256k1(
                     args.private_key.clone(),
                     AccountKind::Ethereum,
-                    subnet_id,
+                    cfg.subnet_id,
                 )?;
                 signer.set_sequence(sequence, &provider).await?;
 

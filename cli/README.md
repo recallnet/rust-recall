@@ -52,8 +52,7 @@ Hoku CLI is a tool for managing your account and data machines.
   This singleton machine is responsible for creating new buckets and/or timehubs.
 - _Bucket machines_:
   These are key-value stores that allow you to push and retrieve data in a familiar S3-like fashion.
-  Buckets support byte range requests and advanced queries based on key prefix, delimiter, offset, and
-  limit.
+  Buckets support byte range requests and advanced queries based on key prefix, delimiter, and pagination.
 - _Timehub machines_:
   An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
   verifiable anchoring system for state updates.
@@ -830,14 +829,14 @@ For example, if you have the keys `my/object`, `my/data`, and `my/object/child`,
 will get the objects at `my/object` and `my/data` but not `my/object/child` since its "nested" under the
 prefix `my/object/` (note: inclusive of the `/` at the end).
 
-| Flag              | Required? | Description                                                                        |
-| ----------------- | --------- | ---------------------------------------------------------------------------------- |
-| `-a, --address`   | Yes       | Bucket machine address.                                                      |
-| `-p, --prefix`    | No        | The prefix to filter objects by (defaults to empty string).                        |
+| Flag          | Required? | Description                                                                        |
+|---------------| --------- |------------------------------------------------------------------------------------|
+| `-a, --address` | Yes       | Bucket machine address.                                                            |
+| `-p, --prefix` | No        | The prefix to filter objects by (defaults to empty string).                        |
 | `-d, --delimiter` | No        | The delimiter used to define object hierarchy (default: `/`).                      |
-| `-o, --offset`    | No        | The offset from which to start listing objects (default: `0`)                      |
-| `-l, --limit`     | No        | The maximum number of objects to list, where `0` indicates max (10k)(default: `0`) |
-| `--height`        | No        | Query at a specific block height (default: `committed`).                           |
+| `--start-key` | No        | The key from which to start listing objects (default: `None`)                      |
+| `-l, --limit` | No        | The maximum number of objects to list, where `0` indicates max (10k)(default: `0`) |
+| `--height`    | No        | Query at a specific block height (default: `committed`).                           |
 
 **Examples:**
 
@@ -901,15 +900,15 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
 --delimiter "*"
 ```
 
-- Get all objects and filter by a prefix with offset and limit. In the example above, the `"my/data"` object was created
-  _after_ `"my/object"`, so it will be the first object listed after offsetting by `1`:
+- Get all objects and filter by a prefix with start key and limit. In the example above, the `"my/data"` object was created
+  _after_ `"my/object"`, so it will be the first object listed starting at `my/key.txt`:
 
 ```
 > hoku bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --delimiter "/" \
 --prefix "my/" \
---offset 1 \
+--start-key "my/key.txt" \
 --limit 1
 
 {

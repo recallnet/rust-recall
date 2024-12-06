@@ -56,7 +56,7 @@ use crate::{
 };
 
 /// Maximum allowed object size in bytes.
-const MAX_OBJECT_LENGTH: u64 = 1024 * 1024 * 1024;
+const MAX_OBJECT_LENGTH: u64 = 5_000_000_000; // 5GB
 
 /// Object add options.
 #[derive(Clone, Default, Debug)]
@@ -110,8 +110,8 @@ pub struct QueryOptions {
     pub prefix: String,
     /// The delimiter used to define object hierarchy.
     pub delimiter: String,
-    /// The offset to start listing objects from.
-    pub offset: u64,
+    /// The key to start listing objects from.
+    pub start_key: Option<Vec<u8>>,
     /// The maximum number of objects to list.
     pub limit: u64,
     /// Query block height.
@@ -123,7 +123,7 @@ impl Default for QueryOptions {
         QueryOptions {
             prefix: Default::default(),
             delimiter: "/".into(),
-            offset: Default::default(),
+            start_key: Default::default(),
             limit: Default::default(),
             height: Default::default(),
         }
@@ -309,7 +309,7 @@ impl Bucket {
             return Err(anyhow!("input must be a file"));
         }
         if md.len() > MAX_OBJECT_LENGTH {
-            return Err(anyhow!("file exceeds maximum allowed size of 1 GiB"));
+            return Err(anyhow!("file exceeds maximum allowed size of 5 GB"));
         }
 
         let content_type = infer::get_from_path(&path)?;
@@ -670,7 +670,7 @@ impl Bucket {
         let params = ListParams {
             prefix: options.prefix.into(),
             delimiter: options.delimiter.into(),
-            offset: options.offset,
+            start_key: options.start_key,
             limit: options.limit,
         };
         let params = RawBytes::serialize(params)?;

@@ -23,13 +23,12 @@ use hoku_sdk::{
         timehub::{PushOptions, Timehub},
         Machine,
     },
+    network::NetworkConfig,
     TxParams,
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Void, Wallet};
 
-use crate::{
-    get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,
-};
+use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct TimehubArgs {
@@ -124,9 +123,9 @@ struct TimehubLeafArgs {
 }
 
 /// Timehub commmands handler.
-pub async fn handle_timehub(cli: Cli, args: &TimehubArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
-    let subnet_id = get_subnet_id(&cli)?;
+pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::Result<()> {
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+    let subnet_id = cfg.subnet_id;
 
     match &args.command {
         TimehubCommands::Create(args) => {

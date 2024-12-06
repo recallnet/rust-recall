@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand};
+use fendermint_actor_bucket::{Object, ObjectState};
 use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
@@ -20,8 +21,11 @@ use hoku_provider::{
     util::{parse_address, parse_metadata, parse_query_height, parse_token_amount},
 };
 
-use hoku_sdk::credits::{BuyOptions, Credits};
 use hoku_sdk::machine::bucket::{AddOptions, DeleteOptions, GetOptions};
+use hoku_sdk::{
+    credits::{BuyOptions, Credits},
+    network::NetworkConfig,
+};
 use hoku_sdk::{
     machine::{
         bucket::{Bucket, QueryOptions},
@@ -31,11 +35,7 @@ use hoku_sdk::{
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Void, Wallet};
 
-use crate::{
-    get_address, get_rpc_url, get_subnet_id, print_json, AddressArgs, BroadcastMode, Cli, TxArgs,
-};
-
-use fendermint_actor_bucket::Object;
+use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct BucketArgs {
@@ -186,9 +186,9 @@ struct BucketQueryArgs {
     /// The delimiter used to define object hierarchy.
     #[arg(short, long, default_value = "/")]
     delimiter: String,
-    /// The offset from which to start listing objects.
-    #[arg(short, long, default_value_t = 0)]
-    offset: u64,
+    /// The key from which to start listing objects.
+    #[arg(long)]
+    start_key: Option<String>,
     /// The maximum number of objects to list. '0' indicates max (10k).
     #[arg(short, long, default_value_t = 0)]
     limit: u64,
@@ -202,12 +202,14 @@ struct BucketQueryArgs {
 }
 
 /// Bucket commands handler.
-pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
-    let subnet_id = get_subnet_id(&cli)?;
-
+pub async fn handle_bucket(
+    cfg: NetworkConfig,
+    show_progress: bool,
+    args: &BucketArgs,
+) -> anyhow::Result<()> {
     match &args.command {
         BucketCommands::Create(args) => {
-            let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
 
             let write_access = if args.public_write {
                 WriteAccess::Public
@@ -219,8 +221,11 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 gas_params,
             } = args.tx_args.to_tx_params();
 
-            let mut signer =
-                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                cfg.subnet_id,
+            )?;
             signer.set_sequence(sequence, &provider).await?;
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
@@ -254,9 +259,9 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }
         BucketCommands::List(args) => {
-            let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
 
-            let address = get_address(args.clone(), &subnet_id)?;
+            let address = get_address(args.clone(), &cfg.subnet_id)?;
             let metadata = Bucket::list(&provider, &Void::new(address), args.height).await?;
 
             let metadata = metadata
@@ -267,12 +272,8 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             print_json(&metadata)
         }
         BucketCommands::Add(args) => {
-            let object_api_url = args
-                .object_api_url
-                .clone()
-                .unwrap_or(cli.network.get().object_api_url()?);
-            let provider =
-                JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, Some(object_api_url))?;
+            let object_api_url = args.object_api_url.clone().unwrap_or(cfg.object_api_url);
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(object_api_url))?;
 
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
@@ -284,7 +285,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             let mut signer = Wallet::new_secp256k1(
                 args.private_key.clone(),
                 AccountKind::Ethereum,
-                subnet_id.clone(),
+                cfg.subnet_id,
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
@@ -301,7 +302,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                         overwrite: args.overwrite,
                         broadcast_mode,
                         gas_params,
-                        show_progress: !cli.quiet,
+                        show_progress,
                     },
                 )
                 .await?;
@@ -315,7 +316,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             }))
         }
         BucketCommands::Delete(args) => {
-            let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
 
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
@@ -326,7 +327,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             let mut signer = Wallet::new_secp256k1(
                 args.private_key.clone(),
                 AccountKind::Ethereum,
-                subnet_id.clone(),
+                cfg.subnet_id,
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
@@ -346,12 +347,8 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
             print_json(&tx)
         }
         BucketCommands::Get(args) => {
-            let object_api_url = args
-                .object_api_url
-                .clone()
-                .unwrap_or(cli.network.get().object_api_url()?);
-            let provider =
-                JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, Some(object_api_url))?;
+            let object_api_url = args.object_api_url.clone().unwrap_or(cfg.object_api_url);
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(object_api_url))?;
 
             let machine = Bucket::attach(args.address).await?;
             machine
@@ -368,7 +365,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 .await
         }
         BucketCommands::Query(args) => {
-            let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
 
             let machine = Bucket::attach(args.address).await?;
             let list = machine
@@ -377,7 +374,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                     QueryOptions {
                         prefix: args.prefix.clone(),
                         delimiter: args.delimiter.clone(),
-                        offset: args.offset,
+                        start_key: args.start_key.clone().map(|key| key.into_bytes()),
                         limit: args.limit,
                         height: args.height,
                     },
@@ -391,7 +388,7 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                     let key = core::str::from_utf8(key_bytes)
                         .unwrap_or_default()
                         .to_string();
-                    json!({"key": key, "value": object_to_json(object)})
+                    json!({"key": key, "value": object_state_to_json(object)})
                 })
                 .collect::<Vec<Value>>();
             let common_prefixes = list
@@ -400,7 +397,16 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 .map(|v| Value::String(core::str::from_utf8(v).unwrap_or_default().to_string()))
                 .collect::<Vec<Value>>();
 
-            print_json(&json!({"objects": objects, "common_prefixes": common_prefixes}))
+            let next_key = match list.next_key {
+                Some(key) => {
+                    Value::String(core::str::from_utf8(&key).unwrap_or_default().to_string())
+                }
+                None => Value::Null,
+            };
+
+            print_json(
+                &json!({"objects": objects, "common_prefixes": common_prefixes, "next_key" : next_key }),
+            )
         }
     }
 }
@@ -417,4 +423,12 @@ fn object_to_json(object: &Option<Object>) -> Value {
     } else {
         json!("none")
     }
+}
+
+fn object_state_to_json(object: &ObjectState) -> Value {
+    json!({
+        "hash": object.hash.to_string(),
+        "size": object.size,
+        "metadata": object.metadata,
+    })
 }
