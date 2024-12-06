@@ -45,6 +45,11 @@ pub fn decode_bytes(deliver_tx: &DeliverTx) -> anyhow::Result<RawBytes> {
     }
 }
 
+/// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as type `()`.
+pub fn decode_empty(_: &DeliverTx) -> anyhow::Result<()> {
+    Ok(())
+}
+
 /// Parse what Tendermint returns in the `data` field of [`DeliverTx`] as generic type `T`.
 pub fn decode_as<T>(deliver_tx: &DeliverTx) -> anyhow::Result<T>
 where
