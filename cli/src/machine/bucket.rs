@@ -242,14 +242,8 @@ pub async fn handle_bucket(
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
 
-            let (store, tx) = Bucket::new(
-                &provider,
-                &mut signer,
-                args.owner,
-                metadata,
-                gas_params.clone(),
-            )
-            .await?;
+            let (store, tx) =
+                Bucket::new(&provider, &mut signer, args.owner, metadata, gas_params).await?;
             let address = store.eth_address()?;
 
             print_json(&json!({"address": address.encode_hex_with_prefix(), "tx": &tx}))

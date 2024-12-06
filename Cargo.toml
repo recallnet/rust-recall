@@ -38,7 +38,6 @@ ethers-contract = "2.0.14"
 fnv = "1.0"
 futures = "0.3.17"
 futures-core = "0.3.30"
-futures-util = "0.3.17"
 humantime = "2.1.0"
 hex = "0.4.3"
 indicatif = "0.17.8"
@@ -85,15 +84,15 @@ ipc-api = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "5a6dd0974fce896
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.
-#[patch."ssh://git@github.com/hokunet/ipc.git"]
-#fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
-#fendermint_actor_bucket = { path = "../ipc/fendermint/actors/bucket" }
-#fendermint_actor_hoku_config_shared = { path = "../ipc/fendermint/actors/hoku_config/shared" }
-#fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
-#fendermint_actor_timehub = { path = "../ipc/fendermint/actors/timehub" }
-#fendermint_crypto = { path = "../ipc/fendermint/crypto" }
-#fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
-#fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
-#
-#ipc_actors_abis = { path = "../ipc/contracts/binding" }
-#ipc-api = { path = "../ipc/ipc/api" }
+[patch."ssh://git@github.com/hokunet/ipc.git"]
+fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
+fendermint_actor_bucket = { path = "../ipc/fendermint/actors/bucket" }
+fendermint_actor_hoku_config_shared = { path = "../ipc/fendermint/actors/hoku_config/shared" }
+fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
+fendermint_actor_timehub = { path = "../ipc/fendermint/actors/timehub" }
+fendermint_crypto = { path = "../ipc/fendermint/crypto" }
+fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
+fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
+
+ipc_actors_abis = { path = "../ipc/contracts/binding" }
+ipc-api = { path = "../ipc/ipc/api" }

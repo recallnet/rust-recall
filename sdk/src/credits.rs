@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
-use std::str::FromStr;
 
 use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
@@ -21,7 +20,7 @@ use hoku_provider::message::{local_message, GasParams};
 use hoku_provider::query::{FvmQueryHeight, QueryProvider};
 use hoku_provider::response::{decode_bytes, decode_empty};
 use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
-use hoku_provider::util::get_eth_address;
+use hoku_provider::util::{get_eth_address, parse_address};
 use hoku_provider::{Client, Provider};
 use hoku_signer::Signer;
 
@@ -117,8 +116,8 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
                 .approvals
                 .into_iter()
                 .map(|(k, v)| {
-                    let a = Address::from_str(&k).expect("failed to parse address from string");
-                    let a = get_eth_address(a).expect("failed to parse ethereum address");
+                    let a = parse_address(&k).expect("failed to parse address from string");
+                    let a = get_eth_address(a).expect("failed to get ethereum address");
                     (a.encode_hex_with_prefix(), v.into())
                 })
                 .collect(),

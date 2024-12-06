@@ -5,14 +5,16 @@
 use fendermint_vm_actor_interface::system::SYSTEM_ACTOR_ADDR;
 use fvm_shared::{address::Address, econ::TokenAmount};
 
+const DEFAULT_GAS_LIMIT: u64 = 100000000;
 const MIN_GAS_FEE_CAP: u64 = 100;
-const MIN_GAS_PREMIUM: u64 = 100_000;
+const MIN_GAS_PREMIUM: u64 = 1;
 
 pub use crate::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{message::Message, MethodNum},
 };
 pub use fendermint_vm_message::{chain::ChainMessage, signed::SignedMessage};
+
 /// Gas parameters for transactions.
 #[derive(Clone, Debug)]
 pub struct GasParams {
@@ -33,7 +35,7 @@ pub struct GasParams {
 impl Default for GasParams {
     fn default() -> Self {
         GasParams {
-            gas_limit: fvm_shared::BLOCK_GAS_LIMIT,
+            gas_limit: DEFAULT_GAS_LIMIT,
             gas_fee_cap: TokenAmount::from_atto(MIN_GAS_FEE_CAP),
             gas_premium: TokenAmount::from_atto(MIN_GAS_PREMIUM),
         }
@@ -43,12 +45,12 @@ impl Default for GasParams {
 impl GasParams {
     /// Sets limits on the gas params.
     ///
-    /// Note: Currently a user could set gas_fee_cap and/or gas_premium to zero.
-    /// https://github.com/consensus-shipyard/ipc/pull/1185 fixes this.
+    /// Note: Currently a user could set gas_fee_cap to zero.
+    /// See https://github.com/consensus-shipyard/ipc/pull/1185#issuecomment-2549333793.
     /// In the meantime, we enforce limits in the client.
     pub fn set_limits(&mut self) {
         if self.gas_limit == 0 || self.gas_limit > fvm_shared::BLOCK_GAS_LIMIT {
-            self.gas_limit = fvm_shared::BLOCK_GAS_LIMIT;
+            self.gas_limit = DEFAULT_GAS_LIMIT;
         }
         let min_gas_fee_cap = TokenAmount::from_atto(MIN_GAS_FEE_CAP);
         if self.gas_fee_cap < min_gas_fee_cap {
