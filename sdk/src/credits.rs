@@ -21,7 +21,7 @@ use tendermint_rpc::Client;
 
 use hoku_provider::message::{local_message, GasParams};
 use hoku_provider::query::QueryProvider;
-use hoku_provider::response::decode_bytes;
+use hoku_provider::response::{decode_bytes, decode_empty};
 use hoku_provider::tx::{BroadcastMode, TxReceipt};
 use hoku_provider::Provider;
 use hoku_signer::Signer;
@@ -309,8 +309,4 @@ fn decode_approve(deliver_tx: &DeliverTx) -> anyhow::Result<Approval> {
     fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::CreditApproval>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
-}
-
-fn decode_empty(_: &DeliverTx) -> anyhow::Result<()> {
-    Ok(())
 }
