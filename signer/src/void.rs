@@ -41,10 +41,6 @@ impl Signer for Void {
         None
     }
 
-    fn sponsor(&self) -> Option<Address> {
-        None
-    }
-
     async fn transaction(
         &mut self,
         _to: Address,

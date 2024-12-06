@@ -37,7 +37,6 @@ pub struct Wallet {
     addr: Address,
     sk: SecretKey,
     subnet_id: SubnetID,
-    sponsor: Option<Address>,
     sequence: Arc<Mutex<u64>>,
 }
 
@@ -55,10 +54,6 @@ impl Signer for Wallet {
         Some(self.subnet_id.clone())
     }
 
-    fn sponsor(&self) -> Option<Address> {
-        self.sponsor
-    }
-
     async fn transaction(
         &mut self,
         to: Address,
@@ -74,7 +69,6 @@ impl Signer for Wallet {
             version: Default::default(),
             from: self.addr,
             to,
-            sponsor: self.sponsor,
             sequence,
             value,
             method_num,
@@ -107,7 +101,6 @@ impl Wallet {
         sk: SecretKey,
         kind: AccountKind,
         subnet_id: SubnetID,
-        sponsor: Option<Address>,
     ) -> anyhow::Result<Self> {
         let pk = sk.public_key().serialize();
         let addr = match kind {
@@ -119,7 +112,6 @@ impl Wallet {
             sk,
             addr,
             subnet_id,
-            sponsor,
             sequence,
         })
     }
@@ -202,8 +194,7 @@ mod tests {
         let private_key = crate::key::random_secretkey();
         let subnet_id = SubnetID::from_str("r/foobar").unwrap();
         let mut wallet =
-            Wallet::new_secp256k1(private_key.clone(), AccountKind::Ethereum, subnet_id, None)
-                .unwrap();
+            Wallet::new_secp256k1(private_key.clone(), AccountKind::Ethereum, subnet_id).unwrap();
 
         // Test setting a specific sequence value
         wallet.set_sequence(Some(50), &mock_provider).await.unwrap();

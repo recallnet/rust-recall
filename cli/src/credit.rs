@@ -15,7 +15,7 @@ use hoku_provider::{
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_credit_amount, parse_token_amount},
 };
-use hoku_sdk::credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions};
+use hoku_sdk::credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions, SetSponsorOptions};
 use hoku_sdk::TxParams;
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
@@ -42,6 +42,18 @@ enum CreditCommands {
     Approve(ApproveArgs),
     /// Revoke an account from using credits from another acccount.
     Revoke(RevokeArgs),
+    /// Sponsor related commands.
+    #[command(subcommand)]
+    Sponsor(SponsorCommands),
+}
+
+#[derive(Clone, Debug, Subcommand)]
+enum SponsorCommands {
+    /// Set account default credit sponsor for gas fees.
+    /// This will have no effect on gas fees if the required credit approval does not exist.
+    Set(SetSponsorArgs),
+    /// Unset account default credit sponsor for gas fees.
+    Unset(UnsetSponsorArgs),
 }
 
 #[derive(Clone, Debug, Args)]
@@ -122,6 +134,33 @@ struct RevokeArgs {
     tx_args: TxArgs,
 }
 
+#[derive(Clone, Debug, Args)]
+struct SetSponsorArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    private_key: SecretKey,
+    /// Credit sponsor address.
+    #[arg(value_parser = parse_address)]
+    sponsor: Address,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct UnsetSponsorArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    private_key: SecretKey,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
+}
+
 /// Credit commands handler.
 pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
     let provider = JsonRpcProvider::new_http(get_rpc_url(&cli)?, None, None)?;
@@ -144,12 +183,8 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer = Wallet::new_secp256k1(
-                args.private_key.clone(),
-                AccountKind::Ethereum,
-                subnet_id,
-                gas_params.gas_sponsor,
-            )?;
+            let mut signer =
+                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
             signer.set_sequence(sequence, &provider).await?;
 
             let to = args.to.unwrap_or(signer.address());
@@ -174,12 +209,8 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer = Wallet::new_secp256k1(
-                args.private_key.clone(),
-                AccountKind::Ethereum,
-                subnet_id,
-                gas_params.gas_sponsor,
-            )?;
+            let mut signer =
+                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
             signer.set_sequence(sequence, &provider).await?;
 
             let from = signer.address();
@@ -207,12 +238,8 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
                 sequence,
             } = args.tx_args.to_tx_params();
 
-            let mut signer = Wallet::new_secp256k1(
-                args.private_key.clone(),
-                AccountKind::Ethereum,
-                subnet_id,
-                gas_params.gas_sponsor,
-            )?;
+            let mut signer =
+                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
             signer.set_sequence(sequence, &provider).await?;
 
             let from = signer.address();
@@ -231,5 +258,65 @@ pub async fn handle_credit(cli: Cli, args: &CreditArgs) -> anyhow::Result<()> {
 
             print_json(&tx)
         }
+        CreditCommands::Sponsor(cmd) => match cmd {
+            SponsorCommands::Set(args) => {
+                let broadcast_mode = args.broadcast_mode.get();
+                let TxParams {
+                    gas_params,
+                    sequence,
+                } = args.tx_args.to_tx_params();
+
+                let mut signer = Wallet::new_secp256k1(
+                    args.private_key.clone(),
+                    AccountKind::Ethereum,
+                    subnet_id,
+                )?;
+                signer.set_sequence(sequence, &provider).await?;
+
+                let from = signer.address();
+                let tx = Credits::set_sponsor(
+                    &provider,
+                    &mut signer,
+                    from,
+                    Some(args.sponsor),
+                    SetSponsorOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+                print_json(&tx)
+            }
+            SponsorCommands::Unset(args) => {
+                let broadcast_mode = args.broadcast_mode.get();
+                let TxParams {
+                    gas_params,
+                    sequence,
+                } = args.tx_args.to_tx_params();
+
+                let mut signer = Wallet::new_secp256k1(
+                    args.private_key.clone(),
+                    AccountKind::Ethereum,
+                    subnet_id,
+                )?;
+                signer.set_sequence(sequence, &provider).await?;
+
+                let from = signer.address();
+                let tx = Credits::set_sponsor(
+                    &provider,
+                    &mut signer,
+                    from,
+                    None,
+                    SetSponsorOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+                print_json(&tx)
+            }
+        },
     }
 }

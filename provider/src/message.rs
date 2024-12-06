@@ -26,8 +26,6 @@ pub struct GasParams {
     ///
     /// The client will enforce a minimum value of 100,000 attoFIL.
     pub gas_premium: TokenAmount,
-    /// Gas sponsor.
-    pub gas_sponsor: Option<Address>,
 }
 
 impl Default for GasParams {
@@ -36,7 +34,6 @@ impl Default for GasParams {
             gas_limit: fvm_shared::BLOCK_GAS_LIMIT,
             gas_fee_cap: TokenAmount::from_atto(MIN_GAS_FEE_CAP),
             gas_premium: TokenAmount::from_atto(MIN_GAS_PREMIUM),
-            gas_sponsor: None,
         }
     }
 }
@@ -68,7 +65,6 @@ pub fn local_message(to: Address, method_num: MethodNum, params: RawBytes) -> Me
         version: Default::default(),
         from: SYSTEM_ACTOR_ADDR,
         to,
-        sponsor: None,
         sequence: 0,
         value: Default::default(),
         method_num,
@@ -90,7 +86,6 @@ pub fn object_upload_message(
         version: Default::default(),
         from,
         to,
-        sponsor: None,
         sequence: 0,
         value: Default::default(),
         method_num,

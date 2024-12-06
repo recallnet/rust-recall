@@ -22,12 +22,7 @@ async fn main() -> anyhow::Result<()> {
     let network = Network::Testnet.init();
 
     // Setup local wallet using private key from arg
-    let signer = Wallet::new_secp256k1(
-        pk,
-        AccountKind::Ethereum,
-        network.subnet_id()?.parent()?,
-        None,
-    )?;
+    let signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, network.subnet_id()?.parent()?)?;
 
     // Deposit some calibration funds into the subnet
     // Note: The debit account _must_ have Calibration

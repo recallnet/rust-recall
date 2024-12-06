@@ -78,7 +78,7 @@ struct FundArgs {
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
-    recipient: Option<Address>,
+    to: Option<Address>,
     /// The amount to transfer in FIL.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
@@ -93,7 +93,7 @@ struct TransferArgs {
     private_key: SecretKey,
     /// The recipient account address.
     #[arg(long, value_parser = parse_address)]
-    recipient: Address,
+    to: Address,
     /// The amount to transfer in FIL.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
@@ -151,12 +151,11 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
                 args.private_key.clone(),
                 AccountKind::Ethereum,
                 subnet_id.parent()?, // Signer must target the parent subnet
-                None,
             )?;
 
             let tx = Account::deposit(
                 &signer,
-                args.recipient.unwrap_or(signer.address()),
+                args.to.unwrap_or(signer.address()),
                 config,
                 args.amount.clone(),
             )
@@ -167,16 +166,12 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
         AccountCommands::Withdraw(args) => {
             let config = get_subnet_config(&cli, &subnet_id, args.subnet.clone())?;
 
-            let signer = Wallet::new_secp256k1(
-                args.private_key.clone(),
-                AccountKind::Ethereum,
-                subnet_id,
-                None,
-            )?;
+            let signer =
+                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
 
             let tx = Account::withdraw(
                 &signer,
-                args.recipient.unwrap_or(signer.address()),
+                args.to.unwrap_or(signer.address()),
                 config,
                 args.amount.clone(),
             )
@@ -187,15 +182,10 @@ pub async fn handle_account(cli: Cli, args: &AccountArgs) -> anyhow::Result<()> 
         AccountCommands::Transfer(args) => {
             let config = get_subnet_config(&cli, &subnet_id, args.subnet.clone())?;
 
-            let signer = Wallet::new_secp256k1(
-                args.private_key.clone(),
-                AccountKind::Ethereum,
-                subnet_id,
-                None,
-            )?;
+            let signer =
+                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
 
-            let tx =
-                Account::transfer(&signer, args.recipient, config, args.amount.clone()).await?;
+            let tx = Account::transfer(&signer, args.to, config, args.amount.clone()).await?;
 
             print_json(&tx)
         }

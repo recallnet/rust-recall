@@ -219,12 +219,8 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 gas_params,
             } = args.tx_args.to_tx_params();
 
-            let mut signer = Wallet::new_secp256k1(
-                args.private_key.clone(),
-                AccountKind::Ethereum,
-                subnet_id,
-                gas_params.gas_sponsor,
-            )?;
+            let mut signer =
+                Wallet::new_secp256k1(args.private_key.clone(), AccountKind::Ethereum, subnet_id)?;
             signer.set_sequence(sequence, &provider).await?;
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
@@ -289,7 +285,6 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 args.private_key.clone(),
                 AccountKind::Ethereum,
                 subnet_id.clone(),
-                gas_params.gas_sponsor,
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
@@ -332,7 +327,6 @@ pub async fn handle_bucket(cli: Cli, args: &BucketArgs) -> anyhow::Result<()> {
                 args.private_key.clone(),
                 AccountKind::Ethereum,
                 subnet_id.clone(),
-                gas_params.gas_sponsor,
             )?;
             signer.set_sequence(sequence, &provider).await?;
 

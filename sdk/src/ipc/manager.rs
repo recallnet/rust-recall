@@ -164,7 +164,7 @@ impl EvmManager {
     /// Deposit funds into a subnet.
     pub async fn deposit(
         signer: &impl Signer,
-        recipient: Address,
+        to: Address,
         subnet: EVMSubnet,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
@@ -176,8 +176,7 @@ impl EvmManager {
             .to_u128()
             .ok_or_else(|| anyhow!("invalid value to fund"))?;
 
-        let call =
-            gateway.fund_with_token(subnet_id, FvmAddress::try_from(recipient)?, value.into());
+        let call = gateway.fund_with_token(subnet_id, FvmAddress::try_from(to)?, value.into());
 
         client_send(gateway.client(), call).await
     }
@@ -185,7 +184,7 @@ impl EvmManager {
     /// Withdraw funds from a subnet.
     pub async fn withdraw(
         signer: &impl Signer,
-        recipient: Address,
+        to: Address,
         subnet: EVMSubnet,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
@@ -196,7 +195,7 @@ impl EvmManager {
             .to_u128()
             .ok_or_else(|| anyhow!("invalid value to fund"))?;
 
-        let mut call = gateway.release(FvmAddress::try_from(recipient)?);
+        let mut call = gateway.release(FvmAddress::try_from(to)?);
         call.tx.set_value(value);
 
         client_send(gateway.client(), call).await
@@ -205,7 +204,7 @@ impl EvmManager {
     /// Transfer funds between two accounts in a subnet.
     pub async fn transfer(
         signer: &impl Signer,
-        recipient: Address,
+        to: Address,
         subnet: EVMSubnet,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
@@ -213,7 +212,7 @@ impl EvmManager {
 
         let (fee, fee_cap) = premium_estimation(signer.clone()).await?;
         let tx = Eip1559TransactionRequest::new()
-            .to(payload_to_evm_address(recipient.payload())?)
+            .to(payload_to_evm_address(to.payload())?)
             .value(fil_to_eth_amount(&amount)?)
             .max_priority_fee_per_gas(fee)
             .max_fee_per_gas(fee_cap);
