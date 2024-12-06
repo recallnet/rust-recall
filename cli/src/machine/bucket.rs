@@ -51,7 +51,7 @@ enum BucketCommands {
     #[clap(alias = "ls")]
     List(AddressArgs),
     /// Add an object with a key prefix.
-    Add(BucketPutArgs),
+    Add(BucketAddArgs),
     /// Delete an object.
     Delete(BucketDeleteArgs),
     /// Get an object.
@@ -85,7 +85,7 @@ struct BucketCreateArgs {
 }
 
 #[derive(Clone, Debug, Parser)]
-struct BucketPutArgs {
+struct BucketAddArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
     private_key: SecretKey,
