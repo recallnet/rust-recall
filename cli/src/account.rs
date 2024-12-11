@@ -83,7 +83,7 @@ struct FundArgs {
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
-    recipient: Option<Address>,
+    to: Option<Address>,
     /// The amount to transfer in FIL.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
@@ -98,7 +98,7 @@ struct TransferArgs {
     private_key: SecretKey,
     /// The recipient account address.
     #[arg(long, value_parser = parse_address)]
-    recipient: Address,
+    to: Address,
     /// The amount to transfer in FIL.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
@@ -163,7 +163,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
 
             let tx = Account::deposit(
                 &signer,
-                args.recipient.unwrap_or(signer.address()),
+                args.to.unwrap_or(signer.address()),
                 config,
                 args.amount.clone(),
             )
@@ -182,7 +182,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
 
             let tx = Account::withdraw(
                 &signer,
-                args.recipient.unwrap_or(signer.address()),
+                args.to.unwrap_or(signer.address()),
                 config,
                 args.amount.clone(),
             )
@@ -199,8 +199,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                 cfg.subnet_id,
             )?;
 
-            let tx =
-                Account::transfer(&signer, args.recipient, config, args.amount.clone()).await?;
+            let tx = Account::transfer(&signer, args.to, config, args.amount.clone()).await?;
 
             print_json(&tx)
         }

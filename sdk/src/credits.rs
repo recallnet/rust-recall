@@ -1,12 +1,15 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::{HashMap, HashSet};
+
 use anyhow::anyhow;
 use fendermint_actor_blobs_shared::params::{
     ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
+    SetCreditSponsorParams,
 };
 use fendermint_actor_blobs_shared::Method::{
-    ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit,
+    ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit, SetCreditSponsor,
 };
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
@@ -21,7 +24,7 @@ use tendermint_rpc::Client;
 
 use hoku_provider::message::{local_message, GasParams};
 use hoku_provider::query::QueryProvider;
-use hoku_provider::response::decode_bytes;
+use hoku_provider::response::{decode_bytes, decode_empty};
 use hoku_provider::tx::{BroadcastMode, TxReceipt};
 use hoku_provider::Provider;
 use hoku_signer::Signer;
@@ -38,9 +41,10 @@ pub struct BuyOptions {
 /// Options for approving credit.
 #[derive(Clone, Default, Debug)]
 pub struct ApproveOptions {
-    /// Restrict the approval to a caller address, e.g., a bucket.
+    /// Restrict the approval to one or more caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
-    pub caller: Option<Address>,
+    /// If not set, any caller is allowed.
+    pub caller: Option<HashSet<Address>>,
     /// Credit approval limit.
     /// If specified, the approval becomes invalid once the committed credits reach the
     /// specified limit.
@@ -54,12 +58,21 @@ pub struct ApproveOptions {
     pub gas_params: GasParams,
 }
 
-/// Options for revoke credit.
+/// Options for revoking credit.
 #[derive(Clone, Default, Debug)]
 pub struct RevokeOptions {
-    /// Restrict the approval to a caller address, e.g., a bucket.
-    /// The receiver will only be able to use the approval via a caller contract.
+    /// Revoke the approval for the caller address.
+    /// The address must be part of the existing caller allowlist.
     pub caller: Option<Address>,
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
+}
+
+/// Options for setting credit sponsor.
+#[derive(Clone, Default, Debug)]
+pub struct SetSponsorOptions {
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
@@ -73,8 +86,18 @@ pub struct Balance {
     pub credit_free: String,
     /// Current committed credit in byte-blocks that will be used for debits.
     pub credit_committed: String,
+    /// Optional default sponsor account address.
+    pub credit_sponsor: Option<String>,
     /// The chain epoch of the last debit.
     pub last_debit_epoch: Option<ChainEpoch>,
+    /// Credit approvals to other accounts, keyed by receiver, keyed by caller,
+    /// which could be the receiver or a specific contract, like a bucket.
+    /// This allows for limiting approvals to interactions from a specific contract.
+    /// For example, an approval for Alice might be valid for any contract caller, so long as
+    /// the origin is Alice.
+    /// An approval for Bob might be valid from only one contract caller, so long as
+    /// the origin is Bob.
+    pub approvals: HashMap<String, Approval>,
 }
 
 impl Default for Balance {
@@ -83,6 +106,8 @@ impl Default for Balance {
             credit_free: "0".into(),
             credit_committed: "0".into(),
             last_debit_epoch: Some(0),
+            credit_sponsor: None,
+            approvals: HashMap::new(),
         }
     }
 }
@@ -98,6 +123,12 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
             credit_free: v.credit_free.to_string(),
             credit_committed: v.credit_committed.to_string(),
             last_debit_epoch,
+            credit_sponsor: v.credit_sponsor.map(|a| a.to_string()),
+            approvals: v
+                .approvals
+                .into_iter()
+                .map(|(k, v)| (k.to_string(), v.into()))
+                .collect(),
         }
     }
 }
@@ -113,6 +144,10 @@ pub struct Approval {
     pub expiry: Option<ChainEpoch>,
     /// Counter for how much credit has been used via this approval.
     pub used: String,
+    /// Optional caller allowlist.
+    /// If not present, any caller is allowed.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caller_allowlist: Option<HashSet<String>>,
 }
 
 impl Default for Approval {
@@ -121,6 +156,7 @@ impl Default for Approval {
             limit: None,
             expiry: None,
             used: "0".into(),
+            caller_allowlist: None,
         }
     }
 }
@@ -131,6 +167,9 @@ impl From<fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
             limit: v.limit.map(|l| l.to_string()),
             expiry: v.expiry,
             used: v.used.to_string(),
+            caller_allowlist: v
+                .caller_allowlist
+                .map(|v| v.into_iter().map(|a| a.to_string()).collect()),
         }
     }
 }
@@ -147,7 +186,7 @@ pub struct CreditStats {
     /// The total number of credits debited in the subnet.
     pub credit_debited: String,
     /// The byte-blocks per atto token rate set at genesis.
-    pub credit_debit_rate: u64,
+    pub blob_credits_per_byte_block: u64,
     /// Total number of debit accounts.
     pub num_accounts: u64,
 }
@@ -159,7 +198,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
             credit_sold: v.credit_sold.to_string(),
             credit_committed: v.credit_committed.to_string(),
             credit_debited: v.credit_debited.to_string(),
-            credit_debit_rate: v.credit_debit_rate,
+            blob_credits_per_byte_block: v.blob_credits_per_byte_block,
             num_accounts: v.num_accounts,
         }
     }
@@ -180,10 +219,10 @@ impl Credits {
 
     pub async fn balance(
         provider: &impl QueryProvider,
-        address: Address,
+        from: Address,
         height: FvmQueryHeight,
     ) -> anyhow::Result<Balance> {
-        let params = GetAccountParams(address);
+        let params = GetAccountParams(from);
         let params = RawBytes::serialize(params)?;
         let message = local_message(BLOBS_ACTOR_ADDR, GetAccount as u64, params);
         let response = provider.call(message, height, decode_balance).await?;
@@ -197,14 +236,14 @@ impl Credits {
     pub async fn buy<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        recipient: Address,
+        to: Address,
         amount: TokenAmount,
         options: BuyOptions,
     ) -> anyhow::Result<TxReceipt<Balance>>
     where
         C: Client + Send + Sync,
     {
-        let params = BuyCreditParams(recipient);
+        let params = BuyCreditParams(to);
         let params = RawBytes::serialize(params)?;
         let message = signer
             .transaction(
@@ -224,7 +263,7 @@ impl Credits {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         from: Address,
-        receiver: Address,
+        to: Address,
         options: ApproveOptions,
     ) -> anyhow::Result<TxReceipt<Approval>>
     where
@@ -232,8 +271,8 @@ impl Credits {
     {
         let params = ApproveCreditParams {
             from,
-            receiver,
-            required_caller: options.caller,
+            to,
+            caller_allowlist: options.caller,
             limit: options.limit,
             ttl: options.ttl,
         };
@@ -256,7 +295,7 @@ impl Credits {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         from: Address,
-        receiver: Address,
+        to: Address,
         options: RevokeOptions,
     ) -> anyhow::Result<TxReceipt<()>>
     where
@@ -264,8 +303,8 @@ impl Credits {
     {
         let params = RevokeCreditParams {
             from,
-            receiver,
-            required_caller: options.caller,
+            to,
+            for_caller: options.caller,
         };
         let params = RawBytes::serialize(params)?;
         let message = signer
@@ -273,6 +312,32 @@ impl Credits {
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 RevokeCredit as u64,
+                params,
+                options.gas_params,
+            )
+            .await?;
+        provider
+            .perform(message, options.broadcast_mode, decode_empty)
+            .await
+    }
+
+    pub async fn set_sponsor<C>(
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        from: Address,
+        sponsor: Option<Address>,
+        options: SetSponsorOptions,
+    ) -> anyhow::Result<TxReceipt<()>>
+    where
+        C: Client + Send + Sync,
+    {
+        let params = SetCreditSponsorParams { from, sponsor };
+        let params = RawBytes::serialize(params)?;
+        let message = signer
+            .transaction(
+                BLOBS_ACTOR_ADDR,
+                Default::default(),
+                SetCreditSponsor as u64,
                 params,
                 options.gas_params,
             )
@@ -309,8 +374,4 @@ fn decode_approve(deliver_tx: &DeliverTx) -> anyhow::Result<Approval> {
     fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::CreditApproval>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
-}
-
-fn decode_empty(_: &DeliverTx) -> anyhow::Result<()> {
-    Ok(())
 }

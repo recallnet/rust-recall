@@ -24,11 +24,13 @@ use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
 use fvm_shared::clock::ChainEpoch;
+use fvm_shared::econ::TokenAmount;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use infer::Type;
 use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash as IrohHash};
 use iroh::client::blobs::WrapOption;
 use iroh::net::NodeId;
+use num_traits::Zero;
 use peekable::tokio::AsyncPeekable;
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
@@ -72,6 +74,8 @@ pub struct AddOptions {
     pub metadata: HashMap<String, String>,
     /// Overwrite the object if it already exists.
     pub overwrite: bool,
+    /// Tokens to use for inline buying of credits
+    pub token_amount: Option<TokenAmount>,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
@@ -488,10 +492,11 @@ impl Bucket {
             overwrite: options.overwrite,
         };
         let serialized_params = RawBytes::serialize(params.clone())?;
+        let token_amount = options.token_amount.unwrap_or(TokenAmount::zero());
         let message = signer
             .transaction(
                 self.address,
-                Default::default(),
+                token_amount,
                 AddObject as u64,
                 serialized_params,
                 options.gas_params,

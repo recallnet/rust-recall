@@ -3,7 +3,7 @@
 
 //! # Hoku SDK
 //!
-//! The top-level user interface for managing Hoku object storage and state timehubs.
+//! The top-level user interface for managing Hoku object storage and timehubs.
 
 use hoku_provider::message::GasParams;
 

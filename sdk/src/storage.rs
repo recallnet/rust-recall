@@ -11,10 +11,9 @@ use fvm_shared::address::Address;
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
-use hoku_provider::message::{local_message, GasParams};
+use hoku_provider::message::local_message;
 use hoku_provider::query::QueryProvider;
 use hoku_provider::response::decode_bytes;
-use hoku_provider::tx::BroadcastMode;
 
 // Commands to support:
 //   ✓ hoku storage stats (subnet-wide summary)
@@ -23,15 +22,6 @@ use hoku_provider::tx::BroadcastMode;
 //   hoku storage get [hash] (get a blob info directly)
 //   hoku storage cat [hash] (get a blob directly)
 //   hoku storage ls --address (list blobs by account)
-
-/// Options for funding an account.
-#[derive(Clone, Default, Debug)]
-pub struct FundOptions {
-    /// Broadcast mode for the transaction.
-    pub broadcast_mode: BroadcastMode,
-    /// Gas params for the transaction.
-    pub gas_params: GasParams,
-}
 
 /// Storage usage stats for an account.
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,6 +1,8 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashSet;
+
 use clap::{Args, Subcommand};
 use fendermint_crypto::SecretKey;
 use fvm_shared::address::Address;
@@ -15,7 +17,7 @@ use hoku_provider::{
 };
 use hoku_sdk::TxParams;
 use hoku_sdk::{
-    credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions},
+    credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions, SetSponsorOptions},
     network::NetworkConfig,
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
@@ -41,6 +43,18 @@ enum CreditCommands {
     Approve(ApproveArgs),
     /// Revoke an account from using credits from another acccount.
     Revoke(RevokeArgs),
+    /// Sponsor related commands.
+    #[command(subcommand)]
+    Sponsor(SponsorCommands),
+}
+
+#[derive(Clone, Debug, Subcommand)]
+enum SponsorCommands {
+    /// Set account default credit sponsor for gas fees.
+    /// This will have no effect on gas fees if the required credit approval does not exist.
+    Set(SetSponsorArgs),
+    /// Unset account default credit sponsor for gas fees.
+    Unset(UnsetSponsorArgs),
 }
 
 #[derive(Clone, Debug, Args)]
@@ -62,7 +76,7 @@ struct BuyArgs {
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
-    recipient: Option<Address>,
+    to: Option<Address>,
     /// The amount of FIL to spend.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
@@ -80,11 +94,12 @@ struct ApproveArgs {
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
-    receiver: Address,
-    /// Restrict the approval to a caller address, e.g., a bucket.
+    to: Address,
+    /// Restrict the approval to one or more caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
+    /// If not set, any caller is allowed.
     #[arg(long, value_parser = parse_address)]
-    caller: Option<Address>,
+    caller: Option<HashSet<Address>>,
     /// Credit approval limit.
     /// If specified, the approval becomes invalid once the committed credits reach the
     /// specified limit.
@@ -108,11 +123,38 @@ struct RevokeArgs {
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
-    receiver: Address,
-    /// Restrict the approval to a caller address, e.g., a bucket.
-    /// The receiver will only be able to use the approval via a caller contract.
+    to: Address,
+    /// Revoke the approval for the caller address.
+    /// The address must be part of the existing caller allowlist.
     #[arg(long, value_parser = parse_address)]
     caller: Option<Address>,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct SetSponsorArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    private_key: SecretKey,
+    /// Credit sponsor address.
+    #[arg(value_parser = parse_address)]
+    sponsor: Address,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct UnsetSponsorArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    private_key: SecretKey,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -148,11 +190,11 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let recipient = args.recipient.unwrap_or(signer.address());
+            let to = args.to.unwrap_or(signer.address());
             let tx = Credits::buy(
                 &provider,
                 &mut signer,
-                recipient,
+                to,
                 args.amount.clone(),
                 BuyOptions {
                     broadcast_mode,
@@ -182,9 +224,9 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
                 &provider,
                 &mut signer,
                 from,
-                args.receiver,
+                args.to,
                 ApproveOptions {
-                    caller: args.caller,
+                    caller: args.caller.clone(),
                     limit: args.limit.clone(),
                     ttl: args.ttl,
                     broadcast_mode,
@@ -214,7 +256,7 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
                 &provider,
                 &mut signer,
                 from,
-                args.receiver,
+                args.to,
                 RevokeOptions {
                     caller: args.caller,
                     broadcast_mode,
@@ -225,5 +267,65 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
 
             print_json(&tx)
         }
+        CreditCommands::Sponsor(cmd) => match cmd {
+            SponsorCommands::Set(args) => {
+                let broadcast_mode = args.broadcast_mode.get();
+                let TxParams {
+                    gas_params,
+                    sequence,
+                } = args.tx_args.to_tx_params();
+
+                let mut signer = Wallet::new_secp256k1(
+                    args.private_key.clone(),
+                    AccountKind::Ethereum,
+                    cfg.subnet_id,
+                )?;
+                signer.set_sequence(sequence, &provider).await?;
+
+                let from = signer.address();
+                let tx = Credits::set_sponsor(
+                    &provider,
+                    &mut signer,
+                    from,
+                    Some(args.sponsor),
+                    SetSponsorOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+                print_json(&tx)
+            }
+            SponsorCommands::Unset(args) => {
+                let broadcast_mode = args.broadcast_mode.get();
+                let TxParams {
+                    gas_params,
+                    sequence,
+                } = args.tx_args.to_tx_params();
+
+                let mut signer = Wallet::new_secp256k1(
+                    args.private_key.clone(),
+                    AccountKind::Ethereum,
+                    cfg.subnet_id,
+                )?;
+                signer.set_sequence(sequence, &provider).await?;
+
+                let from = signer.address();
+                let tx = Credits::set_sponsor(
+                    &provider,
+                    &mut signer,
+                    from,
+                    None,
+                    SetSponsorOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+                print_json(&tx)
+            }
+        },
     }
 }

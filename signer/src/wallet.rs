@@ -60,10 +60,11 @@ impl Signer for Wallet {
         value: TokenAmount,
         method_num: MethodNum,
         params: RawBytes,
-        gas_params: GasParams,
+        mut gas_params: GasParams,
     ) -> anyhow::Result<ChainMessage> {
         let mut sequence_guard = self.sequence.lock().await;
         let sequence = *sequence_guard;
+        gas_params.set_limits();
         let message = Message {
             version: Default::default(),
             from: self.addr,
