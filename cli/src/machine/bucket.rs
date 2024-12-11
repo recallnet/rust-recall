@@ -72,11 +72,6 @@ struct BucketCreateArgs {
     /// Allow public write access to the bucket.
     #[arg(long, default_value_t = false)]
     public_write: bool,
-    /// The amount of FIL to spend on credit for the bucket.
-    /// If you don't buy credits when creating the bucket,
-    /// you can buy them later with the `credit buy --to <bucket address>` command.
-    #[arg(long, value_parser = parse_token_amount)]
-    buy_credit: Option<TokenAmount>,
     /// User-defined metadata.
     #[arg(short, long, value_parser = parse_metadata)]
     metadata: Vec<(String, String)>,
@@ -242,22 +237,6 @@ pub async fn handle_bucket(
                 gas_params.clone(),
             )
             .await?;
-
-            if let Some(buy_credit) = args.buy_credit.clone() {
-                if buy_credit.is_positive() {
-                    Credits::buy(
-                        &provider,
-                        &mut signer,
-                        store.address(),
-                        buy_credit,
-                        BuyOptions {
-                            broadcast_mode: Default::default(),
-                            gas_params,
-                        },
-                    )
-                    .await?;
-                }
-            }
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }
