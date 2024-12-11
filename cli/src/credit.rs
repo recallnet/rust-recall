@@ -77,7 +77,7 @@ struct BuyArgs {
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
     to: Option<Address>,
-    /// The amount of FIL to spend.
+    /// The amount of HOKU to spend.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
     /// Broadcast mode for the transaction.

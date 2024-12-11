@@ -44,7 +44,7 @@ pub fn parse_token_amount(s: &str) -> anyhow::Result<TokenAmount> {
     Ok(TokenAmount::from_nano(nano as u128))
 }
 
-/// Parse the token amount in attoFIL (10**18) from string.
+/// Parse the token amount in attoHOKU (10**18) from string.
 pub fn parse_token_amount_from_atto(s: &str) -> anyhow::Result<TokenAmount> {
     Ok(TokenAmount::from_atto(BigInt::from_str(s)?))
 }

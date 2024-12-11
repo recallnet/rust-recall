@@ -212,8 +212,8 @@ You can find detailed instructions for each of these in their respective subdire
 
 ### Chain RPCs & funds
 
-Since Hoku is built on top of Filecoin, you must have FIL in your account to interact with the network. Hoku is
-currently only live on the Filecoin Calibration network, so you can get tFIL via the
+Since Hoku is built on top of Filecoin, you must have HOKU in your account to interact with the network. Hoku is
+currently only live on the Filecoin Calibration network, so you can get tHOKU via the
 faucet [here](https://faucet.calibnet.chainsafe-fil.io/funds.html). For reference, Filecoin chain information can be
 found [here](https://chainlist.org/?search=filecoin&testnets=true).
 

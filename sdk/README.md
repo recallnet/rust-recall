@@ -56,7 +56,7 @@ All data is signed onchain as transactions, so you'll need to set up an account 
 For example, any EVM-compatible wallet will work, or you can run
 the [`account_deposit.rs`](./examples/account_deposit.rs) example to create a private key for you.
 
-Then, make sure your account is funded with FIL, so you can pay to execute a transaction (you can use the
+Then, make sure your account is funded with HOKU, so you can pay to execute a transaction (you can use the
 faucet [here](https://faucet.calibnet.chainsafe-fil.io/funds.html)).
 Follow the [examples](./examples) to get up and running.
 
