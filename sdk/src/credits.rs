@@ -24,7 +24,7 @@ use tendermint_rpc::Client;
 
 use hoku_provider::message::{local_message, GasParams};
 use hoku_provider::query::QueryProvider;
-use hoku_provider::response::decode_bytes;
+use hoku_provider::response::{decode_bytes, decode_empty};
 use hoku_provider::tx::{BroadcastMode, TxReceipt};
 use hoku_provider::Provider;
 use hoku_signer::Signer;
@@ -186,7 +186,7 @@ pub struct CreditStats {
     /// The total number of credits debited in the subnet.
     pub credit_debited: String,
     /// The byte-blocks per atto token rate set at genesis.
-    pub credit_debit_rate: u64,
+    pub blob_credits_per_byte_block: u64,
     /// Total number of debit accounts.
     pub num_accounts: u64,
 }
@@ -198,7 +198,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
             credit_sold: v.credit_sold.to_string(),
             credit_committed: v.credit_committed.to_string(),
             credit_debited: v.credit_debited.to_string(),
-            credit_debit_rate: v.credit_debit_rate,
+            blob_credits_per_byte_block: v.blob_credits_per_byte_block,
             num_accounts: v.num_accounts,
         }
     }
@@ -374,8 +374,4 @@ fn decode_approve(deliver_tx: &DeliverTx) -> anyhow::Result<Approval> {
     fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::CreditApproval>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
-}
-
-fn decode_empty(_: &DeliverTx) -> anyhow::Result<()> {
-    Ok(())
 }
