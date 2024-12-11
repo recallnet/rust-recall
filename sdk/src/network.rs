@@ -22,7 +22,7 @@ const DEVNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc4434888
 const DEVNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
-const LOCALNET_SUBNET_ID: &str = "/r31337/t410fkzrz3mlkyufisiuae3scumllgalzuu3wxlxa2ly"; // chain ID: 4362550583360910
+const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6gbdxrbehnaeeo4mrq7wc5hgq6smnefys4qanwi"; // chain ID: 534485604105794
 const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 const LOCALNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
@@ -34,7 +34,7 @@ const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x4ed7c70F96B99c776995fB6437
 
 // Ignition
 const TESTNET_RPC_URL: &str = "https://api-ignition-0.hoku.sh";
-const TESTNET_SUBNET_ID: &str = "/r314159/t410flmsf3a7rcemwnj4qxywe5vowmkigkgtm5hl3lqa";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410f2mjuvgks4vlwbmtfmwohbaqo5v2w5fbcr5zf7li";
 const TESTNET_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 const TESTNET_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
