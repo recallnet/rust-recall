@@ -25,14 +25,14 @@ FVM address: t410ftqeuusqto3jezobwm5lh33bnnmv2jfcoijdi44q
 
 ### Deposit funds
 
-To create transactions in the `hoku` testnet, you need to first deposit some Calibration tFIL in the `hoku` subnet.
+To create transactions in the `hoku` testnet, you need to first deposit some Calibration HOKU in the `hoku` subnet.
 
 1. Go to the [Calibration faucet](https://faucet.calibnet.chainsafe-fil.io/) and click "Send Funds".
 2. Enter an Ethereum address.
    This can be any valid Ethereum address,
    like the one given by running the [`account_create.rs`](account_create.rs) example.
 3. Look up the address you used on the [Calibration explorer](https://calibration.filfox.info/en).
-   After about a minute, you should have 100 tFIL.
+   After about a minute, you should have 100 HOKU.
 4. Now you're ready to make a deposit to the `hoku` testnet subnet.
 
 Run the [`account_deposit.rs`](account_deposit.rs) example using the private key for the address you used above.
@@ -44,7 +44,7 @@ cargo run --example account_deposit -- [YOUR_HEX_ENCODED_PRIVATE_KEY]
 Example output:
 
 ```text
-Deposited 1 tFIL to 0x9c094a4a1376d24cb83667567dec2d6b2ba4944e
+Deposited 1 HOKU to 0x9c094a4a1376d24cb83667567dec2d6b2ba4944e
 Transaction hash: 0x03d40fc3e8d629b2b52805e4fd1fb93f2d31bb06feaa3da55408091cbde6a654
 ```
 

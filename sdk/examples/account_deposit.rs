@@ -20,9 +20,9 @@ async fn main() -> anyhow::Result<()> {
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    // Note: The debit account _must_ hold at least 1 Calibration tFIL for the deposit
+    // Note: The debit account _must_ hold at least 1 Calibration HOKU for the deposit
     // plus enough to cover the transaction fee.
-    // Go to the faucet at https://faucet.calibnet.chainsafe-fil.io/ to get yourself some tFIL.
+    // Go to the faucet at https://faucet.calibnet.chainsafe-fil.io/ to get yourself some HOKU.
     let cfg = Network::Testnet.get_config();
 
     // Setup local wallet using private key from arg
@@ -40,7 +40,7 @@ async fn main() -> anyhow::Result<()> {
     .await?;
 
     println!(
-        "Deposited 1 tFIL to {}",
+        "Deposited 1 HOKU to {}",
         signer.evm_address()?.encode_hex_with_prefix()
     );
     println!(

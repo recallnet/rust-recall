@@ -67,7 +67,7 @@ All data is signed onchain as transactions, so you'll need to set up an account 
 network. For example, any EVM-compatible wallet will work, or you can run the `hoku account create` command to create a
 private key for you.
 
-Then, make sure your account is funded with FIL, so you can pay to execute a transaction (you can use the
+Then, make sure your account is funded with HOKU, so you can pay to execute a transaction (you can use the
 faucet [here](https://faucet.calibnet.chainsafe-fil.io/funds.html)). When you `deposit` funds from the parent (Filecoin
 Calibration) to the child subnet, it will register your account on the subnet. If you ever want to move funds back to
 the parent, the `withdraw` command can be used. Note these differ from moving funds intra-subnet, which requires you
@@ -589,8 +589,8 @@ hoku bucket create
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
 | `--public-write`    | No        | Allow **_public, open_** write access to the bucket.                |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
-| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL). |
-| `--gas-premium`     | No        | Gas premium for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).     |
+| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-premium`     | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
 | `--sequence`        | No        | Sequence (i.e., nonce) for the transaction.                               |
 
 **Example:**
@@ -691,8 +691,8 @@ The `INPUT` can be a file path.
 | `-o, --overwrite`      | No        | Overwrite the object if it already exists.                                            |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
-| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).             |
-| `--gas-premium`        | No        | Gas premium for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).                 |
+| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-premium`        | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
 | `--sequence`           | No        | Sequence (i.e., nonce) for the transaction.                                           |
 
 **Examples:**
@@ -789,8 +789,8 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 | `--object-api-url`     | No        | Node Object API URL.                                                                  |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
-| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).             |
-| `--gas-premium`        | No        | Gas premium for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).                 |
+| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-premium`        | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
 | `--sequence`           | No        | Sequence (i.e., nonce) for the transaction.                                           |
 
 **Example:**
@@ -958,8 +958,8 @@ hoku timehub create
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
 | `--public-write`    | No        | Allow **_public, open_** write access to the bucket.                |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
-| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL). |
-| `--gas-premium`     | No        | Gas premium for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).     |
+| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoHOKU. The client will enforce a minimum value of 100 attoHOKU. 1HOKU = 10**18 attoHOKU. |
+| `--gas-premium`     | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU) |
 | `--sequence`        | No        | Sequence (i.e., nonce) for the transaction.                               |
 
 **Example:**
@@ -1044,8 +1044,8 @@ The `INPUT` can be a file path or piped from stdin.
 | `-a, --address`        | Yes       | Timehub machine address.                                                          |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
-| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).             |
-| `--gas-premium`        | No        | Gas premium for the transaction in attoFIL (1FIL = 10\*\*18 attoFIL).                 |
+| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-premium`        | No        | Gas premium for the transaction in attoHOKU ( 1HOKU = 10\*\*18 attoHOKU). |
 | `--sequence`           | No        | Sequence (i.e., nonce) for the transaction.                                           |
 
 **Examples:**

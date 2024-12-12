@@ -128,14 +128,14 @@ struct TxArgs {
     /// Gas limit for the transaction.
     #[arg(long, env = "HOKU_GAS_LIMIT")]
     gas_limit: Option<u64>,
-    /// Maximum gas fee for the transaction in attoFIL.
-    /// The client will enforce a minimum value of 100 attoFIL.
-    /// 1FIL = 10**18 attoFIL.
+    /// Maximum gas fee for the transaction in attoHOKU.
+    /// The client will enforce a minimum value of 100 attoHOKU.
+    /// 1HOKU = 10**18 attoHOKU.
     #[arg(long, env = "HOKU_GAS_FEE_CAP", value_parser = parse_token_amount_from_atto)]
     gas_fee_cap: Option<TokenAmount>,
-    /// Gas premium for the transaction in attoFIL.
-    /// The client will enforce a minimum value of 100,000 attoFIL.
-    /// 1FIL = 10**18 attoFIL.
+    /// Gas premium for the transaction in attoHOKU.
+    /// The client will enforce a minimum value of 100,000 attoHOKU.
+    /// 1HOKU = 10**18 attoHOKU.
     #[arg(long, env = "HOKU_GAS_PREMIUM", value_parser = parse_token_amount_from_atto)]
     gas_premium: Option<TokenAmount>,
     /// Sequence for the transaction.
