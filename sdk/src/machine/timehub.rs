@@ -6,7 +6,6 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use bytes::Bytes;
-use fendermint_actor_machine::WriteAccess;
 use fendermint_actor_timehub::Method::{Count, Get, Peaks, Push, Root};
 use fendermint_vm_actor_interface::adm::Kind;
 use fvm_ipld_encoding::{BytesSer, RawBytes};
@@ -87,23 +86,14 @@ impl Machine for Timehub {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         owner: Option<Address>,
-        write_access: WriteAccess,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
     ) -> anyhow::Result<(Self, DeployTxReceipt)>
     where
         C: Client + Send + Sync,
     {
-        let (address, tx) = deploy_machine(
-            provider,
-            signer,
-            owner,
-            Kind::Timehub,
-            write_access,
-            metadata,
-            gas_params,
-        )
-        .await?;
+        let (address, tx) =
+            deploy_machine(provider, signer, owner, Kind::Timehub, metadata, gas_params).await?;
         Ok((Self::attach(address).await?, tx))
     }
 

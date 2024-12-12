@@ -5,7 +5,6 @@ use anyhow::anyhow;
 use bytes::Bytes;
 use clap::{Args, Subcommand};
 use clap_stdin::FileOrStdin;
-use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
@@ -129,11 +128,6 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
 
     match &args.command {
         TimehubCommands::Create(args) => {
-            let write_access = if args.public_write {
-                WriteAccess::Public
-            } else {
-                WriteAccess::OnlyOwner
-            };
             let TxParams {
                 sequence,
                 gas_params,
@@ -145,15 +139,8 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
 
-            let (store, tx) = Timehub::new(
-                &provider,
-                &mut signer,
-                args.owner,
-                write_access,
-                metadata,
-                gas_params,
-            )
-            .await?;
+            let (store, tx) =
+                Timehub::new(&provider, &mut signer, args.owner, metadata, gas_params).await?;
 
             print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
         }

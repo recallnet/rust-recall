@@ -6,7 +6,6 @@ use std::{collections::HashMap, str::FromStr as _};
 
 use anyhow::anyhow;
 use cid::Cid;
-use fendermint_actor_machine::WriteAccess;
 use fendermint_vm_message::query::FvmQueryHeight;
 
 use hoku_provider::json_rpc::JsonRpcProvider;
@@ -41,7 +40,6 @@ async fn main() -> anyhow::Result<()> {
         &provider,
         &mut signer,
         None,
-        WriteAccess::OnlyOwner,
         HashMap::new(),
         Default::default(),
     )
