@@ -53,8 +53,8 @@ pub struct StorageStats {
     pub capacity_free: String,
     /// The total used storage capacity of the subnet.
     pub capacity_used: String,
-    /// Total number of actively stored blobs.
-    pub num_blobs: u64,
+    // Total number of actively stored blobs.
+    // pub num_blobs: u64,
     /// Total number of currently resolving blobs.
     pub num_resolving: u64,
 }
@@ -64,7 +64,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for StorageStat
         Self {
             capacity_free: v.capacity_free.to_string(),
             capacity_used: v.capacity_used.to_string(),
-            num_blobs: v.num_blobs,
+            // num_blobs: v.num_blobs,
             num_resolving: v.num_resolving,
         }
     }
