@@ -5,13 +5,11 @@ use std::time::Duration;
 
 use anyhow::anyhow;
 use clap::{Args, Subcommand};
-use fendermint_crypto::SecretKey;
-use fendermint_vm_actor_interface::eam::EthAddress;
-use fvm_shared::{address::Address, econ::TokenAmount};
 use reqwest::Url;
 use serde_json::json;
 
 use hoku_provider::{
+    fvm_shared::{address::Address, econ::TokenAmount},
     json_rpc::JsonRpcProvider,
     util::{get_delegated_address, parse_address, parse_token_amount},
 };
@@ -21,7 +19,8 @@ use hoku_sdk::{
     network::{NetworkConfig, ParentNetworkConfig},
 };
 use hoku_signer::{
-    key::parse_secret_key, key::random_secretkey, AccountKind, Signer, SubnetID, Void, Wallet,
+    key::{parse_secret_key, random_secretkey, SecretKey},
+    AccountKind, EthAddress, Signer, SubnetID, Void, Wallet,
 };
 
 use crate::{get_address, print_json, AddressArgs};

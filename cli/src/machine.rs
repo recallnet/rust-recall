@@ -3,12 +3,12 @@
 
 use clap::{Args, Subcommand};
 use ethers::utils::hex::ToHexExt;
-use fendermint_vm_message::query::FvmQueryHeight;
-use fvm_shared::address::Address;
 use serde_json::json;
 
 use hoku_provider::{
+    fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
+    query::FvmQueryHeight,
     util::{get_delegated_address, parse_address, parse_query_height},
 };
 use hoku_sdk::{machine::info, network::NetworkConfig};
