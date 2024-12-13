@@ -18,7 +18,6 @@ use fendermint_actor_bucket::{
     Method::{AddObject, DeleteObject, GetObject, ListObjects},
     Object,
 };
-use fendermint_actor_machine::WriteAccess;
 use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
@@ -156,23 +155,15 @@ impl Machine for Bucket {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         owner: Option<Address>,
-        write_access: WriteAccess,
+
         metadata: HashMap<String, String>,
         gas_params: GasParams,
     ) -> anyhow::Result<(Self, DeployTxReceipt)>
     where
         C: Client + Send + Sync,
     {
-        let (address, tx) = deploy_machine(
-            provider,
-            signer,
-            owner,
-            Kind::Bucket,
-            write_access,
-            metadata,
-            gas_params,
-        )
-        .await?;
+        let (address, tx) =
+            deploy_machine(provider, signer, owner, Kind::Bucket, metadata, gas_params).await?;
         let this = Self::attach(address).await?;
         Ok((this, tx))
     }

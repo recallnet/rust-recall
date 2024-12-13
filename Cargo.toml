@@ -70,17 +70,17 @@ tendermint-rpc = { version = "0.31.1", features = [
 fvm_shared = "4.4.0"
 fvm_ipld_encoding = "0.4.0"
 
-fendermint_actor_blobs_shared = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-fendermint_actor_bucket = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-fendermint_actor_hoku_config_shared = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-fendermint_actor_machine = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-fendermint_actor_timehub = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-fendermint_crypto = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-fendermint_vm_actor_interface = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-fendermint_vm_message = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
+fendermint_actor_blobs_shared = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+fendermint_actor_bucket = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+fendermint_actor_hoku_config_shared = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+fendermint_actor_machine = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+fendermint_actor_timehub = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+fendermint_crypto = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+fendermint_vm_actor_interface = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+fendermint_vm_message = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
 
-ipc_actors_abis = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
-ipc-api = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "0a90cd4e22196d516ce079ba0ca1adee8e02d023" }
+ipc_actors_abis = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
+ipc-api = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "6f04e8c17e290b38519ee6688bc1c8b9a0e43527" }
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.

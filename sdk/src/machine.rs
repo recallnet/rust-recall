@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fendermint_actor_machine::{Metadata, WriteAccess, GET_METADATA_METHOD};
+use fendermint_actor_machine::{Metadata, GET_METADATA_METHOD};
 use fendermint_vm_actor_interface::adm::{
     self, CreateExternalParams, CreateExternalReturn, Kind, ListMetadataParams,
     Method::CreateExternal, Method::ListMetadata, ADM_ACTOR_ADDR,
@@ -44,14 +44,10 @@ pub trait Machine: Send + Sync + Sized {
     const KIND: Kind;
 
     /// Create a new machine instance using the given [`Provider`] and [`Signer`].
-    ///
-    /// [`WriteAccess::OnlyOwner`]: Only the owner will be able to mutate the machine.
-    /// [`WriteAccess::Public`]: Any account can mutate the machine.
     async fn new<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         owner: Option<Address>,
-        write_access: WriteAccess,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
     ) -> anyhow::Result<(Self, DeployTxReceipt)>
@@ -107,7 +103,6 @@ async fn deploy_machine<C>(
     signer: &mut impl Signer,
     owner: Option<Address>,
     kind: Kind,
-    write_access: WriteAccess,
     metadata: HashMap<String, String>,
     gas_params: GasParams,
 ) -> anyhow::Result<(Address, DeployTxReceipt)>
@@ -117,7 +112,6 @@ where
     let params = CreateExternalParams {
         owner: owner.unwrap_or(signer.address()),
         kind,
-        write_access,
         metadata,
     };
 

@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::env;
 
 use anyhow::anyhow;
-use fendermint_actor_machine::WriteAccess;
 use rand::{thread_rng, Rng};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
@@ -43,7 +42,6 @@ async fn main() -> anyhow::Result<()> {
         &provider,
         &mut signer,
         None,
-        WriteAccess::OnlyOwner,
         HashMap::new(),
         Default::default(),
     )

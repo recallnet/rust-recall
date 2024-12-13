@@ -6,7 +6,6 @@ use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand};
 use fendermint_actor_bucket::{Object, ObjectState};
-use fendermint_actor_machine::WriteAccess;
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::address::Address;
@@ -206,11 +205,6 @@ pub async fn handle_bucket(
         BucketCommands::Create(args) => {
             let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
 
-            let write_access = if args.public_write {
-                WriteAccess::Public
-            } else {
-                WriteAccess::OnlyOwner
-            };
             let TxParams {
                 sequence,
                 gas_params,
@@ -229,7 +223,6 @@ pub async fn handle_bucket(
                 &provider,
                 &mut signer,
                 args.owner,
-                write_access,
                 metadata,
                 gas_params.clone(),
             )
