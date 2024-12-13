@@ -2,18 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use async_trait::async_trait;
-use fendermint_crypto::SecretKey;
-use fendermint_vm_actor_interface::eam::EthAddress;
-use fendermint_vm_message::{chain::ChainMessage, signed::SignedMessage};
-use fvm_ipld_encoding::RawBytes;
-use fvm_shared::{
-    address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
+use hoku_provider::message::{ChainMessage, GasParams, Message, SignedMessage};
+use hoku_provider::util::get_delegated_address;
+use hoku_provider::{
+    fvm_ipld_encoding::RawBytes,
+    fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
 };
 
-use hoku_provider::message::GasParams;
-use hoku_provider::util::get_delegated_address;
-
+use crate::key::SecretKey;
 use crate::SubnetID;
+
+pub use fendermint_vm_actor_interface::eam::EthAddress;
 
 /// Trait that must be implemented by all signers.
 ///

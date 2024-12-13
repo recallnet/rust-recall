@@ -3,20 +3,20 @@
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fendermint_crypto::SecretKey;
-use fendermint_vm_actor_interface::eam::EthAddress;
-use fendermint_vm_message::{chain::ChainMessage, query::FvmQueryHeight, signed::SignedMessage};
-use fvm_ipld_encoding::RawBytes;
-use fvm_shared::{
-    address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
-};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use hoku_provider::{message::GasParams, query::QueryProvider};
+use hoku_provider::{
+    fvm_ipld_encoding::RawBytes,
+    fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
+    message::{ChainMessage, GasParams, Message, SignedMessage},
+    query::{FvmQueryHeight, QueryProvider},
+};
 
-use crate::signer::Signer;
+use crate::signer::{EthAddress, Signer};
 use crate::SubnetID;
+
+pub use fendermint_crypto::SecretKey;
 
 /// Indicates how an [`Address`] should be derived from a public key.
 ///
@@ -159,7 +159,7 @@ mod tests {
 
     use super::*;
     use async_trait::async_trait;
-    use fendermint_vm_message::query::{FvmQuery, FvmQueryHeight};
+    use hoku_provider::query::{FvmQuery, FvmQueryHeight};
     use tendermint_rpc::endpoint::abci_query::AbciQuery;
 
     struct MockQueryProvider;

@@ -11,7 +11,7 @@ mod subnet;
 mod void;
 mod wallet;
 
-pub use signer::Signer;
+pub use signer::{EthAddress, Signer};
 pub use subnet::SubnetID;
 pub use void::Void;
 pub use wallet::{AccountKind, Wallet};

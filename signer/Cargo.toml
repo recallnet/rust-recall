@@ -18,12 +18,8 @@ hex = { workspace = true }
 rand = { workspace = true }
 tokio = { workspace = true }
 
-fvm_ipld_encoding = { workspace = true }
-fvm_shared = { workspace = true }
-
 fendermint_crypto = { workspace = true }
 fendermint_vm_actor_interface = { workspace = true }
-fendermint_vm_message = { workspace = true }
 tendermint-rpc = { workspace = true }
 
 ipc-api = { workspace = true }
