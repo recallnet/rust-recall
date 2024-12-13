@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
-use ethers::prelude::TransactionReceipt;
-use fendermint_vm_message::query::FvmQueryHeight;
-use fvm_shared::{address::Address, econ::TokenAmount};
 
-use hoku_provider::query::QueryProvider;
+use hoku_provider::{
+    fvm_shared::{address::Address, econ::TokenAmount},
+    query::{FvmQueryHeight, QueryProvider},
+};
 use hoku_signer::Signer;
 
-use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
+pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
+pub use ethers::prelude::TransactionReceipt;
 
 /// A static wrapper around Hoku account methods.
 pub struct Account {}

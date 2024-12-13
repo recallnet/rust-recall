@@ -8,22 +8,19 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use fendermint_actor_timehub::Method::{Count, Get, Peaks, Push, Root};
 use fendermint_vm_actor_interface::adm::Kind;
-use fvm_ipld_encoding::{BytesSer, RawBytes};
-use fvm_shared::address::Address;
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
-use tendermint_rpc::Client;
 
 use hoku_provider::{
+    fvm_ipld_encoding::{self, BytesSer, RawBytes},
+    fvm_shared::address::Address,
     message::{local_message, GasParams},
-    query::QueryProvider,
+    query::{FvmQueryHeight, QueryProvider},
     response::{decode_as, decode_bytes, Cid},
     tx::{BroadcastMode, TxReceipt},
-    Provider,
+    Client, Provider,
 };
 use hoku_signer::Signer;
-
-pub use fendermint_vm_message::query::FvmQueryHeight;
 
 use crate::machine::{deploy_machine, DeployTxReceipt, Machine};
 

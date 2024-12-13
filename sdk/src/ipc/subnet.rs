@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use fvm_shared::address::Address;
+use hoku_provider::fvm_shared::address::Address;
 use reqwest::Url;
 
 use hoku_signer::SubnetID;

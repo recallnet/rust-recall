@@ -5,13 +5,13 @@ use std::fmt::Display;
 use std::str::FromStr;
 use std::time::Duration;
 
-use fvm_shared::{
+use serde::{Deserialize, Deserializer};
+
+use hoku_provider::fvm_shared::{
     address::{self, Address, Error, Network as FvmNetwork},
     chainid::ChainID,
 };
-use serde::{Deserialize, Deserializer};
-use tendermint_rpc::Url;
-
+use hoku_provider::json_rpc::Url;
 use hoku_provider::util::parse_address;
 use hoku_signer::SubnetID;
 
