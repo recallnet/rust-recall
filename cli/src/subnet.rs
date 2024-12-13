@@ -3,6 +3,7 @@
 
 use clap::{Args, Subcommand};
 use fendermint_crypto::SecretKey;
+use fvm_shared::bigint::BigInt;
 use fvm_shared::clock::ChainEpoch;
 use serde_json::json;
 
@@ -44,9 +45,9 @@ struct SetConfigArgs {
     /// The total storage capacity of the subnet.
     #[arg(long)]
     blob_capacity: u64,
-    /// The byte-blocks per atto token rate.
+    /// The token to credit rate. The amount of atto credits that 1 atto buys.
     #[arg(long)]
-    blob_credits_per_byte_block: u64,
+    token_credit_rate: BigInt,
     /// Block interval at which to debit all credit accounts.
     #[arg(long)]
     blob_credit_debit_interval: ChainEpoch,
@@ -92,7 +93,7 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                     &mut signer,
                     SetConfigOptions {
                         blob_capacity: args.blob_capacity,
-                        blob_credits_per_byte_block: args.blob_credits_per_byte_block,
+                        token_credit_rate: args.token_credit_rate.clone(),
                         blob_credit_debit_interval: args.blob_credit_debit_interval,
                         broadcast_mode,
                         gas_params,
@@ -106,7 +107,7 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                 let config = Subnet::get_config(&provider, args.address.height).await?;
                 print_json(&json!({
                     "blob_capacity": config.blob_capacity,
-                    "blob_credits_per_byte_block": config.blob_credits_per_byte_block,
+                    "token_credit_rate": config.token_credit_rate.to_string(),
                     "blob_credit_debit_interval": config.blob_credit_debit_interval,
                 }))
             }
