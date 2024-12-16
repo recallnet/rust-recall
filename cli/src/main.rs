@@ -1,6 +1,8 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::collections::HashSet;
+
 use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use fendermint_crypto::SecretKey;
 use fendermint_vm_message::query::FvmQueryHeight;
@@ -214,6 +216,13 @@ fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Addres
             .exit();
     };
     Ok(address)
+}
+
+/// Parser function for comma-separated address values.
+pub fn parse_address_list(s: &str) -> anyhow::Result<HashSet<Address>> {
+    s.split(',')
+        .map(|s| parse_address(s).map_err(|e| anyhow::anyhow!("error parsing address: {}", e)))
+        .collect::<Result<HashSet<_>, _>>()
 }
 
 /// Print serializable to stdout as pretty formatted JSON.
