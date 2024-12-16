@@ -57,6 +57,16 @@ pub struct StorageStats {
     // pub num_blobs: u64,
     /// Total number of currently resolving blobs.
     pub num_resolving: u64,
+    /// Total number of debit accounts.
+    pub num_accounts: u64,
+    /// Total number of actively stored blobs.
+    pub num_blobs: u64,
+    /// Total bytes of all currently resolving blobs.
+    pub bytes_resolving: u64,
+    /// Total number of blobs that are not yet added to the validator's resolve pool.
+    pub num_added: u64,
+    // Total bytes of all blobs that are not yet added to the validator's resolve pool.
+    pub bytes_added: u64,
 }
 
 impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for StorageStats {
@@ -66,6 +76,11 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for StorageStat
             capacity_used: v.capacity_used.to_string(),
             // num_blobs: v.num_blobs,
             num_resolving: v.num_resolving,
+            num_accounts: v.num_accounts,
+            num_blobs: v.num_blobs,
+            bytes_resolving: v.bytes_resolving,
+            num_added: v.num_added,
+            bytes_added: v.bytes_added,
         }
     }
 }
