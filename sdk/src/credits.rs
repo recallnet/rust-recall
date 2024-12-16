@@ -188,7 +188,7 @@ pub struct CreditStats {
     /// The byte-blocks per atto token rate set at genesis.
     pub blob_credits_per_byte_block: u64,
     // Total number of debit accounts.
-    // pub num_accounts: u64,
+    pub num_accounts: u64,
 }
 
 impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats {
@@ -199,7 +199,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
             credit_committed: v.credit_committed.to_string(),
             credit_debited: v.credit_debited.to_string(),
             blob_credits_per_byte_block: v.blob_credits_per_byte_block,
-            // num_accounts: v.num_accounts,
+            num_accounts: v.num_accounts,
         }
     }
 }
