@@ -22,7 +22,7 @@ use hoku_sdk::{
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
-use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
+use crate::{get_address, parse_address_list, print_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct CreditArgs {
@@ -98,7 +98,7 @@ struct ApproveArgs {
     /// Restrict the approval to one or more caller address, e.g., a bucket.
     /// The receiver will only be able to use the approval via a caller contract.
     /// If not set, any caller is allowed.
-    #[arg(long, value_parser = parse_address)]
+    #[arg(long, value_parser = parse_address_list)]
     caller: Option<HashSet<Address>>,
     /// Credit approval limit.
     /// If specified, the approval becomes invalid once the committed credits reach the
