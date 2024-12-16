@@ -220,9 +220,9 @@ fn get_address(args: AddressArgs, subnet_id: &SubnetID) -> anyhow::Result<Addres
 
 /// Parser function for comma-separated address values.
 pub fn parse_address_list(s: &str) -> anyhow::Result<HashSet<Address>> {
-    Ok(s.split(',')
+    s.split(',')
         .map(|s| parse_address(s).map_err(|e| anyhow::anyhow!("error parsing address: {}", e)))
-        .collect::<Result<HashSet<_>, _>>()?)
+        .collect::<Result<HashSet<_>, _>>()
 }
 
 /// Print serializable to stdout as pretty formatted JSON.
