@@ -15,8 +15,8 @@ use base64::{engine::general_purpose, Engine};
 use fendermint_actor_blobs_shared::state::{Hash, PublicKey};
 use fendermint_actor_bucket::{
     AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
-    Method::{AddObject, DeleteObject, GetObject, ListObjects},
-    Object,
+    Method::{AddObject, DeleteObject, GetObject, ListObjects, UpdateObjectMetadata},
+    Object, UpdateObjectMetadataParams, MAX_METADATA_KEY_SIZE, MAX_METADATA_VALUE_SIZE,
 };
 use fendermint_vm_actor_interface::adm::Kind;
 use fendermint_vm_message::query::FvmQueryHeight;
@@ -86,6 +86,15 @@ pub struct AddOptions {
 /// Object delete options.
 #[derive(Clone, Default, Debug)]
 pub struct DeleteOptions {
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
+}
+
+/// Update object metadata options.
+#[derive(Clone, Default, Debug)]
+pub struct UpdateObjectMetadataOptions {
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
@@ -352,6 +361,8 @@ impl Bucket {
     where
         C: Client + Send + Sync,
     {
+        validate_metadata(&options.metadata)?;
+
         // Iroh ingest
         msg_bar.set_prefix("[1/3]");
         msg_bar.set_message("Ingesting data ...");
@@ -672,6 +683,45 @@ impl Bucket {
         Ok(response.value)
     }
 
+    /// Update object metadata.
+    ///
+    /// New metadata gets added, and existing gets updated, and empty value metadata gets deleted.
+    pub async fn update_object_metadata<C>(
+        &self,
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        key: &str,
+        metadata: HashMap<String, Option<String>>,
+        options: UpdateObjectMetadataOptions,
+    ) -> anyhow::Result<TxReceipt<()>>
+    where
+        C: Client + Send + Sync,
+    {
+        validate_metadata_optional(&metadata)?;
+
+        let params = UpdateObjectMetadataParams {
+            key: key.into(),
+            metadata,
+        };
+        let params = RawBytes::serialize(params)?;
+        let message = signer
+            .transaction(
+                self.address,
+                Default::default(),
+                UpdateObjectMetadata as u64,
+                params,
+                options.gas_params,
+            )
+            .await?;
+        provider
+            .perform(
+                message,
+                options.broadcast_mode,
+                |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
+            )
+            .await
+    }
+
     fn add_content_type_to_metadata(
         &self,
         options: AddOptions,
@@ -700,4 +750,46 @@ fn decode_list(deliver_tx: &DeliverTx) -> anyhow::Result<ListObjectsReturn> {
     let data = decode_bytes(deliver_tx)?;
     fvm_ipld_encoding::from_slice(&data)
         .map_err(|e| anyhow!("error parsing as ListObjectsReturn: {e}"))
+}
+
+fn validate_metadata(metadata: &HashMap<String, String>) -> anyhow::Result<()> {
+    for (key, value) in metadata {
+        if key.len() as u32 > MAX_METADATA_KEY_SIZE {
+            return Err(anyhow!(
+                "key must be less than or equal to {}",
+                MAX_METADATA_KEY_SIZE
+            ));
+        }
+
+        if value.is_empty() || value.len() as u32 > MAX_METADATA_VALUE_SIZE {
+            return Err(anyhow!(
+                "value must non-empty and less than or equal to {}",
+                MAX_METADATA_VALUE_SIZE
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_metadata_optional(metadata: &HashMap<String, Option<String>>) -> anyhow::Result<()> {
+    for (key, value) in metadata {
+        if key.len() as u32 > MAX_METADATA_KEY_SIZE {
+            return Err(anyhow!(
+                "key must be less than or equal to{}",
+                MAX_METADATA_KEY_SIZE
+            ));
+        }
+
+        if let Some(value) = value {
+            if value.is_empty() || value.len() as u32 > MAX_METADATA_VALUE_SIZE {
+                return Err(anyhow!(
+                    "value must non-empty and less than or equal to {}",
+                    MAX_METADATA_VALUE_SIZE
+                ));
+            }
+        }
+    }
+
+    Ok(())
 }
