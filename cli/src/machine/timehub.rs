@@ -63,9 +63,6 @@ struct TimehubCreateArgs {
     /// The owner defaults to the signer if not specified.
     #[arg(short, long, value_parser = parse_address)]
     owner: Option<Address>,
-    /// Allow public write access to the timehub.
-    #[arg(long, default_value_t = false)]
-    public_write: bool,
     /// User-defined metadata.
     #[arg(short, long, value_parser = parse_metadata)]
     metadata: Vec<(String, String)>,

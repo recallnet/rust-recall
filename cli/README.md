@@ -587,7 +587,6 @@ hoku bucket create
 | Flag                | Required? | Description                                                               |
 | ------------------- | --------- | ------------------------------------------------------------------------- |
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
-| `--public-write`    | No        | Allow **_public, open_** write access to the bucket.                |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
 | `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
 | `--gas-premium`     | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
@@ -956,7 +955,6 @@ hoku timehub create
 | Flag                | Required? | Description                                                               |
 | ------------------- | --------- | ------------------------------------------------------------------------- |
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
-| `--public-write`    | No        | Allow **_public, open_** write access to the bucket.                |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
 | `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoHOKU. The client will enforce a minimum value of 100 attoHOKU. 1HOKU = 10**18 attoHOKU. |
 | `--gas-premium`     | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU) |
