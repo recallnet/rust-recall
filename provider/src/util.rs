@@ -73,3 +73,19 @@ pub fn parse_metadata(s: &str) -> anyhow::Result<(String, String)> {
     let val = s[pos + 1..].to_string();
     Ok((key, val))
 }
+
+/// Parse metadata from string accepting empty values.
+pub fn parse_metadata_optional(s: &str) -> anyhow::Result<(String, Option<String>)> {
+    match s.find('=') {
+        Some(pos) => {
+            let key = s[..pos].to_string();
+            let val = s[pos + 1..].to_string();
+            if val.is_empty() {
+                return Err(anyhow::anyhow!("empty VALUE provided"));
+            }
+
+            Ok((key, Some(val)))
+        }
+        None => Ok((s.to_string(), None)),
+    }
+}

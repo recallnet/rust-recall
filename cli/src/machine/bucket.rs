@@ -17,10 +17,15 @@ use tokio::io::{self};
 
 use hoku_provider::{
     json_rpc::JsonRpcProvider,
-    util::{parse_address, parse_metadata, parse_query_height, parse_token_amount},
+    util::{
+        parse_address, parse_metadata, parse_metadata_optional, parse_query_height,
+        parse_token_amount,
+    },
 };
 
-use hoku_sdk::machine::bucket::{AddOptions, DeleteOptions, GetOptions};
+use hoku_sdk::machine::bucket::{
+    AddOptions, DeleteOptions, GetOptions, UpdateObjectMetadataOptions,
+};
 use hoku_sdk::network::NetworkConfig;
 use hoku_sdk::{
     machine::{
@@ -54,6 +59,8 @@ enum BucketCommands {
     Get(BucketGetArgs),
     /// Query for objects.
     Query(BucketQueryArgs),
+    /// Metadata for objects.
+    Metadata(BucketMetadataArgs),
 }
 
 #[derive(Clone, Debug, Args)]
@@ -190,6 +197,27 @@ struct BucketQueryArgs {
     /// or a specific block height, e.g., "123".
     #[arg(long, value_parser = parse_query_height, default_value = "committed")]
     height: FvmQueryHeight,
+}
+
+#[derive(Clone, Debug, Args)]
+struct BucketMetadataArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    private_key: SecretKey,
+    /// Bucket machine address.
+    #[arg(short, long, value_parser = parse_address)]
+    address: Address,
+    /// Key of the object to update metadata.
+    #[arg(short, long)]
+    key: String,
+    /// User-defined metadata.
+    #[arg(short, long, value_parser = parse_metadata_optional, required=true)]
+    metadata: Vec<(String, Option<String>)>,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
 }
 
 /// Bucket commands handler.
@@ -378,6 +406,41 @@ pub async fn handle_bucket(
             print_json(
                 &json!({"objects": objects, "common_prefixes": common_prefixes, "next_key" : next_key }),
             )
+        }
+        BucketCommands::Metadata(args) => {
+            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+
+            let broadcast_mode = args.broadcast_mode.get();
+            let TxParams {
+                sequence,
+                gas_params,
+            } = args.tx_args.to_tx_params();
+
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                cfg.subnet_id,
+            )?;
+            signer.set_sequence(sequence, &provider).await?;
+
+            let metadata: HashMap<String, Option<String>> =
+                args.metadata.clone().into_iter().collect();
+
+            let machine = Bucket::attach(args.address).await?;
+            let tx = machine
+                .update_object_metadata(
+                    &provider,
+                    &mut signer,
+                    &args.key,
+                    metadata,
+                    UpdateObjectMetadataOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+            print_json(&tx)
         }
     }
 }
