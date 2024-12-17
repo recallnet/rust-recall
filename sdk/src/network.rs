@@ -5,7 +5,10 @@ use std::fmt::Display;
 use std::str::FromStr;
 use std::time::Duration;
 
-use fvm_shared::address::{self, Address, Error, Network as FvmNetwork};
+use fvm_shared::{
+    address::{self, Address, Error, Network as FvmNetwork},
+    chainid::ChainID,
+};
 use serde::{Deserialize, Deserializer};
 use tendermint_rpc::Url;
 
@@ -35,6 +38,7 @@ const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x322813Fd9A801c5507c9de605d
 // Ignition
 const TESTNET_RPC_URL: &str = "https://api-ignition-0.hoku.sh";
 const TESTNET_SUBNET_ID: &str = "/r314159/t410f2mjuvgks4vlwbmtfmwohbaqo5v2w5fbcr5zf7li";
+const TESTNET_CHAIN_ID: u64 = 2481632;
 const TESTNET_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 const TESTNET_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
@@ -121,7 +125,9 @@ impl Network {
         match self {
             Network::Mainnet => todo!(),
             Network::Testnet => NetworkConfig {
-                subnet_id: SubnetID::from_str(TESTNET_SUBNET_ID).unwrap(),
+                subnet_id: SubnetID::from_str(TESTNET_SUBNET_ID)
+                    .unwrap()
+                    .with_chain_id(ChainID::from(TESTNET_CHAIN_ID)),
                 rpc_url: Url::from_str(TESTNET_RPC_URL).unwrap(),
                 object_api_url: Url::from_str(TESTNET_OBJECT_API_URL).unwrap(),
                 evm_rpc_url: reqwest::Url::from_str(TESTNET_EVM_RPC_URL).unwrap(),
