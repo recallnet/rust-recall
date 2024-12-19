@@ -26,6 +26,7 @@ const DEVNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f5
 
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
 const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6gbdxrbehnaeeo4mrq7wc5hgq6smnefys4qanwi"; // chain ID: 534485604105794
+const LOCALNET_CHAIN_ID: u64 = 248163216;
 const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
 const LOCALNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
@@ -143,7 +144,9 @@ impl Network {
                 }),
             },
             Network::Localnet => NetworkConfig {
-                subnet_id: SubnetID::from_str(LOCALNET_SUBNET_ID).unwrap(),
+                subnet_id: SubnetID::from_str(LOCALNET_SUBNET_ID)
+                    .unwrap()
+                    .with_chain_id(ChainID::from(LOCALNET_CHAIN_ID)),
                 rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
                 object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
                 evm_rpc_url: reqwest::Url::from_str(LOCALNET_EVM_RPC_URL).unwrap(),
