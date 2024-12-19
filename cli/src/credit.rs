@@ -4,16 +4,16 @@
 use std::collections::HashSet;
 
 use clap::{Args, Subcommand};
+use fendermint_actor_blobs_shared::state::Credit;
 use fendermint_crypto::SecretKey;
 use fvm_shared::address::Address;
-use fvm_shared::bigint::BigUint;
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
 use serde_json::json;
 
 use hoku_provider::{
     json_rpc::JsonRpcProvider,
-    util::{parse_address, parse_credit_amount, parse_token_amount},
+    util::{parse_address, parse_credit_amount, parse_token_amount, parse_token_amount_from_atto},
 };
 use hoku_sdk::TxParams;
 use hoku_sdk::{
@@ -37,7 +37,7 @@ enum CreditCommands {
     /// Get credit balance for an account.
     Balance(BalanceArgs),
     /// Buy credits for an account.
-    /// Use the `stats` command to see the subnet byte-blocks per atto token rate.
+    /// Use the `stats` command to see the subnet credit per atto token rate.
     Buy(BuyArgs),
     /// Approve an account to use credits from another acccount.
     Approve(ApproveArgs),
@@ -104,7 +104,12 @@ struct ApproveArgs {
     /// If specified, the approval becomes invalid once the committed credits reach the
     /// specified limit.
     #[arg(long, value_parser = parse_credit_amount)]
-    limit: Option<BigUint>,
+    credit_limit: Option<Credit>,
+    /// Gas fee limit.
+    /// If specified, the approval becomes invalid once the commited gas reach the
+    /// specified limit.
+    #[arg(long, value_parser = parse_token_amount_from_atto)]
+    gas_fee_limit: Option<TokenAmount>,
     /// Credit approval time-to-live epochs.
     /// If specified, the approval becomes invalid after this duration.
     #[arg(long)]
@@ -227,7 +232,8 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
                 args.to,
                 ApproveOptions {
                     caller: args.caller.clone(),
-                    limit: args.limit.clone(),
+                    credit_limit: args.credit_limit.clone(),
+                    gas_fee_limit: args.gas_fee_limit.clone(),
                     ttl: args.ttl,
                     broadcast_mode,
                     gas_params,

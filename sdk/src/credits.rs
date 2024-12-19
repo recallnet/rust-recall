@@ -8,6 +8,7 @@ use fendermint_actor_blobs_shared::params::{
     ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
     SetCreditSponsorParams,
 };
+use fendermint_actor_blobs_shared::state::Credit;
 use fendermint_actor_blobs_shared::Method::{
     ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit, SetCreditSponsor,
 };
@@ -15,7 +16,7 @@ use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
 use fvm_shared::address::Address;
-use fvm_shared::bigint::BigUint;
+use fvm_shared::bigint::BigInt;
 use fvm_shared::clock::ChainEpoch;
 use fvm_shared::econ::TokenAmount;
 use serde::{Deserialize, Serialize};
@@ -48,7 +49,11 @@ pub struct ApproveOptions {
     /// Credit approval limit.
     /// If specified, the approval becomes invalid once the committed credits reach the
     /// specified limit.
-    pub limit: Option<BigUint>,
+    pub credit_limit: Option<Credit>,
+    /// Gas fee limit.
+    /// If specified, the approval becomes invalid once the commited gas reach the
+    /// specified limit.
+    pub gas_fee_limit: Option<TokenAmount>,
     /// Credit approval time-to-live epochs.
     /// If specified, the approval becomes invalid after this duration.
     pub ttl: Option<ChainEpoch>,
@@ -138,12 +143,17 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
 pub struct Approval {
     /// Optional credit approval limit.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub limit: Option<String>,
+    pub credit_limit: Option<String>,
+    /// Optional gas fee approval limit.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gas_fee_limit: Option<String>,
     /// Optional credit approval expiry epoch.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expiry: Option<ChainEpoch>,
     /// Counter for how much credit has been used via this approval.
-    pub used: String,
+    pub credit_used: String,
+    /// How much gas has been used via this approval.
+    pub gas_fee_used: String,
     /// Optional caller allowlist.
     /// If not present, any caller is allowed.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -153,9 +163,11 @@ pub struct Approval {
 impl Default for Approval {
     fn default() -> Self {
         Self {
-            limit: None,
+            credit_limit: None,
+            credit_used: "0".into(),
+            gas_fee_limit: None,
+            gas_fee_used: "0".into(),
             expiry: None,
-            used: "0".into(),
             caller_allowlist: None,
         }
     }
@@ -164,9 +176,11 @@ impl Default for Approval {
 impl From<fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
     fn from(v: fendermint_actor_blobs_shared::state::CreditApproval) -> Self {
         Self {
-            limit: v.limit.map(|l| l.to_string()),
+            credit_limit: v.credit_limit.map(|l| l.to_string()),
+            credit_used: v.credit_used.to_string(),
+            gas_fee_limit: v.gas_fee_limit.map(|l| l.to_string()),
+            gas_fee_used: v.gas_fee_used.to_string(),
             expiry: v.expiry,
-            used: v.used.to_string(),
             caller_allowlist: v
                 .caller_allowlist
                 .map(|v| v.into_iter().map(|a| a.to_string()).collect()),
@@ -185,8 +199,8 @@ pub struct CreditStats {
     pub credit_committed: String,
     /// The total number of credits debited in the subnet.
     pub credit_debited: String,
-    /// The byte-blocks per atto token rate set at genesis.
-    pub blob_credits_per_byte_block: u64,
+    /// The token to credit rate. The amount of credits that 1 atto buys.
+    pub token_credit_rate: BigInt,
     // Total number of debit accounts.
     pub num_accounts: u64,
 }
@@ -198,7 +212,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
             credit_sold: v.credit_sold.to_string(),
             credit_committed: v.credit_committed.to_string(),
             credit_debited: v.credit_debited.to_string(),
-            blob_credits_per_byte_block: v.blob_credits_per_byte_block,
+            token_credit_rate: v.token_credit_rate,
             num_accounts: v.num_accounts,
         }
     }
@@ -273,7 +287,8 @@ impl Credits {
             from,
             to,
             caller_allowlist: options.caller,
-            limit: options.limit,
+            credit_limit: options.credit_limit,
+            gas_fee_limit: options.gas_fee_limit,
             ttl: options.ttl,
         };
         let params = RawBytes::serialize(params)?;

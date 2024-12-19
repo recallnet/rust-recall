@@ -6,6 +6,7 @@ use fendermint_actor_hoku_config_shared::{HokuConfig, SetConfigParams};
 use fendermint_vm_actor_interface::hoku_config::HOKU_CONFIG_ACTOR_ADDR;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_ipld_encoding::RawBytes;
+use fvm_shared::bigint::BigInt;
 use fvm_shared::clock::ChainEpoch;
 use tendermint::chain;
 use tendermint_rpc::Client;
@@ -23,8 +24,8 @@ use hoku_signer::Signer;
 pub struct SetConfigOptions {
     /// The total storage capacity of the subnet.
     pub blob_capacity: u64,
-    /// The byte-blocks per atto token rate.
-    pub blob_credits_per_byte_block: u64,
+    /// The token to credit rate. The amount of credits that 1 atto buys.
+    pub token_credit_rate: BigInt,
     /// Block interval at which to debit all credit accounts.
     pub blob_credit_debit_interval: ChainEpoch,
     /// Broadcast mode for the transaction.
@@ -52,7 +53,7 @@ impl Subnet {
     {
         let params = SetConfigParams {
             blob_capacity: options.blob_capacity,
-            blob_credits_per_byte_block: options.blob_credits_per_byte_block,
+            token_credit_rate: options.token_credit_rate,
             blob_credit_debit_interval: options.blob_credit_debit_interval,
         };
         let params = RawBytes::serialize(params)?;

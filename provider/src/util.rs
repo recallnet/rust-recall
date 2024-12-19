@@ -2,16 +2,15 @@
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use fendermint_actor_blobs_shared::state::Credit;
 use fendermint_vm_message::query::FvmQueryHeight;
-use std::str::FromStr;
-
-use fvm_shared::bigint::BigUint;
 use fvm_shared::{
     address::{Address, Error, Network},
     bigint::BigInt,
     econ::TokenAmount,
 };
 use ipc_api::{ethers_address_to_fil_address, evm::payload_to_evm_address};
+use std::str::FromStr;
 
 /// Parse an f/eth-address from string.
 pub fn parse_address(s: &str) -> anyhow::Result<Address> {
@@ -50,8 +49,8 @@ pub fn parse_token_amount_from_atto(s: &str) -> anyhow::Result<TokenAmount> {
 }
 
 /// Parse the credit amount from string.
-pub fn parse_credit_amount(s: &str) -> anyhow::Result<BigUint> {
-    Ok(BigUint::from_str(s)?)
+pub fn parse_credit_amount(s: &str) -> anyhow::Result<Credit> {
+    Ok(Credit::from_whole(BigInt::from_str(s)?))
 }
 
 /// Parse query height from string.
