@@ -103,6 +103,8 @@ pub struct Balance {
     /// An approval for Bob might be valid from only one contract caller, so long as
     /// the origin is Bob.
     pub approvals: HashMap<String, Approval>,
+    /// The total token value an account has used to buy credits.
+    pub gas_allowance: String,
 }
 
 impl Default for Balance {
@@ -113,6 +115,7 @@ impl Default for Balance {
             last_debit_epoch: Some(0),
             credit_sponsor: None,
             approvals: HashMap::new(),
+            gas_allowance: "0".into(),
         }
     }
 }
@@ -134,6 +137,7 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
                 .into_iter()
                 .map(|(k, v)| (k.to_string(), v.into()))
                 .collect(),
+            gas_allowance: v.gas_allowance.to_string(),
         }
     }
 }
