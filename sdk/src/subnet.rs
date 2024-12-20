@@ -1,12 +1,13 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use fendermint_actor_blobs_shared::state::TokenCreditRate;
 use fendermint_actor_hoku_config_shared::Method::{GetConfig, SetConfig};
 use fendermint_actor_hoku_config_shared::{HokuConfig, SetConfigParams};
 use fendermint_vm_actor_interface::hoku_config::HOKU_CONFIG_ACTOR_ADDR;
 use tendermint::chain;
 
-use hoku_provider::fvm_shared::{bigint::BigInt, clock::ChainEpoch};
+use hoku_provider::fvm_shared::clock::ChainEpoch;
 use hoku_provider::json_rpc::JsonRpcProvider;
 use hoku_provider::message::{local_message, GasParams, RawBytes};
 use hoku_provider::query::{FvmQueryHeight, QueryProvider};
@@ -20,14 +21,18 @@ use hoku_signer::Signer;
 pub struct SetConfigOptions {
     /// The total storage capacity of the subnet.
     pub blob_capacity: u64,
-    /// The token to credit rate. The amount of credits that 1 atto buys.
-    pub token_credit_rate: BigInt,
+    /// The token to credit rate.
+    pub token_credit_rate: TokenCreditRate,
     /// Block interval at which to debit all credit accounts.
     pub blob_credit_debit_interval: ChainEpoch,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
     pub gas_params: GasParams,
+    /// The minimum epoch duration a blob can be stored.
+    pub blob_min_ttl: ChainEpoch,
+    /// The rolling epoch duration used for non-expiring blobs.
+    pub blob_auto_renew_ttl: ChainEpoch,
 }
 
 /// Accessors for fetching subnet-wide information from a node via the CometBFT RPCs.
@@ -51,6 +56,8 @@ impl Subnet {
             blob_capacity: options.blob_capacity,
             token_credit_rate: options.token_credit_rate,
             blob_credit_debit_interval: options.blob_credit_debit_interval,
+            blob_min_ttl: options.blob_min_ttl,
+            blob_auto_renew_ttl: options.blob_auto_renew_ttl,
         };
         let params = RawBytes::serialize(params)?;
         let message = signer

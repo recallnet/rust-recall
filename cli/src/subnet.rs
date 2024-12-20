@@ -4,10 +4,9 @@
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use hoku_provider::{
-    fvm_shared::{bigint::BigInt, clock::ChainEpoch},
-    json_rpc::JsonRpcProvider,
-};
+use hoku_provider::util::parse_token_credit_rate;
+use hoku_provider::{fvm_shared::clock::ChainEpoch, json_rpc::JsonRpcProvider};
+use hoku_sdk::credits::TokenCreditRate;
 use hoku_sdk::subnet::SetConfigOptions;
 use hoku_sdk::{network::NetworkConfig, subnet::Subnet, TxParams};
 use hoku_signer::key::SecretKey;
@@ -47,11 +46,17 @@ struct SetConfigArgs {
     #[arg(long)]
     blob_capacity: u64,
     /// The token to credit rate. The amount of atto credits that 1 atto buys.
-    #[arg(long)]
-    token_credit_rate: BigInt,
+    #[arg(long, value_parser = parse_token_credit_rate)]
+    token_credit_rate: TokenCreditRate,
     /// Block interval at which to debit all credit accounts.
     #[arg(long)]
     blob_credit_debit_interval: ChainEpoch,
+    /// The minimum epoch duration a blob can be stored.
+    #[arg(long)]
+    blob_min_ttl: ChainEpoch,
+    /// The rolling epoch duration used for non-expiring blobs.
+    #[arg(long)]
+    blob_auto_renew_ttl: ChainEpoch,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -96,6 +101,8 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                         blob_capacity: args.blob_capacity,
                         token_credit_rate: args.token_credit_rate.clone(),
                         blob_credit_debit_interval: args.blob_credit_debit_interval,
+                        blob_min_ttl: args.blob_min_ttl,
+                        blob_auto_renew_ttl: args.blob_auto_renew_ttl,
                         broadcast_mode,
                         gas_params,
                     },

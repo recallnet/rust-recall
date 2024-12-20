@@ -15,9 +15,7 @@ use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use serde::{Deserialize, Serialize};
 
 use hoku_provider::fvm_ipld_encoding::{self, RawBytes};
-use hoku_provider::fvm_shared::{
-    address::Address, bigint::BigInt, clock::ChainEpoch, econ::TokenAmount,
-};
+use hoku_provider::fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount};
 use hoku_provider::message::{local_message, GasParams};
 use hoku_provider::query::{FvmQueryHeight, QueryProvider};
 use hoku_provider::response::{decode_bytes, decode_empty};
@@ -25,7 +23,7 @@ use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
 use hoku_provider::{Client, Provider};
 use hoku_signer::Signer;
 
-pub use fendermint_actor_blobs_shared::state::Credit;
+pub use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
 
 /// Options for buying credit.
 #[derive(Clone, Default, Debug)]
@@ -200,8 +198,8 @@ pub struct CreditStats {
     pub credit_committed: String,
     /// The total number of credits debited in the subnet.
     pub credit_debited: String,
-    /// The token to credit rate. The amount of credits that 1 atto buys.
-    pub token_credit_rate: BigInt,
+    /// The token to credit rate.
+    pub token_credit_rate: TokenCreditRate,
     // Total number of debit accounts.
     pub num_accounts: u64,
 }

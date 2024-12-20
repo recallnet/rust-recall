@@ -4,7 +4,8 @@
 
 use std::str::FromStr;
 
-use fendermint_actor_blobs_shared::state::Credit;
+use anyhow::anyhow;
+use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::{
     address::{Address, Error, Network},
@@ -12,6 +13,7 @@ use fvm_shared::{
     econ::TokenAmount,
 };
 pub use ipc_api::{ethers_address_to_fil_address, evm::payload_to_evm_address};
+use rust_decimal::Decimal;
 
 /// Parse an f/eth-address from string.
 pub fn parse_address(s: &str) -> anyhow::Result<Address> {
@@ -33,15 +35,18 @@ pub fn get_delegated_address(a: Address) -> anyhow::Result<ethers::types::Addres
     payload_to_evm_address(a.payload())
 }
 
-/// We only support up to nine decimal digits for transaction.
-const FIL_AMOUNT_NANO_DIGITS: u32 = 9;
-
 /// Parse the token amount from string.
 pub fn parse_token_amount(s: &str) -> anyhow::Result<TokenAmount> {
-    let f: f64 = s.parse()?;
-    // no rounding, just the integer part
-    let nano = f64::trunc(f * (10u64.pow(FIL_AMOUNT_NANO_DIGITS) as f64));
-    Ok(TokenAmount::from_nano(nano as u128))
+    let decimal = Decimal::from_str(s)?;
+
+    // Scale the decimal to atto (10^18)
+    let decimal_in_attos = decimal
+        .checked_mul(Decimal::new(1_000_000_000_000_000_000, 0))
+        .ok_or(anyhow!("overflow occurred when scaling '{}'", s))?;
+
+    Ok(TokenAmount::from_atto(BigInt::from_str(
+        &decimal_in_attos.trunc().to_string(),
+    )?))
 }
 
 /// Parse the token amount in attoHOKU (10**18) from string.
@@ -52,6 +57,11 @@ pub fn parse_token_amount_from_atto(s: &str) -> anyhow::Result<TokenAmount> {
 /// Parse the credit amount from string.
 pub fn parse_credit_amount(s: &str) -> anyhow::Result<Credit> {
     Ok(Credit::from_whole(BigInt::from_str(s)?))
+}
+
+/// Parse the token to credit rate.
+pub fn parse_token_credit_rate(s: &str) -> anyhow::Result<TokenCreditRate> {
+    Ok(TokenCreditRate::from(BigInt::from_str(s)?))
 }
 
 /// Parse query height from string.
