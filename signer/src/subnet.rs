@@ -36,6 +36,9 @@ pub struct SubnetID {
     faux: String,
     /// A valid [`ipc_api::subnet_id::SubnetID`].
     real: ipc_api::subnet_id::SubnetID,
+
+    /// Explicitely set chain ID. If not set the chain ID is computed as a hash from the subnet ID.
+    explicit_chain_id: Option<ChainID>,
 }
 
 impl SubnetID {
@@ -50,22 +53,36 @@ impl SubnetID {
             Ok(Self {
                 faux: Default::default(),
                 real: parent,
+                explicit_chain_id: None,
             })
         } else {
             Err(anyhow!("subnet has no parent"))
         }
     }
 
+    pub fn with_chain_id(self, chain_id: ChainID) -> SubnetID {
+        SubnetID {
+            explicit_chain_id: Some(chain_id),
+            ..self
+        }
+    }
+
     /// Returns the chain ID representation.
     pub fn chain_id(&self) -> ChainID {
-        if self.real.is_root() {
-            return if self.faux.is_empty() {
-                ChainID::from(self.real.root_id())
-            } else {
-                ChainID::from(hash(self.faux.clone().as_bytes()))
-            };
+        match self.explicit_chain_id {
+            Some(chain_id) => chain_id,
+            None => {
+                if self.real.is_root() {
+                    if self.faux.is_empty() {
+                        ChainID::from(self.real.root_id())
+                    } else {
+                        ChainID::from(hash(self.faux.clone().as_bytes()))
+                    }
+                } else {
+                    ChainID::from(self.real.chain_id())
+                }
+            }
         }
-        ChainID::from(self.real.chain_id())
     }
 }
 
@@ -94,6 +111,7 @@ impl FromStr for SubnetID {
             return Ok(Self {
                 faux: id.to_string(),
                 real: Default::default(),
+                explicit_chain_id: None,
             });
         }
 
@@ -115,6 +133,7 @@ impl FromStr for SubnetID {
         Ok(Self {
             faux: Default::default(),
             real: ipc_api::subnet_id::SubnetID::new(root, children),
+            explicit_chain_id: None,
         })
     }
 }
