@@ -3,8 +3,8 @@
 
 use ethers::utils::hex::ToHexExt;
 use fendermint_vm_actor_interface::eam::EthAddress;
-use fvm_shared::address::Address;
 
+use hoku_provider::fvm_shared::address::Address;
 use hoku_sdk::network::Network;
 use hoku_signer::key::random_secretkey;
 

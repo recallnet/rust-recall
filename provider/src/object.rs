@@ -3,8 +3,9 @@
 
 use async_trait::async_trait;
 use fvm_shared::address::Address;
-use iroh::blobs::Hash;
-use iroh::net::NodeAddr;
+
+pub use iroh::blobs::Hash;
+pub use iroh::net::NodeAddr;
 
 /// Provider for object interactions.
 #[async_trait]

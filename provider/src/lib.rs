@@ -15,3 +15,6 @@ pub mod tx;
 pub mod util;
 
 pub use provider::*;
+
+pub use fvm_ipld_encoding;
+pub use fvm_shared;

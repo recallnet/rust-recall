@@ -6,9 +6,8 @@ use std::{collections::HashMap, str::FromStr as _};
 
 use anyhow::anyhow;
 use cid::Cid;
-use fendermint_vm_message::query::FvmQueryHeight;
 
-use hoku_provider::json_rpc::JsonRpcProvider;
+use hoku_provider::{json_rpc::JsonRpcProvider, query::FvmQueryHeight};
 use hoku_sdk::machine::timehub::Leaf;
 use hoku_sdk::{
     machine::{timehub::Timehub, Machine},

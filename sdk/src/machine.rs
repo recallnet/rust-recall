@@ -10,19 +10,17 @@ use fendermint_vm_actor_interface::adm::{
     self, CreateExternalParams, CreateExternalReturn, Kind, ListMetadataParams,
     Method::CreateExternal, Method::ListMetadata, ADM_ACTOR_ADDR,
 };
-use fendermint_vm_message::query::FvmQueryHeight;
-use fvm_ipld_encoding::RawBytes;
-use fvm_shared::address::Address;
 use serde::Serialize;
 use tendermint::{abci::response::DeliverTx, block::Height, Hash};
-use tendermint_rpc::Client;
 
 use hoku_provider::{
+    fvm_ipld_encoding::{self, RawBytes},
+    fvm_shared::address::Address,
     message::{local_message, GasParams},
-    query::QueryProvider,
+    query::{FvmQueryHeight, QueryProvider},
     response::decode_bytes,
     tx::BroadcastMode,
-    Provider,
+    Client, Provider,
 };
 use hoku_signer::Signer;
 

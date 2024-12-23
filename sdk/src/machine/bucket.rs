@@ -16,14 +16,9 @@ use fendermint_actor_blobs_shared::state::{Hash, PublicKey};
 use fendermint_actor_bucket::{
     AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
     Method::{AddObject, DeleteObject, GetObject, ListObjects, UpdateObjectMetadata},
-    Object, UpdateObjectMetadataParams, MAX_METADATA_KEY_SIZE, MAX_METADATA_VALUE_SIZE,
+    UpdateObjectMetadataParams, MAX_METADATA_KEY_SIZE, MAX_METADATA_VALUE_SIZE,
 };
 use fendermint_vm_actor_interface::adm::Kind;
-use fendermint_vm_message::query::FvmQueryHeight;
-use fvm_ipld_encoding::RawBytes;
-use fvm_shared::address::Address;
-use fvm_shared::clock::ChainEpoch;
-use fvm_shared::econ::TokenAmount;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use infer::Type;
 use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash as IrohHash};
@@ -33,7 +28,6 @@ use num_traits::Zero;
 use peekable::tokio::AsyncPeekable;
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
-use tendermint_rpc::Client;
 use tokio::sync::{mpsc, Mutex};
 use tokio::{
     io::{AsyncRead, AsyncWrite, AsyncWriteExt},
@@ -42,12 +36,15 @@ use tokio::{
 use tokio_stream::StreamExt;
 
 use hoku_provider::{
+    fvm_ipld_encoding,
+    fvm_ipld_encoding::RawBytes,
+    fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
     message::{local_message, object_upload_message, GasParams},
     object::ObjectProvider,
-    query::QueryProvider,
+    query::{FvmQueryHeight, QueryProvider},
     response::{decode_as, decode_bytes},
     tx::{BroadcastMode, TxReceipt},
-    Provider,
+    Client, Provider,
 };
 use hoku_signer::Signer;
 
@@ -56,6 +53,8 @@ use crate::{
     machine::{deploy_machine, DeployTxReceipt, Machine},
     progress::new_progress_bar,
 };
+
+pub use fendermint_actor_bucket::{Object, ObjectState};
 
 /// Maximum allowed object size in bytes.
 const MAX_OBJECT_LENGTH: u64 = 5_000_000_000; // 5GB

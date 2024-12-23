@@ -5,8 +5,8 @@ use std::env;
 
 use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
-use fvm_shared::econ::TokenAmount;
 
+use hoku_provider::fvm_shared::econ::TokenAmount;
 use hoku_sdk::{account::Account, network::Network};
 use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 

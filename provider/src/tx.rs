@@ -6,10 +6,12 @@ use std::str::FromStr;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fendermint_vm_message::chain::ChainMessage;
 use num_traits::Zero;
 use serde::Serialize;
-use tendermint::{abci::response::DeliverTx, block::Height, Hash};
+
+use crate::message::ChainMessage;
+
+pub use tendermint::{abci::response::DeliverTx, block::Height, Hash};
 
 /// Controls how the provider waits for the result of a transaction.
 #[derive(Debug, Default, Copy, Clone)]

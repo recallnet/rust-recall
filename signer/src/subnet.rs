@@ -9,10 +9,9 @@ use std::hash::Hasher;
 use std::str::FromStr;
 
 use fnv::FnvHasher;
-use fvm_shared::chainid::ChainID;
 use ipc_api::{error::Error, subnet_id::MAX_CHAIN_ID};
 
-use hoku_provider::util::parse_address;
+use hoku_provider::{fvm_shared::chainid::ChainID, util::parse_address};
 
 fn hash(bytes: &[u8]) -> u64 {
     let mut hasher = FnvHasher::default();

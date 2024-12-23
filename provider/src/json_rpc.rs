@@ -6,13 +6,7 @@ use std::fmt::Display;
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use fendermint_vm_message::{
-    chain::ChainMessage,
-    query::{FvmQuery, FvmQueryHeight},
-};
 use fvm_shared::address::Address;
-use iroh::blobs::Hash;
-use iroh::net::NodeAddr;
 use reqwest::multipart::Form;
 use tendermint::abci::response::DeliverTx;
 use tendermint::block::Height;
@@ -23,8 +17,9 @@ use tendermint_rpc::{
 
 pub use tendermint_rpc::{HttpClient, Url};
 
-use crate::object::ObjectProvider;
-use crate::query::QueryProvider;
+use crate::message::ChainMessage;
+use crate::object::{Hash, NodeAddr, ObjectProvider};
+use crate::query::{FvmQuery, FvmQueryHeight, QueryProvider};
 use crate::tx::{BroadcastMode, TxProvider, TxReceipt};
 use crate::{Provider, TendermintClient};
 
