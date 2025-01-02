@@ -59,7 +59,7 @@ struct BalanceArgs {
 #[derive(Clone, Debug, Args)]
 struct BuyArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
@@ -77,7 +77,7 @@ struct BuyArgs {
 #[derive(Clone, Debug, Args)]
 struct ApproveArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
@@ -111,7 +111,7 @@ struct ApproveArgs {
 #[derive(Clone, Debug, Args)]
 struct RevokeArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]

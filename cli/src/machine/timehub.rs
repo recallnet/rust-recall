@@ -58,7 +58,7 @@ enum TimehubCommands {
 #[derive(Clone, Debug, Args)]
 struct TimehubCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Timehub owner address.
     /// The owner defaults to the signer if not specified.
@@ -74,7 +74,7 @@ struct TimehubCreateArgs {
 #[derive(Clone, Debug, Args)]
 struct TimehubPushArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Timehub machine address.
     #[arg(short, long, value_parser = parse_address)]

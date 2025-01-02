@@ -64,7 +64,7 @@ enum BucketCommands {
 #[derive(Clone, Debug, Args)]
 struct BucketCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Bucket owner address.
     /// The owner defaults to the signer if not specified.
@@ -80,7 +80,7 @@ struct BucketCreateArgs {
 #[derive(Clone, Debug, Parser)]
 struct BucketAddArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Node Object API URL.
     #[arg(long, env = "HOKU_OBJECT_API_URL")]
@@ -119,7 +119,7 @@ struct BucketAddArgs {
 #[derive(Clone, Debug, Parser)]
 struct BucketDeleteArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -200,7 +200,7 @@ struct BucketQueryArgs {
 #[derive(Clone, Debug, Args)]
 struct BucketMetadataArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
