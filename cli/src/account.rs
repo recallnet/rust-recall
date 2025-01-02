@@ -14,16 +14,17 @@ use hoku_provider::{
     util::{get_delegated_address, parse_address, parse_token_amount},
 };
 use hoku_sdk::{
-    account::Account,
+    account::{Account, SetSponsorOptions},
     ipc::subnet::EVMSubnet,
     network::{NetworkConfig, ParentNetworkConfig},
+    TxParams,
 };
 use hoku_signer::{
     key::{parse_secret_key, random_secretkey, SecretKey},
     AccountKind, EthAddress, Signer, SubnetID, Void, Wallet,
 };
 
-use crate::{get_address, print_json, AddressArgs};
+use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct AccountArgs {
@@ -43,6 +44,18 @@ enum AccountCommands {
     Withdraw(FundArgs),
     /// Transfer funds to another account in a subnet.
     Transfer(TransferArgs),
+    /// Sponsor related commands.
+    #[command(subcommand)]
+    Sponsor(SponsorCommands),
+}
+
+#[derive(Clone, Debug, Subcommand)]
+enum SponsorCommands {
+    /// Set account default credit sponsor for gas fees.
+    /// This will have no effect on gas fees if the required credit approval does not exist.
+    Set(SetSponsorArgs),
+    /// Unset account default credit sponsor for gas fees.
+    Unset(UnsetSponsorArgs),
 }
 
 #[derive(Clone, Debug, Args)]
@@ -103,6 +116,33 @@ struct TransferArgs {
     amount: TokenAmount,
     #[command(flatten)]
     subnet: SubnetArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct SetSponsorArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    private_key: SecretKey,
+    /// Credit sponsor address.
+    #[arg(value_parser = parse_address)]
+    sponsor: Address,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct UnsetSponsorArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    private_key: SecretKey,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
 }
 
 /// Account commands handler.
@@ -202,6 +242,62 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
 
             print_json(&tx)
         }
+        AccountCommands::Sponsor(cmd) => match cmd {
+            SponsorCommands::Set(args) => {
+                let broadcast_mode = args.broadcast_mode.get();
+                let TxParams {
+                    gas_params,
+                    sequence,
+                } = args.tx_args.to_tx_params();
+
+                let mut signer = Wallet::new_secp256k1(
+                    args.private_key.clone(),
+                    AccountKind::Ethereum,
+                    cfg.subnet_id,
+                )?;
+                signer.set_sequence(sequence, &provider).await?;
+
+                let tx = Account::set_sponsor(
+                    &provider,
+                    &mut signer,
+                    Some(args.sponsor),
+                    SetSponsorOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+                print_json(&tx)
+            }
+            SponsorCommands::Unset(args) => {
+                let broadcast_mode = args.broadcast_mode.get();
+                let TxParams {
+                    gas_params,
+                    sequence,
+                } = args.tx_args.to_tx_params();
+
+                let mut signer = Wallet::new_secp256k1(
+                    args.private_key.clone(),
+                    AccountKind::Ethereum,
+                    cfg.subnet_id,
+                )?;
+                signer.set_sequence(sequence, &provider).await?;
+
+                let tx = Account::set_sponsor(
+                    &provider,
+                    &mut signer,
+                    None,
+                    SetSponsorOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+                print_json(&tx)
+            }
+        },
     }
 }
 

@@ -1,15 +1,14 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use anyhow::anyhow;
 use fendermint_actor_blobs_shared::params::{
     ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
-    SetCreditSponsorParams,
 };
 use fendermint_actor_blobs_shared::Method::{
-    ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit, SetCreditSponsor,
+    ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit,
 };
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use serde::{Deserialize, Serialize};
@@ -37,16 +36,12 @@ pub struct BuyOptions {
 /// Options for approving credit.
 #[derive(Clone, Default, Debug)]
 pub struct ApproveOptions {
-    /// Restrict the approval to one or more caller address, e.g., a bucket.
-    /// The receiver will only be able to use the approval via a caller contract.
-    /// If not set, any caller is allowed.
-    pub caller: Option<HashSet<Address>>,
     /// Credit approval limit.
-    /// If specified, the approval becomes invalid once the committed credits reach the
+    /// If specified, the approval becomes invalid once the used credits reach the
     /// specified limit.
     pub credit_limit: Option<Credit>,
     /// Gas fee limit.
-    /// If specified, the approval becomes invalid once the commited gas reach the
+    /// If specified, the approval becomes invalid once the used gas fees reach the
     /// specified limit.
     pub gas_fee_limit: Option<TokenAmount>,
     /// Credit approval time-to-live epochs.
@@ -61,18 +56,6 @@ pub struct ApproveOptions {
 /// Options for revoking credit.
 #[derive(Clone, Default, Debug)]
 pub struct RevokeOptions {
-    /// Revoke the approval for the caller address.
-    /// The address must be part of the existing caller allowlist.
-    pub caller: Option<Address>,
-    /// Broadcast mode for the transaction.
-    pub broadcast_mode: BroadcastMode,
-    /// Gas params for the transaction.
-    pub gas_params: GasParams,
-}
-
-/// Options for setting credit sponsor.
-#[derive(Clone, Default, Debug)]
-pub struct SetSponsorOptions {
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
@@ -151,12 +134,8 @@ pub struct Approval {
     pub expiry: Option<ChainEpoch>,
     /// Counter for how much credit has been used via this approval.
     pub credit_used: String,
-    /// How much gas has been used via this approval.
+    /// Amount of gas that has been used via this approval.
     pub gas_fee_used: String,
-    /// Optional caller allowlist.
-    /// If not present, any caller is allowed.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub caller_allowlist: Option<HashSet<String>>,
 }
 
 impl Default for Approval {
@@ -167,7 +146,6 @@ impl Default for Approval {
             gas_fee_limit: None,
             gas_fee_used: "0".into(),
             expiry: None,
-            caller_allowlist: None,
         }
     }
 }
@@ -180,9 +158,6 @@ impl From<fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
             gas_fee_limit: v.gas_fee_limit.map(|l| l.to_string()),
             gas_fee_used: v.gas_fee_used.to_string(),
             expiry: v.expiry,
-            caller_allowlist: v
-                .caller_allowlist
-                .map(|v| v.into_iter().map(|a| a.to_string()).collect()),
         }
     }
 }
@@ -285,7 +260,7 @@ impl Credits {
         let params = ApproveCreditParams {
             from,
             to,
-            caller_allowlist: options.caller,
+            caller_allowlist: None, // TODO: remove this when it's been removed in ipc
             credit_limit: options.credit_limit,
             gas_fee_limit: options.gas_fee_limit,
             ttl: options.ttl,
@@ -318,7 +293,7 @@ impl Credits {
         let params = RevokeCreditParams {
             from,
             to,
-            for_caller: options.caller,
+            for_caller: None, // TODO: remove this when it's been removed in ipc
         };
         let params = RawBytes::serialize(params)?;
         let message = signer
@@ -326,32 +301,6 @@ impl Credits {
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 RevokeCredit as u64,
-                params,
-                options.gas_params,
-            )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_empty)
-            .await
-    }
-
-    pub async fn set_sponsor<C>(
-        provider: &impl Provider<C>,
-        signer: &mut impl Signer,
-        from: Address,
-        sponsor: Option<Address>,
-        options: SetSponsorOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
-    where
-        C: Client + Send + Sync,
-    {
-        let params = SetCreditSponsorParams { from, sponsor };
-        let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
-                BLOBS_ACTOR_ADDR,
-                Default::default(),
-                SetCreditSponsor as u64,
                 params,
                 options.gas_params,
             )

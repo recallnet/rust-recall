@@ -1,16 +1,32 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
 use anyhow::anyhow;
+pub use ethers::prelude::TransactionReceipt;
+use fendermint_actor_blobs_shared::params::SetSponsorParams;
+use fendermint_actor_blobs_shared::Method::SetAccountSponsor;
+use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 
+use hoku_provider::fvm_ipld_encoding::RawBytes;
+use hoku_provider::message::GasParams;
+use hoku_provider::response::decode_empty;
+use hoku_provider::tx::{BroadcastMode, TxReceipt};
 use hoku_provider::{
     fvm_shared::{address::Address, econ::TokenAmount},
     query::{FvmQueryHeight, QueryProvider},
+    Client, Provider,
 };
 use hoku_signer::Signer;
 
-pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
-pub use ethers::prelude::TransactionReceipt;
+/// Options for setting credit sponsor.
+#[derive(Clone, Default, Debug)]
+pub struct SetSponsorOptions {
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
+}
 
 /// A static wrapper around Hoku account methods.
 pub struct Account {}
@@ -70,5 +86,34 @@ impl Account {
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
         EvmManager::transfer(signer, to, subnet, amount).await
+    }
+
+    /// Sets or unsets a gas sponsor for the signer.
+    pub async fn set_sponsor<C>(
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        sponsor: Option<Address>,
+        options: SetSponsorOptions,
+    ) -> anyhow::Result<TxReceipt<()>>
+    where
+        C: Client + Send + Sync,
+    {
+        let params = SetSponsorParams {
+            from: signer.address(),
+            sponsor,
+        };
+        let params = RawBytes::serialize(params)?;
+        let message = signer
+            .transaction(
+                BLOBS_ACTOR_ADDR,
+                Default::default(),
+                SetAccountSponsor as u64,
+                params,
+                options.gas_params,
+            )
+            .await?;
+        provider
+            .perform(message, options.broadcast_mode, decode_empty)
+            .await
     }
 }

@@ -12,7 +12,7 @@ use hoku_provider::{
     util::{parse_address, parse_credit_amount, parse_token_amount, parse_token_amount_from_atto},
 };
 use hoku_sdk::{
-    credits::{ApproveOptions, BuyOptions, Credit, Credits, RevokeOptions, SetSponsorOptions},
+    credits::{ApproveOptions, BuyOptions, Credit, Credits, RevokeOptions},
     network::NetworkConfig,
     TxParams,
 };
@@ -42,18 +42,6 @@ enum CreditCommands {
     Approve(ApproveArgs),
     /// Revoke an account from using credits from another acccount.
     Revoke(RevokeArgs),
-    /// Sponsor related commands.
-    #[command(subcommand)]
-    Sponsor(SponsorCommands),
-}
-
-#[derive(Clone, Debug, Subcommand)]
-enum SponsorCommands {
-    /// Set account default credit sponsor for gas fees.
-    /// This will have no effect on gas fees if the required credit approval does not exist.
-    Set(SetSponsorArgs),
-    /// Unset account default credit sponsor for gas fees.
-    Unset(UnsetSponsorArgs),
 }
 
 #[derive(Clone, Debug, Args)]
@@ -100,12 +88,12 @@ struct ApproveArgs {
     #[arg(long, value_parser = parse_address_list)]
     caller: Option<HashSet<Address>>,
     /// Credit approval limit.
-    /// If specified, the approval becomes invalid once the committed credits reach the
+    /// If specified, the approval becomes invalid once the used credits reach the
     /// specified limit.
     #[arg(long, value_parser = parse_credit_amount)]
     credit_limit: Option<Credit>,
     /// Gas fee limit.
-    /// If specified, the approval becomes invalid once the commited gas reach the
+    /// If specified, the approval becomes invalid once the used gas fees reach the
     /// specified limit.
     #[arg(long, value_parser = parse_token_amount_from_atto)]
     gas_fee_limit: Option<TokenAmount>,
@@ -132,33 +120,6 @@ struct RevokeArgs {
     /// The address must be part of the existing caller allowlist.
     #[arg(long, value_parser = parse_address)]
     caller: Option<Address>,
-    /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
-    broadcast_mode: BroadcastMode,
-    #[command(flatten)]
-    tx_args: TxArgs,
-}
-
-#[derive(Clone, Debug, Args)]
-struct SetSponsorArgs {
-    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
-    private_key: SecretKey,
-    /// Credit sponsor address.
-    #[arg(value_parser = parse_address)]
-    sponsor: Address,
-    /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
-    broadcast_mode: BroadcastMode,
-    #[command(flatten)]
-    tx_args: TxArgs,
-}
-
-#[derive(Clone, Debug, Args)]
-struct UnsetSponsorArgs {
-    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
-    private_key: SecretKey,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -230,7 +191,6 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
                 from,
                 args.to,
                 ApproveOptions {
-                    caller: args.caller.clone(),
                     credit_limit: args.credit_limit.clone(),
                     gas_fee_limit: args.gas_fee_limit.clone(),
                     ttl: args.ttl,
@@ -263,7 +223,6 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
                 from,
                 args.to,
                 RevokeOptions {
-                    caller: args.caller,
                     broadcast_mode,
                     gas_params,
                 },
@@ -272,65 +231,5 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
 
             print_json(&tx)
         }
-        CreditCommands::Sponsor(cmd) => match cmd {
-            SponsorCommands::Set(args) => {
-                let broadcast_mode = args.broadcast_mode.get();
-                let TxParams {
-                    gas_params,
-                    sequence,
-                } = args.tx_args.to_tx_params();
-
-                let mut signer = Wallet::new_secp256k1(
-                    args.private_key.clone(),
-                    AccountKind::Ethereum,
-                    cfg.subnet_id,
-                )?;
-                signer.set_sequence(sequence, &provider).await?;
-
-                let from = signer.address();
-                let tx = Credits::set_sponsor(
-                    &provider,
-                    &mut signer,
-                    from,
-                    Some(args.sponsor),
-                    SetSponsorOptions {
-                        broadcast_mode,
-                        gas_params,
-                    },
-                )
-                .await?;
-
-                print_json(&tx)
-            }
-            SponsorCommands::Unset(args) => {
-                let broadcast_mode = args.broadcast_mode.get();
-                let TxParams {
-                    gas_params,
-                    sequence,
-                } = args.tx_args.to_tx_params();
-
-                let mut signer = Wallet::new_secp256k1(
-                    args.private_key.clone(),
-                    AccountKind::Ethereum,
-                    cfg.subnet_id,
-                )?;
-                signer.set_sequence(sequence, &provider).await?;
-
-                let from = signer.address();
-                let tx = Credits::set_sponsor(
-                    &provider,
-                    &mut signer,
-                    from,
-                    None,
-                    SetSponsorOptions {
-                        broadcast_mode,
-                        gas_params,
-                    },
-                )
-                .await?;
-
-                print_json(&tx)
-            }
-        },
     }
 }
