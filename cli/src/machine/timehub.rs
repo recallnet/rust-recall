@@ -3,10 +3,11 @@
 
 use anyhow::anyhow;
 use bytes::Bytes;
+use cid::Cid;
 use clap::{Args, Subcommand};
 use clap_stdin::FileOrStdin;
 use serde_json::{json, Value};
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr as _};
 use tokio::io::AsyncReadExt;
 
 use hoku_provider::{
@@ -167,6 +168,21 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
             let mut reader = args.input.into_async_reader().await?;
             let mut buf = Vec::new();
             reader.read_to_end(&mut buf).await?;
+            let buf = match String::from_utf8(buf.clone()) {
+                Ok(str_data) => {
+                    match Cid::from_str(str_data.trim()) {
+                        Ok(cid) => cid.to_bytes(),
+                        Err(_) => {
+                            // the cid bytes were valid utf8 but not multibase encoded,
+                            // we'll give the actor the raw bytes we received and let it reject it if needed
+                            // is this possible? maybe we should we just error.
+                            buf
+                        }
+                    }
+                }
+                Err(_) => buf,
+            };
+
             let payload = Bytes::from(buf);
 
             let machine = Timehub::attach(args.address).await?;
