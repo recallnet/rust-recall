@@ -1,9 +1,7 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
 use anyhow::anyhow;
-pub use ethers::prelude::TransactionReceipt;
 use fendermint_actor_blobs_shared::params::SetSponsorParams;
 use fendermint_actor_blobs_shared::Method::SetAccountSponsor;
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
@@ -18,6 +16,9 @@ use hoku_provider::{
     Client, Provider,
 };
 use hoku_signer::Signer;
+
+pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
+pub use ethers::prelude::TransactionReceipt;
 
 /// Options for setting credit sponsor.
 #[derive(Clone, Default, Debug)]

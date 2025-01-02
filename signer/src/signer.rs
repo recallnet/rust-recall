@@ -3,7 +3,7 @@
 
 use async_trait::async_trait;
 use hoku_provider::message::{ChainMessage, GasParams, Message, SignedMessage};
-use hoku_provider::util::get_delegated_address;
+use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
@@ -24,7 +24,7 @@ pub trait Signer: Clone + Send + Sync {
 
     /// Returns the signer EVM address.
     fn evm_address(&self) -> anyhow::Result<EthAddress> {
-        let delegated = get_delegated_address(self.address())?;
+        let delegated = get_eth_address(self.address())?;
         Ok(EthAddress::from(delegated))
     }
 

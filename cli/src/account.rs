@@ -11,7 +11,7 @@ use serde_json::json;
 use hoku_provider::{
     fvm_shared::{address::Address, econ::TokenAmount},
     json_rpc::JsonRpcProvider,
-    util::{get_delegated_address, parse_address, parse_token_amount},
+    util::{get_eth_address, parse_address, parse_token_amount},
 };
 use hoku_sdk::{
     account::{Account, SetSponsorOptions},
@@ -154,7 +154,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             let sk = random_secretkey();
             let pk = sk.public_key().serialize();
             let address = Address::from(EthAddress::new_secp256k1(&pk)?);
-            let eth_address = get_delegated_address(address)?;
+            let eth_address = get_eth_address(address)?;
             let sk_hex = hex::encode(sk.serialize());
 
             print_json(
@@ -163,7 +163,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
         }
         AccountCommands::Info(args) => {
             let address = get_address(args.address.clone(), &cfg.subnet_id)?;
-            let eth_address = get_delegated_address(address)?;
+            let eth_address = get_eth_address(address)?;
             let sequence =
                 Account::sequence(&provider, &Void::new(address), args.address.height).await?;
             let balance = Account::balance(

@@ -10,9 +10,11 @@ use fendermint_vm_actor_interface::adm::{
     self, CreateExternalParams, CreateExternalReturn, Kind, ListMetadataParams,
     Method::CreateExternal, Method::ListMetadata, ADM_ACTOR_ADDR,
 };
+use fendermint_vm_actor_interface::eam::EthAddress;
 use serde::Serialize;
 use tendermint::{abci::response::DeliverTx, block::Height, Hash};
 
+use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_ipld_encoding::{self, RawBytes},
     fvm_shared::address::Address,
@@ -82,6 +84,15 @@ pub trait Machine: Send + Sync + Sized {
 
     /// Returns the machine [`Address`].
     fn address(&self) -> Address;
+
+    /// Returns the machine [`EthAddress`] if possible.
+    ///
+    /// An Ethereum-style address representation is possible when the machine is constructed
+    /// with a masked ID address (not an actor-style t/f2 address).
+    fn eth_address(&self) -> anyhow::Result<EthAddress> {
+        let address = get_eth_address(self.address())?;
+        Ok(EthAddress::from(address))
+    }
 }
 
 /// Get machine info (the owner and machine kind).
@@ -128,11 +139,8 @@ where
         .await?;
 
     // In commit broadcast mode, if the data or address does not exist, something fatal happened.
-    let address = tx
-        .data
-        .expect("data exists")
-        .robust_address
-        .expect("address exists");
+    let actor_id = tx.data.expect("data exists").actor_id;
+    let address = Address::new_id(actor_id);
 
     Ok((
         address,
