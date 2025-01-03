@@ -40,7 +40,7 @@ enum ConfigCommands {
 #[derive(Clone, Debug, Args)]
 struct SetConfigArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The total storage capacity of the subnet.
     #[arg(long)]

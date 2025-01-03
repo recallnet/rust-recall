@@ -164,7 +164,7 @@ impl TxArgs {
 #[derive(Clone, Debug, Args)]
 struct AddressArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key)]
+    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: Option<SecretKey>,
     /// Account address. The signer address is used if no address is given.
     #[arg(short, long, value_parser = parse_address)]
