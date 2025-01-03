@@ -31,7 +31,7 @@ pub fn parse_address(s: &str) -> anyhow::Result<Address> {
     Ok(addr)
 }
 
-/// Converts f-address to eth-address. Only masked ID and delegated address is supported.
+/// Converts f-address to eth-address. Only masked ID and delegated addresses are supported.
 pub fn get_eth_address(a: Address) -> anyhow::Result<ethers::types::Address> {
     match a.payload() {
         Payload::Delegated(delegated) => {
@@ -39,7 +39,7 @@ pub fn get_eth_address(a: Address) -> anyhow::Result<ethers::types::Address> {
             Ok(ethers::types::Address::from_slice(&slice[0..20]))
         }
         Payload::ID(id) => Ok(EthAddress::from_id(*id).0.into()),
-        _ => Err(anyhow!("address provided is not delegated")),
+        _ => Err(anyhow!("address provided is not masked ID or delegated")),
     }
 }
 
