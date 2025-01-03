@@ -1,13 +1,13 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context as _};
 use bytes::Bytes;
 use cid::Cid;
 use clap::{Args, Subcommand};
 use clap_stdin::FileOrStdin;
 use serde_json::{json, Value};
-use std::{collections::HashMap, str::FromStr as _};
+use std::{collections::HashMap, io::Cursor, str::FromStr as _};
 use tokio::io::AsyncReadExt;
 
 use hoku_provider::{
@@ -168,22 +168,19 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
             let mut reader = args.input.into_async_reader().await?;
             let mut buf = Vec::new();
             reader.read_to_end(&mut buf).await?;
-            let buf = match String::from_utf8(buf.clone()) {
-                Ok(str_data) => {
-                    match Cid::from_str(str_data.trim()) {
-                        Ok(cid) => cid.to_bytes(),
-                        Err(_) => {
-                            // the cid bytes were valid utf8 but not multibase encoded,
-                            // we'll give the actor the raw bytes we received and let it reject it if needed
-                            // is this possible? maybe we should we just error.
-                            buf
-                        }
-                    }
+            let cid = match Cid::read_bytes(Cursor::new(buf.clone())) {
+                Ok(cid) => cid,
+                Err(_) => {
+                    let str_data = String::from_utf8(buf)
+                        .context("input should be a multibase encoded utf8 string")?;
+                    let str_data = str_data.trim();
+                    Cid::from_str(str_data).with_context(|| {
+                        format!("'{str_data}' should be a multibase encoded CID")
+                    })?
                 }
-                Err(_) => buf,
             };
 
-            let payload = Bytes::from(buf);
+            let payload = Bytes::from(cid.to_bytes());
 
             let machine = Timehub::attach(args.address).await?;
             let tx = machine
