@@ -163,7 +163,6 @@ impl Machine for Bucket {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         owner: Option<Address>,
-
         metadata: HashMap<String, String>,
         gas_params: GasParams,
     ) -> anyhow::Result<(Self, DeployTxReceipt)>
@@ -280,7 +279,7 @@ impl Bucket {
         R: AsyncRead + Unpin + Send + 'static,
     {
         let mut reader = AsyncPeekable::from(reader);
-        let mut buffer = [0u8; 40]; // 40 bytes is enough to detect mime type
+        let mut buffer = [0u8; 40]; // 40 bytes is enough to detect the mime type
         reader.peek(&mut buffer).await?;
 
         let content_type = infer::get(&buffer[..]);
@@ -483,10 +482,10 @@ impl Bucket {
         msg_bar.set_prefix("[3/3]");
         msg_bar.set_message("Broadcasting transaction...");
         let params = AddParams {
-            source: fendermint_actor_blobs_shared::state::PublicKey(*node_addr.node_id.as_bytes()),
+            source: PublicKey(*node_addr.node_id.as_bytes()),
             key: key.into(),
-            hash: fendermint_actor_blobs_shared::state::Hash(*object_hash.as_bytes()),
-            recovery_hash: fendermint_actor_blobs_shared::state::Hash(*metadata_hash.as_bytes()),
+            hash: Hash(*object_hash.as_bytes()),
+            recovery_hash: Hash(*metadata_hash.as_bytes()),
             size: object_size,
             ttl: options.ttl,
             metadata: options.metadata,
@@ -532,8 +531,8 @@ impl Bucket {
     ) -> anyhow::Result<String> {
         let from = signer.address();
         let params = UploadParams {
-            source: fendermint_actor_blobs_shared::state::PublicKey(*provider_node_id.as_bytes()),
-            hash: fendermint_actor_blobs_shared::state::Hash(*hash.as_bytes()),
+            source: PublicKey(*provider_node_id.as_bytes()),
+            hash: Hash(*hash.as_bytes()),
             size,
         };
         let serialized_params = RawBytes::serialize(params)?;

@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 use clap::{Args, Parser, Subcommand};
+use ethers::utils::hex::ToHexExt;
 use serde_json::{json, Value};
 use tokio::io::{self};
 
@@ -13,11 +14,10 @@ use hoku_provider::{
     json_rpc::{JsonRpcProvider, Url},
     query::FvmQueryHeight,
     util::{
-        parse_address, parse_metadata, parse_metadata_optional, parse_query_height,
-        parse_token_amount,
+        get_eth_address, parse_address, parse_metadata, parse_metadata_optional,
+        parse_query_height, parse_token_amount,
     },
 };
-
 use hoku_sdk::{
     machine::{
         bucket::{
@@ -250,8 +250,9 @@ pub async fn handle_bucket(
                 gas_params.clone(),
             )
             .await?;
+            let address = store.eth_address()?;
 
-            print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
+            print_json(&json!({"address": address.encode_hex_with_prefix(), "tx": &tx}))
         }
         BucketCommands::List(args) => {
             let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
@@ -261,7 +262,10 @@ pub async fn handle_bucket(
 
             let metadata = metadata
                 .iter()
-                .map(|m| json!({"address": m.address.to_string(), "kind": m.kind, "metadata" : m.metadata}))
+                .map(|m| {
+                    let a = get_eth_address(m.address).expect("invalid address");
+                    json!({"address": a.encode_hex_with_prefix(), "kind": m.kind, "metadata" : m.metadata})
+                })
                 .collect::<Vec<Value>>();
 
             print_json(&metadata)

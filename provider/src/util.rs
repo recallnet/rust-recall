@@ -6,9 +6,10 @@ use std::str::FromStr;
 
 use anyhow::anyhow;
 use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
+use fendermint_vm_actor_interface::eam::EthAddress;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::{
-    address::{Address, Error, Network},
+    address::{Address, Error, Network, Payload},
     bigint::BigInt,
     econ::TokenAmount,
 };
@@ -30,9 +31,16 @@ pub fn parse_address(s: &str) -> anyhow::Result<Address> {
     Ok(addr)
 }
 
-/// Converts f-address to eth-address. Only delegated address is supported.
-pub fn get_delegated_address(a: Address) -> anyhow::Result<ethers::types::Address> {
-    payload_to_evm_address(a.payload())
+/// Converts f-address to eth-address. Only masked ID and delegated addresses are supported.
+pub fn get_eth_address(a: Address) -> anyhow::Result<ethers::types::Address> {
+    match a.payload() {
+        Payload::Delegated(delegated) => {
+            let slice = delegated.subaddress();
+            Ok(ethers::types::Address::from_slice(&slice[0..20]))
+        }
+        Payload::ID(id) => Ok(EthAddress::from_id(*id).0.into()),
+        _ => Err(anyhow!("address provided is not masked ID or delegated")),
+    }
 }
 
 /// Parse the token amount from string.

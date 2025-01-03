@@ -9,7 +9,7 @@ use hoku_provider::{
     fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
     query::FvmQueryHeight,
-    util::{get_delegated_address, parse_address, parse_query_height},
+    util::{get_eth_address, parse_address, parse_query_height},
 };
 use hoku_sdk::{machine::info, network::NetworkConfig};
 
@@ -50,7 +50,7 @@ pub async fn handle_machine(cfg: NetworkConfig, args: &MachineArgs) -> anyhow::R
         MachineCommands::Info(args) => {
             let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
             let metadata = info(&provider, args.address, args.height).await?;
-            let owner = get_delegated_address(metadata.owner)?.encode_hex_with_prefix();
+            let owner = get_eth_address(metadata.owner)?.encode_hex_with_prefix();
 
             print_json(
                 &json!({"kind": metadata.kind, "owner": owner, "metadata": metadata.metadata}),

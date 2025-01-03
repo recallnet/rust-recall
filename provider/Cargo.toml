@@ -26,9 +26,6 @@ tendermint-proto = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true }
 rust_decimal = { workspace = true }
-tokio = { workspace = true }
-tokio-stream = { workspace = true }
-futures-util = { workspace = true }
 
 fvm_ipld_encoding = { workspace = true }
 fvm_shared = { workspace = true }
@@ -41,5 +38,3 @@ ipc-api = { workspace = true }
 
 iroh = { workspace = true }
 serde_json = { workspace = true }
-
-[dev-dependencies]
