@@ -63,10 +63,8 @@ const MAX_OBJECT_LENGTH: u64 = 5_000_000_000; // 5GB
 #[derive(Clone, Default, Debug)]
 pub struct AddOptions {
     /// Object time-to-live (TTL) duration.
-    /// If a TTL is specified, credits will be reserved for the duration,
-    /// after which the object will be deleted.
-    /// If a TTL is not specified, the object will be continuously renewed about every hour.
-    /// If the owner's free credit balance is exhausted, the object will be deleted.
+    /// Credits will be reserved for the duration, after which the object will be deleted.
+    /// If not specified, the current default TTL from the config actor is used.
     pub ttl: Option<ChainEpoch>,
     /// Metadata to add to the object.
     pub metadata: HashMap<String, String>,

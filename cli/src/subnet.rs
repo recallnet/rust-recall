@@ -54,9 +54,9 @@ struct SetConfigArgs {
     /// The minimum epoch duration a blob can be stored.
     #[arg(long)]
     blob_min_ttl: ChainEpoch,
-    /// The rolling epoch duration used for non-expiring blobs.
+    /// The default epoch duration a blob is stored.
     #[arg(long)]
-    blob_auto_renew_ttl: ChainEpoch,
+    blob_default_ttl: ChainEpoch,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -102,7 +102,7 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                         token_credit_rate: args.token_credit_rate.clone(),
                         blob_credit_debit_interval: args.blob_credit_debit_interval,
                         blob_min_ttl: args.blob_min_ttl,
-                        blob_auto_renew_ttl: args.blob_auto_renew_ttl,
+                        blob_default_ttl: args.blob_default_ttl,
                         broadcast_mode,
                         gas_params,
                     },
