@@ -22,8 +22,8 @@ pub trait Signer: Clone + Send + Sync {
     /// Returns the signer address.
     fn address(&self) -> Address;
 
-    /// Returns the signer EVM address.
-    fn evm_address(&self) -> anyhow::Result<EthAddress> {
+    /// Returns the signer Ethereum address.
+    fn eth_address(&self) -> anyhow::Result<EthAddress> {
         let delegated = get_eth_address(self.address())?;
         Ok(EthAddress::from(delegated))
     }

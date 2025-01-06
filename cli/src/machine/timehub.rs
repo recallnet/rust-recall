@@ -6,10 +6,12 @@ use bytes::Bytes;
 use cid::Cid;
 use clap::{Args, Subcommand};
 use clap_stdin::FileOrStdin;
+use ethers::utils::hex::ToHexExt;
 use serde_json::{json, Value};
 use std::{collections::HashMap, io::Cursor, str::FromStr as _};
 use tokio::io::AsyncReadExt;
 
+use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
@@ -140,8 +142,9 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
 
             let (store, tx) =
                 Timehub::new(&provider, &mut signer, args.owner, metadata, gas_params).await?;
+            let address = store.eth_address()?;
 
-            print_json(&json!({"address": store.address().to_string(), "tx": &tx}))
+            print_json(&json!({"address": address.encode_hex_with_prefix(), "tx": &tx}))
         }
         TimehubCommands::List(args) => {
             let address = get_address(args.clone(), &subnet_id)?;
@@ -149,7 +152,10 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
 
             let metadata = metadata
                 .iter()
-                .map(|m| json!({"address": m.address.to_string(), "kind": m.kind, "metadata": m.metadata}))
+                .map(|m| {
+                    let a = get_eth_address(m.address).expect("invalid address");
+                    json!({"address": a.encode_hex_with_prefix(), "kind": m.kind, "metadata" : m.metadata})
+                })
                 .collect::<Vec<Value>>();
 
             print_json(&metadata)

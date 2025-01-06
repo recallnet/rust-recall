@@ -31,8 +31,8 @@ pub struct SetConfigOptions {
     pub gas_params: GasParams,
     /// The minimum epoch duration a blob can be stored.
     pub blob_min_ttl: ChainEpoch,
-    /// The rolling epoch duration used for non-expiring blobs.
-    pub blob_auto_renew_ttl: ChainEpoch,
+    /// The default epoch duration a blob is stored.
+    pub blob_default_ttl: ChainEpoch,
 }
 
 /// Accessors for fetching subnet-wide information from a node via the CometBFT RPCs.
@@ -57,7 +57,7 @@ impl Subnet {
             token_credit_rate: options.token_credit_rate,
             blob_credit_debit_interval: options.blob_credit_debit_interval,
             blob_min_ttl: options.blob_min_ttl,
-            blob_auto_renew_ttl: options.blob_auto_renew_ttl,
+            blob_default_ttl: options.blob_default_ttl,
         };
         let params = RawBytes::serialize(params)?;
         let message = signer

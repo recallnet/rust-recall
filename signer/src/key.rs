@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::Context;
+
 pub use fendermint_crypto::SecretKey;
 
 /// Parse [`SecretKey`] from a hex string.

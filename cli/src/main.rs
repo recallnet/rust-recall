@@ -8,7 +8,7 @@ use serde::Serialize;
 use stderrlog::Timestamp;
 
 use hoku_provider::{
-    fvm_shared::{self, address::Address, econ::TokenAmount},
+    fvm_shared::{address::Address, econ::TokenAmount},
     json_rpc::Url,
     message::GasParams,
     query::FvmQueryHeight,
@@ -153,7 +153,7 @@ impl TxArgs {
         TxParams {
             sequence: self.sequence,
             gas_params: GasParams {
-                gas_limit: self.gas_limit.unwrap_or(fvm_shared::BLOCK_GAS_LIMIT),
+                gas_limit: self.gas_limit.unwrap_or_default(),
                 gas_fee_cap: self.gas_fee_cap.clone().unwrap_or_default(),
                 gas_premium: self.gas_premium.clone().unwrap_or_default(),
             },

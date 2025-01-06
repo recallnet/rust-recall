@@ -37,7 +37,7 @@ async fn main() -> anyhow::Result<()> {
 
     println!(
         "Balance of {}: {}",
-        signer.evm_address()?.encode_hex_with_prefix(),
+        signer.eth_address()?.encode_hex_with_prefix(),
         balance,
     );
 

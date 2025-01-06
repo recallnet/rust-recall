@@ -92,10 +92,8 @@ struct BucketAddArgs {
     #[arg(short, long)]
     key: String,
     /// Object time-to-live (TTL) duration.
-    /// If a TTL is specified, credits will be reserved for the duration,
-    /// after which the object will be deleted.
-    /// If a TTL is not specified, the object will be continuously renewed about every hour.
-    /// If the owner's free credit balance is exhuasted, the object will be deleted.
+    /// Credits will be reserved for the duration, after which the object will be deleted.
+    /// If not specified, the current default TTL from the config actor is used.
     #[arg(long)]
     ttl: Option<ChainEpoch>,
     /// Overwrite the object if it already exists.
@@ -242,14 +240,8 @@ pub async fn handle_bucket(
 
             let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
 
-            let (store, tx) = Bucket::new(
-                &provider,
-                &mut signer,
-                args.owner,
-                metadata,
-                gas_params.clone(),
-            )
-            .await?;
+            let (store, tx) =
+                Bucket::new(&provider, &mut signer, args.owner, metadata, gas_params).await?;
             let address = store.eth_address()?;
 
             print_json(&json!({"address": address.encode_hex_with_prefix(), "tx": &tx}))

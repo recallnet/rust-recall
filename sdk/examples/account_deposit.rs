@@ -41,7 +41,7 @@ async fn main() -> anyhow::Result<()> {
 
     println!(
         "Deposited 1 HOKU to {}",
-        signer.evm_address()?.encode_hex_with_prefix()
+        signer.eth_address()?.encode_hex_with_prefix()
     );
     println!(
         "Transaction hash: 0x{}",
