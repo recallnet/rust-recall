@@ -9,7 +9,7 @@ use tokio::sync::Mutex;
 use hoku_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
-    message::{ChainMessage, GasParams, Message, SignedMessage},
+    message::{ChainMessage, GasParams, Message, OriginKind, SignedMessage},
     query::{FvmQueryHeight, QueryProvider},
 };
 
@@ -88,7 +88,12 @@ impl Signer for Wallet {
     }
 
     fn verify_message(&self, message: &Message, signature: &Signature) -> anyhow::Result<()> {
-        SignedMessage::verify_signature(message, signature, &self.subnet_id.chain_id())?;
+        SignedMessage::verify_signature(
+            OriginKind::Fvm,
+            message,
+            signature,
+            &self.subnet_id.chain_id(),
+        )?;
         Ok(())
     }
 }

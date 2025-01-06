@@ -13,7 +13,10 @@ pub use crate::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{message::Message, MethodNum},
 };
-pub use fendermint_vm_message::{chain::ChainMessage, signed::SignedMessage};
+pub use fendermint_vm_message::{
+    chain::ChainMessage,
+    signed::{OriginKind, SignedMessage},
+};
 
 /// Gas parameters for transactions.
 #[derive(Clone, Debug)]
