@@ -106,7 +106,6 @@ pub async fn info(
     Ok(response.value)
 }
 
-/// Estimate gas for a transaction if gas limit is not set
 async fn estimate_gas<C>(
     provider: &impl Provider<C>,
     signer: &impl Signer,

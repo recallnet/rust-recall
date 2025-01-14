@@ -89,7 +89,6 @@ impl Account {
         EvmManager::transfer(signer, to, subnet, amount).await
     }
 
-    /// Estimate gas for a transaction if gas limit is not set
     async fn estimate_gas<C>(
         provider: &impl Provider<C>,
         signer: &impl Signer,
@@ -101,7 +100,6 @@ impl Account {
         C: Client + Send + Sync,
     {
         if gas_params.gas_limit == 0 {
-            // Estimate gas first
             let estimation_message = create_gas_estimation_message(
                 signer.address(),
                 BLOBS_ACTOR_ADDR,

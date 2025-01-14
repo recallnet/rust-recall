@@ -342,7 +342,6 @@ impl Bucket {
         .await
     }
 
-    /// Estimate gas for a transaction if gas limit is not set
     async fn estimate_gas<C>(
         &self,
         provider: &impl Provider<C>,
@@ -355,7 +354,6 @@ impl Bucket {
     where
         C: Client + Send + Sync,
     {
-        // estimate gas
         let message = create_gas_estimation_message(
             signer.address(),
             self.address,

@@ -104,7 +104,6 @@ impl Machine for Timehub {
 }
 
 impl Timehub {
-    /// Estimate gas for a transaction if gas limit is not set
     async fn estimate_gas<C>(
         &self,
         provider: &impl Provider<C>,
