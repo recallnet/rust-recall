@@ -25,7 +25,7 @@ async fn main() -> anyhow::Result<()> {
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    let cfg = Network::Testnet.get_config();
+    let cfg = Network::Localnet.get_config();
 
     // Setup network provider
     let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
@@ -55,7 +55,7 @@ async fn main() -> anyhow::Result<()> {
     println!(
         "Pushed to timehub {} with index {}",
         machine.address(),
-        tx.data.unwrap().index // Safe if broadcast mode is "commit". See `PushOptions`.
+        tx.data.unwrap().index, // Safe if broadcast mode is "commit". See `PushOptions`.
     );
     println!("Transaction hash: 0x{}", tx.hash);
 

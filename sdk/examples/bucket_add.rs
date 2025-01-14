@@ -24,11 +24,11 @@ async fn main() -> anyhow::Result<()> {
         return Err(anyhow!("Usage: [private key]"));
     }
 
-    let pk_kex = &args[2];
+    let pk_kex = &args[1];
     let pk = parse_secret_key(pk_kex)?;
 
-    // Use testnet network defaults
-    let cfg = Network::Testnet.get_config();
+    // Use localnet network defaults
+    let cfg = Network::Localnet.get_config();
 
     // Setup network provider
     let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(cfg.object_api_url))?;
