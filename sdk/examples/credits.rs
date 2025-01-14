@@ -28,8 +28,8 @@ async fn main() -> anyhow::Result<()> {
     let pk_hex = &args[1];
     let pk = parse_secret_key(pk_hex)?;
 
-    // Use localnet network defaults
-    let cfg = Network::Localnet.get_config();
+    // Use testnet network defaults
+    let cfg = Network::Testnet.get_config();
 
     // Setup network provider
     let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;

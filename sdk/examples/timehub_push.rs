@@ -25,7 +25,7 @@ async fn main() -> anyhow::Result<()> {
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    let cfg = Network::Localnet.get_config();
+    let cfg = Network::Testnet.get_config();
 
     // Setup network provider
     let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
