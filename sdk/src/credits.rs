@@ -272,7 +272,7 @@ impl Credits {
         to: Address,
         amount: TokenAmount,
         options: BuyOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxReceipt<Balance>>
     where
         C: Client + Send + Sync,
     {
@@ -299,7 +299,7 @@ impl Credits {
             )
             .await?;
         provider
-            .perform(message, options.broadcast_mode, decode_empty)
+            .perform(message, options.broadcast_mode, decode_buy)
             .await
     }
 
@@ -310,14 +310,14 @@ impl Credits {
         from: Address,
         to: Address,
         options: ApproveOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxReceipt<Approval>>
     where
         C: Client + Send + Sync,
     {
         let params = ApproveCreditParams {
             from,
             to,
-            caller_allowlist: None,
+            caller_allowlist: None, // TODO: remove this when it's been removed in ipc
             credit_limit: options.credit_limit,
             gas_fee_limit: options.gas_fee_limit,
             ttl: options.ttl,
@@ -344,7 +344,7 @@ impl Credits {
             )
             .await?;
         provider
-            .perform(message, options.broadcast_mode, decode_empty)
+            .perform(message, options.broadcast_mode, decode_approve)
             .await
     }
 
@@ -362,7 +362,7 @@ impl Credits {
         let params = RevokeCreditParams {
             from,
             to,
-            for_caller: None,
+            for_caller: None, // TODO: remove this when it's been removed in ipc
         };
         let params = RawBytes::serialize(params)?;
 
