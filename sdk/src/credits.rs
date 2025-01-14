@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use hoku_provider::fvm_ipld_encoding::{self, RawBytes};
 use hoku_provider::fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount};
-use hoku_provider::message::{local_message, GasParams};
+use hoku_provider::message::{create_gas_estimation_message, local_message, GasParams};
 use hoku_provider::query::{FvmQueryHeight, QueryProvider};
 use hoku_provider::response::{decode_bytes, decode_empty};
 use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
@@ -212,6 +212,35 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
 pub struct Credits {}
 
 impl Credits {
+    /// Estimate gas for a transaction if gas limit is not set
+    async fn estimate_gas<C>(
+        provider: &impl Provider<C>,
+        signer: &impl Signer,
+        method: u64,
+        params: RawBytes,
+        mut gas_params: GasParams,
+        amount: TokenAmount,
+    ) -> anyhow::Result<GasParams>
+    where
+        C: Client + Send + Sync,
+    {
+        if gas_params.gas_limit == 0 {
+            let estimation_message = create_gas_estimation_message(
+                signer.address(),
+                BLOBS_ACTOR_ADDR,
+                amount,
+                method,
+                params,
+                gas_params.clone(),
+            );
+            let estimated_gas = provider
+                .estimate_gas(estimation_message, FvmQueryHeight::Committed)
+                .await?;
+            gas_params.gas_limit = estimated_gas.value.gas_limit;
+        }
+        Ok(gas_params)
+    }
+
     pub async fn stats(
         provider: &impl QueryProvider,
         height: FvmQueryHeight,
@@ -237,65 +266,90 @@ impl Credits {
         }
     }
 
+    /// Buy credits for an account.
     pub async fn buy<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         to: Address,
         amount: TokenAmount,
         options: BuyOptions,
-    ) -> anyhow::Result<TxReceipt<Balance>>
+    ) -> anyhow::Result<TxReceipt<()>>
     where
         C: Client + Send + Sync,
     {
         let params = BuyCreditParams(to);
         let params = RawBytes::serialize(params)?;
+
+        let gas_params = Self::estimate_gas(
+            provider,
+            signer,
+            BuyCredit as u64,
+            params.clone(),
+            options.gas_params,
+            amount.clone(),
+        )
+        .await?;
+
         let message = signer
             .transaction(
                 BLOBS_ACTOR_ADDR,
                 amount,
                 BuyCredit as u64,
                 params,
-                options.gas_params,
+                gas_params,
             )
             .await?;
         provider
-            .perform(message, options.broadcast_mode, decode_buy)
+            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 
+    /// Approve credits for an account.
     pub async fn approve<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         from: Address,
         to: Address,
         options: ApproveOptions,
-    ) -> anyhow::Result<TxReceipt<Approval>>
+    ) -> anyhow::Result<TxReceipt<()>>
     where
         C: Client + Send + Sync,
     {
         let params = ApproveCreditParams {
             from,
             to,
-            caller_allowlist: None, // TODO: remove this when it's been removed in ipc
+            caller_allowlist: None,
             credit_limit: options.credit_limit,
             gas_fee_limit: options.gas_fee_limit,
             ttl: options.ttl,
         };
         let params = RawBytes::serialize(params)?;
+
+        let gas_params = Self::estimate_gas(
+            provider,
+            signer,
+            ApproveCredit as u64,
+            params.clone(),
+            options.gas_params,
+            Default::default(),
+        )
+        .await?;
+
         let message = signer
             .transaction(
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 ApproveCredit as u64,
                 params,
-                options.gas_params,
+                gas_params,
             )
             .await?;
         provider
-            .perform(message, options.broadcast_mode, decode_approve)
+            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 
+    /// Revoke credits for an account.
     pub async fn revoke<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
@@ -309,16 +363,27 @@ impl Credits {
         let params = RevokeCreditParams {
             from,
             to,
-            for_caller: None, // TODO: remove this when it's been removed in ipc
+            for_caller: None,
         };
         let params = RawBytes::serialize(params)?;
+
+        let gas_params = Self::estimate_gas(
+            provider,
+            signer,
+            RevokeCredit as u64,
+            params.clone(),
+            options.gas_params,
+            Default::default(),
+        )
+        .await?;
+
         let message = signer
             .transaction(
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 RevokeCredit as u64,
                 params,
-                options.gas_params,
+                gas_params,
             )
             .await?;
         provider

@@ -14,7 +14,7 @@ use tendermint::abci::response::DeliverTx;
 use hoku_provider::{
     fvm_ipld_encoding::{self, BytesSer, RawBytes},
     fvm_shared::address::Address,
-    message::{local_message, GasParams},
+    message::{create_gas_estimation_message, local_message, GasParams},
     query::{FvmQueryHeight, QueryProvider},
     response::{decode_as, decode_bytes, Cid},
     tx::{BroadcastMode, TxReceipt},
@@ -104,6 +104,35 @@ impl Machine for Timehub {
 }
 
 impl Timehub {
+    /// Estimate gas for a transaction if gas limit is not set
+    async fn estimate_gas<C>(
+        &self,
+        provider: &impl Provider<C>,
+        signer: &impl Signer,
+        method: u64,
+        params: RawBytes,
+        mut gas_params: GasParams,
+    ) -> anyhow::Result<GasParams>
+    where
+        C: Client + Send + Sync,
+    {
+        if gas_params.gas_limit == 0 {
+            let estimation_message = create_gas_estimation_message(
+                signer.address(),
+                self.address,
+                Default::default(),
+                method,
+                params,
+                gas_params.clone(),
+            );
+            let estimated_gas = provider
+                .estimate_gas(estimation_message, FvmQueryHeight::Committed)
+                .await?;
+            gas_params.gas_limit = estimated_gas.value.gas_limit;
+        }
+        Ok(gas_params)
+    }
+
     /// Push a payload into the timehub.
     pub async fn push<C>(
         &self,
@@ -123,13 +152,23 @@ impl Timehub {
         }
 
         let params = RawBytes::serialize(BytesSer(&payload))?;
+        let gas_params = self
+            .estimate_gas(
+                provider,
+                signer,
+                Push as u64,
+                params.clone(),
+                options.gas_params,
+            )
+            .await?;
+
         let message = signer
             .transaction(
                 self.address,
                 Default::default(),
                 Push as u64,
                 params,
-                options.gas_params,
+                gas_params,
             )
             .await?;
         provider

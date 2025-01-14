@@ -39,7 +39,7 @@ use hoku_provider::{
     fvm_ipld_encoding,
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
-    message::{local_message, object_upload_message, GasParams},
+    message::{create_gas_estimation_message, local_message, object_upload_message, GasParams},
     object::ObjectProvider,
     query::{FvmQueryHeight, QueryProvider},
     response::{decode_as, decode_bytes},
@@ -342,6 +342,37 @@ impl Bucket {
         .await
     }
 
+    /// Estimate gas for a transaction if gas limit is not set
+    async fn estimate_gas<C>(
+        &self,
+        provider: &impl Provider<C>,
+        signer: &impl Signer,
+        method: u64,
+        params: RawBytes,
+        mut gas_params: GasParams,
+        token_amount: TokenAmount,
+    ) -> anyhow::Result<GasParams>
+    where
+        C: Client + Send + Sync,
+    {
+        // estimate gas
+        let message = create_gas_estimation_message(
+            signer.address(),
+            self.address,
+            token_amount,
+            method,
+            params,
+            gas_params.clone(),
+        );
+        let estimated_gas = provider
+            .estimate_gas(message, FvmQueryHeight::Committed)
+            .await?;
+
+        // Update gas limit with estimated value
+        gas_params.gas_limit = estimated_gas.value.gas_limit;
+        Ok(gas_params)
+    }
+
     #[allow(clippy::too_many_arguments)]
     async fn add_inner<C>(
         &self,
@@ -491,13 +522,25 @@ impl Bucket {
         };
         let serialized_params = RawBytes::serialize(params.clone())?;
         let token_amount = options.token_amount.unwrap_or(TokenAmount::zero());
+
+        let gas_params = self
+            .estimate_gas(
+                provider,
+                signer,
+                AddObject as u64,
+                serialized_params.clone(),
+                options.gas_params.clone(),
+                token_amount.clone(),
+            )
+            .await?;
+
         let message = signer
             .transaction(
                 self.address,
                 token_amount,
                 AddObject as u64,
                 serialized_params,
-                options.gas_params,
+                gas_params,
             )
             .await?;
 

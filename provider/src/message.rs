@@ -38,7 +38,7 @@ pub struct GasParams {
 impl Default for GasParams {
     fn default() -> Self {
         GasParams {
-            gas_limit: DEFAULT_GAS_LIMIT,
+            gas_limit: 0,
             gas_fee_cap: TokenAmount::from_atto(MIN_GAS_FEE_CAP),
             gas_premium: TokenAmount::from_atto(MIN_GAS_PREMIUM),
         }
@@ -111,4 +111,28 @@ pub fn serialize(message: &ChainMessage) -> anyhow::Result<Vec<u8>> {
 /// Convenience method to serialize a [`SignedMessage`] for authentication.
 pub fn serialize_signed(message: &SignedMessage) -> anyhow::Result<Vec<u8>> {
     Ok(fvm_ipld_encoding::to_vec(message)?)
+}
+
+/// Create a message for gas estimation.
+/// This creates a message with sequence number 0 which is suitable for gas estimation.
+pub fn create_gas_estimation_message(
+    from: Address,
+    to: Address,
+    value: TokenAmount,
+    method_num: MethodNum,
+    params: RawBytes,
+    gas_params: GasParams,
+) -> Message {
+    Message {
+        version: Default::default(),
+        from,
+        to,
+        sequence: 0,
+        value,
+        method_num,
+        params,
+        gas_limit: gas_params.gas_limit,
+        gas_fee_cap: gas_params.gas_fee_cap,
+        gas_premium: gas_params.gas_premium,
+    }
 }

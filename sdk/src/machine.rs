@@ -18,7 +18,7 @@ use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_ipld_encoding::{self, RawBytes},
     fvm_shared::address::Address,
-    message::{local_message, GasParams},
+    message::{create_gas_estimation_message, local_message, GasParams},
     query::{FvmQueryHeight, QueryProvider},
     response::decode_bytes,
     tx::BroadcastMode,
@@ -106,6 +106,34 @@ pub async fn info(
     Ok(response.value)
 }
 
+/// Estimate gas for a transaction if gas limit is not set
+async fn estimate_gas<C>(
+    provider: &impl Provider<C>,
+    signer: &impl Signer,
+    method: u64,
+    params: RawBytes,
+    mut gas_params: GasParams,
+) -> anyhow::Result<GasParams>
+where
+    C: Client + Send + Sync,
+{
+    if gas_params.gas_limit == 0 {
+        let estimation_message = create_gas_estimation_message(
+            signer.address(),
+            ADM_ACTOR_ADDR,
+            Default::default(),
+            method,
+            params,
+            gas_params.clone(),
+        );
+        let estimated_gas = provider
+            .estimate_gas(estimation_message, FvmQueryHeight::Committed)
+            .await?;
+        gas_params.gas_limit = estimated_gas.value.gas_limit;
+    }
+    Ok(gas_params)
+}
+
 /// Deploys a machine.
 async fn deploy_machine<C>(
     provider: &impl Provider<C>,
@@ -113,7 +141,7 @@ async fn deploy_machine<C>(
     owner: Option<Address>,
     kind: Kind,
     metadata: HashMap<String, String>,
-    gas_params: GasParams,
+    mut gas_params: GasParams,
 ) -> anyhow::Result<(Address, DeployTxReceipt)>
 where
     C: Client + Send + Sync,
@@ -125,6 +153,16 @@ where
     };
 
     let params = RawBytes::serialize(params)?;
+
+    gas_params = estimate_gas(
+        provider,
+        signer,
+        CreateExternal as u64,
+        params.clone(),
+        gas_params,
+    )
+    .await?;
+
     let message = signer
         .transaction(
             ADM_ACTOR_ADDR,
