@@ -55,7 +55,7 @@ async fn main() -> anyhow::Result<()> {
     println!(
         "Pushed to timehub {} with index {}",
         machine.address(),
-        tx.data.unwrap().index, // Safe if broadcast mode is "commit". See `PushOptions`.
+        tx.data.unwrap().index // Safe if broadcast mode is "commit". See `PushOptions`.
     );
     println!("Transaction hash: 0x{}", tx.hash);
 
