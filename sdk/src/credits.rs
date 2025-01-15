@@ -111,7 +111,11 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
             credit_free: v.credit_free.to_string(),
             credit_committed: v.credit_committed.to_string(),
             last_debit_epoch,
-            credit_sponsor: v.credit_sponsor.map(|a| a.to_string()),
+            credit_sponsor: v.credit_sponsor.map(|a| {
+                get_eth_address(a)
+                    .expect("failed to get ethereum address")
+                    .encode_hex_with_prefix()
+            }),
             approvals: v
                 .approvals
                 .into_iter()
