@@ -131,6 +131,7 @@ impl Timehub {
                 Push as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
                 decode_push_return,
             )
             .await

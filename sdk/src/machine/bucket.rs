@@ -500,6 +500,7 @@ impl Bucket {
                 AddObject as u64,
                 serialized_params,
                 options.gas_params,
+                options.broadcast_mode,
                 decode_as,
             )
             .await?;
@@ -583,6 +584,7 @@ impl Bucket {
                 DeleteObject as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
                 |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
             )
             .await
@@ -702,6 +704,7 @@ impl Bucket {
                 UpdateObjectMetadata as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
                 |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
             )
             .await

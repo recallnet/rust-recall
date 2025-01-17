@@ -8,17 +8,16 @@ use tokio::sync::Mutex;
 
 use crate::signer::{EthAddress, Signer};
 use crate::SubnetID;
-use hoku_provider::tx::DeliverTx;
+use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
 use hoku_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
     message::{ChainMessage, GasParams, Message, OriginKind, SignedMessage},
     query::{FvmQueryHeight, QueryProvider},
+    Client, Provider,
 };
-use hoku_provider::{Client, Provider};
 
 pub use fendermint_crypto::SecretKey;
-use hoku_provider::tx::{BroadcastMode, TxReceipt};
 
 /// Indicates how an [`Address`] should be derived from a public key.
 ///
@@ -68,6 +67,7 @@ impl Signer for Wallet {
         method_num: MethodNum,
         params: RawBytes,
         mut gas_params: GasParams,
+        broadcast_mode: BroadcastMode,
         decode_fn: F,
     ) -> anyhow::Result<TxReceipt<T>> {
         let mut message = Message {
@@ -100,7 +100,7 @@ impl Signer for Wallet {
         let signed = SignedMessage::new_secp256k1(message, &self.sk, &self.subnet_id.chain_id())?;
         let signed_message = ChainMessage::Signed(signed);
         Ok(provider
-            .perform(signed_message, BroadcastMode::Commit, decode_fn)
+            .perform(signed_message, broadcast_mode, decode_fn)
             .await?)
     }
 

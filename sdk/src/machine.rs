@@ -14,6 +14,7 @@ use fendermint_vm_actor_interface::eam::EthAddress;
 use serde::Serialize;
 use tendermint::{abci::response::DeliverTx, block::Height, Hash};
 
+use hoku_provider::tx::BroadcastMode;
 use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_ipld_encoding::{self, RawBytes},
@@ -132,6 +133,7 @@ where
             CreateExternal as u64,
             params,
             gas_params,
+            BroadcastMode::Commit,
             decode_create,
         )
         .await?;

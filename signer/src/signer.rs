@@ -3,8 +3,7 @@
 
 use async_trait::async_trait;
 use hoku_provider::message::{GasParams, Message, SignedMessage};
-use hoku_provider::tx::DeliverTx;
-use hoku_provider::tx::TxReceipt;
+use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
 use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_ipld_encoding::RawBytes,
@@ -52,6 +51,7 @@ pub trait Signer: Clone + Send + Sync {
         method_num: MethodNum,
         params: RawBytes,
         gas_params: GasParams,
+        broadcast_mode: BroadcastMode,
         decode_fn: F,
     ) -> anyhow::Result<TxReceipt<T>>;
 

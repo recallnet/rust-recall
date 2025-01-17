@@ -11,7 +11,7 @@ use hoku_provider::fvm_shared::{
     address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
 };
 use hoku_provider::message::{GasParams, SignedMessage};
-use hoku_provider::tx::{DeliverTx, TxReceipt};
+use hoku_provider::tx::{DeliverTx, TxReceipt, BroadcastMode};
 use hoku_provider::{Client, Provider};
 
 /// [`Signer`] implementation that is not capable of signing messages.
@@ -52,6 +52,7 @@ impl Signer for Void {
         _method_num: MethodNum,
         _params: RawBytes,
         _gas_params: GasParams,
+        _broadcast_mode: BroadcastMode,
         _decode_fn: F,
     ) -> anyhow::Result<TxReceipt<T>> {
         Err(anyhow!("void signer cannot create transactions"))

@@ -68,6 +68,7 @@ impl Subnet {
                 SetConfig as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
                 decode_empty,
             )
             .await

@@ -258,6 +258,7 @@ impl Credits {
                 BuyCredit as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
                 decode_buy,
             )
             .await
@@ -291,6 +292,7 @@ impl Credits {
                 ApproveCredit as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
                 decode_approve,
             )
             .await
@@ -321,6 +323,7 @@ impl Credits {
                 RevokeCredit as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
                 decode_empty,
             )
             .await
