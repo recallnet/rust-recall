@@ -93,7 +93,7 @@ impl Signer for Wallet {
         let sequence = *sequence_guard;
         message.sequence = sequence;
 
-        // Set gas params to the estimated value
+        // Check gas fee cap and premium are within the limits
         gas_params.set_limits();
 
         *sequence_guard += 1;
