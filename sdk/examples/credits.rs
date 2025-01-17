@@ -127,7 +127,7 @@ async fn main() -> anyhow::Result<()> {
     println!("Second wallet credit balance: {:?}", second_balance);
     println!(
         "Second wallet credit approvals: {:?}",
-        second_balance.approvals
+        second_balance.approvals_from
     );
 
     // Revoke credits from the second wallet
@@ -158,7 +158,7 @@ async fn main() -> anyhow::Result<()> {
         Credits::balance(&provider, signer_address, FvmQueryHeight::Committed).await?;
     println!(
         "First wallet approvals after revocation: {:?}",
-        first_balance.approvals
+        first_balance.approvals_from
     );
 
     // Check final credit balances
