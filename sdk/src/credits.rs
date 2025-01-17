@@ -75,14 +75,10 @@ pub struct Balance {
     pub credit_sponsor: Option<String>,
     /// The chain epoch of the last debit.
     pub last_debit_epoch: Option<ChainEpoch>,
-    /// Credit approvals to other accounts, keyed by receiver, keyed by caller,
-    /// which could be the receiver or a specific contract, like a bucket.
-    /// This allows for limiting approvals to interactions from a specific contract.
-    /// For example, an approval for Alice might be valid for any contract caller, so long as
-    /// the origin is Alice.
-    /// An approval for Bob might be valid from only one contract caller, so long as
-    /// the origin is Bob.
-    pub approvals: HashMap<String, Approval>,
+    /// Credit approvals to other accounts from this account, keyed by receiver.
+    pub approvals_to: HashMap<String, Approval>,
+    /// Credit approvals to this account from other accounts, keyed by sender.
+    pub approvals_from: HashMap<String, Approval>,
     /// The total token value an account has used to buy credits.
     pub gas_allowance: String,
 }
@@ -94,7 +90,8 @@ impl Default for Balance {
             credit_committed: "0".into(),
             last_debit_epoch: Some(0),
             credit_sponsor: None,
-            approvals: HashMap::new(),
+            approvals_to: HashMap::new(),
+            approvals_from: HashMap::new(),
             gas_allowance: "0".into(),
         }
     }
@@ -112,8 +109,17 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
             credit_committed: v.credit_committed.to_string(),
             last_debit_epoch,
             credit_sponsor: v.credit_sponsor.map(|a| a.to_string()),
-            approvals: v
-                .approvals
+            approvals_to: v
+                .approvals_to
+                .into_iter()
+                .map(|(k, v)| {
+                    let a = parse_address(&k).expect("failed to parse address from string");
+                    let a = get_eth_address(a).expect("failed to get ethereum address");
+                    (a.encode_hex_with_prefix(), v.into())
+                })
+                .collect(),
+            approvals_from: v
+                .approvals_from
                 .into_iter()
                 .map(|(k, v)| {
                     let a = parse_address(&k).expect("failed to parse address from string");
