@@ -9,7 +9,7 @@ use tendermint::chain;
 
 use hoku_provider::fvm_shared::clock::ChainEpoch;
 use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_provider::message::{create_gas_estimation_message, local_message, GasParams, RawBytes};
+use hoku_provider::message::{local_message, GasParams, RawBytes};
 use hoku_provider::query::{FvmQueryHeight, QueryProvider};
 use hoku_provider::response::{decode_as, decode_empty};
 use hoku_provider::tx::{BroadcastMode, TxReceipt};
@@ -60,27 +60,16 @@ impl Subnet {
             blob_default_ttl: options.blob_default_ttl,
         };
         let params = RawBytes::serialize(params)?;
-
-        let gas_params = Subnet::estimate_gas(
-            provider,
-            signer,
-            SetConfig as u64,
-            params.clone(),
-            options.gas_params,
-        )
-        .await?;
-
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 HOKU_CONFIG_ACTOR_ADDR,
                 Default::default(),
                 SetConfig as u64,
                 params,
-                gas_params,
+                options.gas_params,
+                decode_empty,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 
@@ -91,30 +80,5 @@ impl Subnet {
         let message = local_message(HOKU_CONFIG_ACTOR_ADDR, GetConfig as u64, Default::default());
         let response = provider.call(message, height, decode_as).await?;
         Ok(response.value)
-    }
-
-    async fn estimate_gas<C>(
-        provider: &impl Provider<C>,
-        signer: &mut impl Signer,
-        method: u64,
-        params: RawBytes,
-        mut gas_params: GasParams,
-    ) -> anyhow::Result<GasParams>
-    where
-        C: Client + Send + Sync,
-    {
-        let estimation_message = create_gas_estimation_message(
-            signer.address(),
-            HOKU_CONFIG_ACTOR_ADDR,
-            Default::default(),
-            method,
-            params.clone(),
-            gas_params.clone(),
-        );
-        let estimated_gas = provider
-            .estimate_gas(estimation_message, FvmQueryHeight::Committed)
-            .await?;
-        gas_params.gas_limit = estimated_gas.value.gas_limit;
-        Ok(gas_params)
     }
 }

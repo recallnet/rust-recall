@@ -7,7 +7,7 @@ use fendermint_actor_blobs_shared::Method::SetAccountSponsor;
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 
 use hoku_provider::fvm_ipld_encoding::RawBytes;
-use hoku_provider::message::{create_gas_estimation_message, GasParams};
+use hoku_provider::message::GasParams;
 use hoku_provider::response::decode_empty;
 use hoku_provider::tx::{BroadcastMode, TxReceipt};
 use hoku_provider::{
@@ -89,35 +89,6 @@ impl Account {
         EvmManager::transfer(signer, to, subnet, amount).await
     }
 
-    async fn estimate_gas<C>(
-        provider: &impl Provider<C>,
-        signer: &impl Signer,
-        method: u64,
-        params: RawBytes,
-        mut gas_params: GasParams,
-    ) -> anyhow::Result<GasParams>
-    where
-        C: Client + Send + Sync,
-    {
-        if gas_params.gas_limit == 0 {
-            let estimation_message = create_gas_estimation_message(
-                signer.address(),
-                BLOBS_ACTOR_ADDR,
-                Default::default(),
-                method,
-                params,
-                gas_params.clone(),
-            );
-            let estimated_gas = provider
-                .estimate_gas(estimation_message, FvmQueryHeight::Committed)
-                .await?;
-
-            // Update gas limit with estimated value
-            gas_params.gas_limit = estimated_gas.value.gas_limit;
-        }
-        Ok(gas_params)
-    }
-
     /// Sets or unsets a gas sponsor for the signer.
     pub async fn set_sponsor<C>(
         provider: &impl Provider<C>,
@@ -133,27 +104,16 @@ impl Account {
             sponsor,
         };
         let params = RawBytes::serialize(params)?;
-
-        let gas_params = Self::estimate_gas(
-            provider,
-            signer,
-            SetAccountSponsor as u64,
-            params.clone(),
-            options.gas_params,
-        )
-        .await?;
-
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 SetAccountSponsor as u64,
                 params,
-                gas_params,
+                options.gas_params,
+                decode_empty,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 }

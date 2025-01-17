@@ -39,7 +39,7 @@ use hoku_provider::{
     fvm_ipld_encoding,
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
-    message::{create_gas_estimation_message, local_message, object_upload_message, GasParams},
+    message::{local_message, object_upload_message, GasParams},
     object::ObjectProvider,
     query::{FvmQueryHeight, QueryProvider},
     response::{decode_as, decode_bytes},
@@ -342,35 +342,6 @@ impl Bucket {
         .await
     }
 
-    async fn estimate_gas<C>(
-        &self,
-        provider: &impl Provider<C>,
-        signer: &impl Signer,
-        method: u64,
-        params: RawBytes,
-        mut gas_params: GasParams,
-        token_amount: TokenAmount,
-    ) -> anyhow::Result<GasParams>
-    where
-        C: Client + Send + Sync,
-    {
-        let message = create_gas_estimation_message(
-            signer.address(),
-            self.address,
-            token_amount,
-            method,
-            params,
-            gas_params.clone(),
-        );
-        let estimated_gas = provider
-            .estimate_gas(message, FvmQueryHeight::Committed)
-            .await?;
-
-        // Update gas limit with estimated value
-        gas_params.gas_limit = estimated_gas.value.gas_limit;
-        Ok(gas_params)
-    }
-
     #[allow(clippy::too_many_arguments)]
     async fn add_inner<C>(
         &self,
@@ -521,29 +492,16 @@ impl Bucket {
         let serialized_params = RawBytes::serialize(params.clone())?;
         let token_amount = options.token_amount.unwrap_or(TokenAmount::zero());
 
-        let gas_params = self
-            .estimate_gas(
+        let tx = signer
+            .send_transaction(
                 provider,
-                signer,
-                AddObject as u64,
-                serialized_params.clone(),
-                options.gas_params.clone(),
-                token_amount.clone(),
-            )
-            .await?;
-
-        let message = signer
-            .transaction(
                 self.address,
                 token_amount,
                 AddObject as u64,
                 serialized_params,
-                gas_params,
+                options.gas_params,
+                decode_as,
             )
-            .await?;
-
-        let tx = provider
-            .perform(message, options.broadcast_mode, decode_as)
             .await?;
 
         msg_bar.println(format!(
@@ -617,19 +575,14 @@ impl Bucket {
     {
         let params = DeleteParams(key.into());
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 self.address,
                 Default::default(),
                 DeleteObject as u64,
                 params,
                 options.gas_params,
-            )
-            .await?;
-        provider
-            .perform(
-                message,
-                options.broadcast_mode,
                 |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
             )
             .await
@@ -741,19 +694,14 @@ impl Bucket {
             metadata,
         };
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 self.address,
                 Default::default(),
                 UpdateObjectMetadata as u64,
                 params,
                 options.gas_params,
-            )
-            .await?;
-        provider
-            .perform(
-                message,
-                options.broadcast_mode,
                 |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
             )
             .await

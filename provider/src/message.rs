@@ -5,7 +5,6 @@
 use fendermint_vm_actor_interface::system::SYSTEM_ACTOR_ADDR;
 use fvm_shared::{address::Address, econ::TokenAmount};
 
-const DEFAULT_GAS_LIMIT: u64 = 100000000;
 const MIN_GAS_FEE_CAP: u64 = 100;
 const MIN_GAS_PREMIUM: u64 = 1;
 
@@ -52,9 +51,6 @@ impl GasParams {
     /// See https://github.com/consensus-shipyard/ipc/pull/1185#issuecomment-2549333793.
     /// In the meantime, we enforce limits in the client.
     pub fn set_limits(&mut self) {
-        if self.gas_limit == 0 || self.gas_limit > fvm_shared::BLOCK_GAS_LIMIT {
-            self.gas_limit = DEFAULT_GAS_LIMIT;
-        }
         let min_gas_fee_cap = TokenAmount::from_atto(MIN_GAS_FEE_CAP);
         if self.gas_fee_cap < min_gas_fee_cap {
             self.gas_fee_cap = min_gas_fee_cap;
@@ -111,28 +107,4 @@ pub fn serialize(message: &ChainMessage) -> anyhow::Result<Vec<u8>> {
 /// Convenience method to serialize a [`SignedMessage`] for authentication.
 pub fn serialize_signed(message: &SignedMessage) -> anyhow::Result<Vec<u8>> {
     Ok(fvm_ipld_encoding::to_vec(message)?)
-}
-
-/// Create a message for gas estimation.
-/// This creates a message with sequence number 0 which is suitable for gas estimation.
-pub fn create_gas_estimation_message(
-    from: Address,
-    to: Address,
-    value: TokenAmount,
-    method_num: MethodNum,
-    params: RawBytes,
-    gas_params: GasParams,
-) -> Message {
-    Message {
-        version: Default::default(),
-        from,
-        to,
-        sequence: 0,
-        value,
-        method_num,
-        params,
-        gas_limit: gas_params.gas_limit,
-        gas_fee_cap: gas_params.gas_fee_cap,
-        gas_premium: gas_params.gas_premium,
-    }
 }

@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use async_trait::async_trait;
-use hoku_provider::message::{ChainMessage, GasParams, Message, SignedMessage};
+use hoku_provider::message::{GasParams, Message, SignedMessage};
+use hoku_provider::tx::DeliverTx;
+use hoku_provider::tx::TxReceipt;
 use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
+    Client, Provider,
 };
 
 use crate::key::SecretKey;
@@ -37,14 +40,20 @@ pub trait Signer: Clone + Send + Sync {
     fn subnet_id(&self) -> Option<SubnetID>;
 
     /// Returns a [`ChainMessage`] that can be submitted to a provider.
-    async fn transaction(
+    async fn send_transaction<
+        C: Client + Send + Sync,
+        T: Send + Sync,
+        F: FnOnce(&DeliverTx) -> anyhow::Result<T> + Send + Sync,
+    >(
         &mut self,
+        provider: &impl Provider<C>,
         to: Address,
         value: TokenAmount,
         method_num: MethodNum,
         params: RawBytes,
         gas_params: GasParams,
-    ) -> anyhow::Result<ChainMessage>;
+        decode_fn: F,
+    ) -> anyhow::Result<TxReceipt<T>>;
 
     /// Returns a raw [`SignedMessage`].  
     fn sign_message(&self, message: Message) -> anyhow::Result<SignedMessage>;

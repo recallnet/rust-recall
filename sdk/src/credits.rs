@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use hoku_provider::fvm_ipld_encoding::{self, RawBytes};
 use hoku_provider::fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount};
-use hoku_provider::message::{create_gas_estimation_message, local_message, GasParams};
+use hoku_provider::message::{local_message, GasParams};
 use hoku_provider::query::{FvmQueryHeight, QueryProvider};
 use hoku_provider::response::{decode_bytes, decode_empty};
 use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
@@ -212,34 +212,6 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
 pub struct Credits {}
 
 impl Credits {
-    async fn estimate_gas<C>(
-        provider: &impl Provider<C>,
-        signer: &impl Signer,
-        method: u64,
-        params: RawBytes,
-        mut gas_params: GasParams,
-        amount: TokenAmount,
-    ) -> anyhow::Result<GasParams>
-    where
-        C: Client + Send + Sync,
-    {
-        if gas_params.gas_limit == 0 {
-            let estimation_message = create_gas_estimation_message(
-                signer.address(),
-                BLOBS_ACTOR_ADDR,
-                amount,
-                method,
-                params,
-                gas_params.clone(),
-            );
-            let estimated_gas = provider
-                .estimate_gas(estimation_message, FvmQueryHeight::Committed)
-                .await?;
-            gas_params.gas_limit = estimated_gas.value.gas_limit;
-        }
-        Ok(gas_params)
-    }
-
     pub async fn stats(
         provider: &impl QueryProvider,
         height: FvmQueryHeight,
@@ -278,28 +250,16 @@ impl Credits {
     {
         let params = BuyCreditParams(to);
         let params = RawBytes::serialize(params)?;
-
-        let gas_params = Self::estimate_gas(
-            provider,
-            signer,
-            BuyCredit as u64,
-            params.clone(),
-            options.gas_params,
-            amount.clone(),
-        )
-        .await?;
-
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 amount,
                 BuyCredit as u64,
                 params,
-                gas_params,
+                options.gas_params,
+                decode_buy,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_buy)
             .await
     }
 
@@ -323,28 +283,16 @@ impl Credits {
             ttl: options.ttl,
         };
         let params = RawBytes::serialize(params)?;
-
-        let gas_params = Self::estimate_gas(
-            provider,
-            signer,
-            ApproveCredit as u64,
-            params.clone(),
-            options.gas_params,
-            Default::default(),
-        )
-        .await?;
-
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 ApproveCredit as u64,
                 params,
-                gas_params,
+                options.gas_params,
+                decode_approve,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_approve)
             .await
     }
 
@@ -365,28 +313,16 @@ impl Credits {
             for_caller: None, // TODO: remove this when it's been removed in ipc
         };
         let params = RawBytes::serialize(params)?;
-
-        let gas_params = Self::estimate_gas(
-            provider,
-            signer,
-            RevokeCredit as u64,
-            params.clone(),
-            options.gas_params,
-            Default::default(),
-        )
-        .await?;
-
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 RevokeCredit as u64,
                 params,
-                gas_params,
+                options.gas_params,
+                decode_empty,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 }

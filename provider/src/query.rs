@@ -51,23 +51,27 @@ pub trait QueryProvider: Send + Sync {
     }
 
     /// Estimate the gas limit of a message.
-    async fn estimate_gas(
+    async fn estimate_gas_limit(
         &self,
         mut message: Message,
         height: FvmQueryHeight,
-    ) -> anyhow::Result<QueryResponse<GasEstimate>> {
+    ) -> anyhow::Result<u64> {
+        if message.gas_limit != 0 {
+            return Ok(message.gas_limit);
+        }
+
         // Using a sequence of 0 so estimation doesn't get tripped over by nonce mismatch.
         message.sequence = 0;
 
         let res = self
-            .query(FvmQuery::EstimateGas(Box::new(message)), height)
+            .query(FvmQuery::EstimateGas(Box::new(message.clone())), height)
             .await?;
-        let height = res.height;
-        let value = extract(res, |res| {
+        let estimate: GasEstimate = extract(res, |res| {
             fvm_ipld_encoding::from_slice(&res.value)
                 .context("failed to decode GasEstimate from query")
         })?;
-        Ok(QueryResponse { height, value })
+
+        Ok(estimate.gas_limit)
     }
 
     /// Query the state of an actor.
@@ -191,7 +195,7 @@ mod tests {
     #[test]
     fn parse_call_query_response() {
         // Value extracted from a log captured in an issue.
-        let response = "{\"code\":0,\"log\":\"\",\"info\":\"\",\"index\":\"0\",\"key\":null,\"value\":\"mNwIGCESARhAGCIYVxhtGGUYcxhzGGEYZxhlGCAYZhhhGGkYbBhlGGQYIBh3GGkYdBhoGCAYYhhhGGMYaxh0GHIYYRhjGGUYOgoYMBgwGDoYIBh0GDAYMRgxGDkYIBgoGG0YZRh0GGgYbxhkGCAYMxg4GDQYNBg0GDUYMBg4GDMYNxgpGCAYLRgtGCAYYxhvGG4YdBhyGGEYYxh0GCAYchhlGHYYZRhyGHQYZRhkGCAYKBgzGDMYKQoYMBiuGK0YpAEYOhh3CgcYbRhlGHMYcxhhGGcYZRIYNgoEGGYYchhvGG0SGCwYdBg0GDEYMBhmGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhvGG4YYxg2GGkYahhpGBgBEhg0CgIYdBhvEhgsGHQYNBgxGDAYZhg3GG8YNhh3GHYYNBhtGGgYaRg2GG0YdRgzGHgYZhhpGGYYdhhmGGcYbxhyGGIYYRhtGDUYbhhwGGcYbBhpGG0YNBhkGHkYdRh2GGkYaRgYAQ==\",\"proofOps\":null,\"height\":\"6148\",\"codespace\":\"\"}";
+        let response = "{\"code\":0,\"log\":\"\",\"info\":\"\",\"index\":\"0\",\"key\":null,\"value\":\"mNwIGCESARhAGCIYVxhtGGUYcxhzGGEYZxhlGCAYZhhhGGkYbBhlGGQYIBh3GGkYdBhoGCAYYhhhGGMYaxh0GHIYYRhjGGUYOgoYMBgwGDoYIBh0GDAYMRgxGDkYIBgoGG0YZRh0GGgYbxhkGCAYMxg4GDQYNBg0GDUYMBg4GDMYNxgpGCAYLRgtGCAYYxhvGG4YdBhyGGEYYxh0GCAYchhlGHYYZRhyGHQYZRhkGCAYKBgzGDMYKQoYMBiuGK0YpAEYOhh3CgcYbRhlGHMYcxhhGGcYZRIYNgoEGGYYchhvGG0SGCwYdBg0GDEYMBhmGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhhGGEYYRhvGG4YYxg2GGkYahhpGBgBEhg0CgIYdBhvEhgsGHQYNBgxGDAYZhg3GG8YNhh3GHYYNBhtGGgYaRg2GG0YdRgzGHgYZhhpGGYYdhhmGGcYbxhyGGIYYRhtGDUYbhhwGGcYbBhpGG0YNBhkGHkYdRh2GGkYaRgYAQ==\",\"proofOps\":null,\"height\":\"6148\",\"codespace\":\"\"}";
         let query = serde_json::from_str::<AbciQuery>(response).expect("failed to parse AbciQuery");
         let deliver_tx = parse_deliver_tx(query).expect("failed to parse DeliverTx");
         assert!(deliver_tx.code.is_err());
