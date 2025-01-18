@@ -78,7 +78,7 @@ impl Signer for Wallet {
             value,
             method_num,
             params,
-            gas_limit: gas_params.gas_limit.clone(),
+            gas_limit: gas_params.gas_limit,
             gas_fee_cap: gas_params.gas_fee_cap.clone(),
             gas_premium: gas_params.gas_premium.clone(),
         };

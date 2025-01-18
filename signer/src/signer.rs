@@ -39,6 +39,7 @@ pub trait Signer: Clone + Send + Sync {
     fn subnet_id(&self) -> Option<SubnetID>;
 
     /// Returns a [`ChainMessage`] that can be submitted to a provider.
+    #[allow(clippy::too_many_arguments)]
     async fn send_transaction<
         C: Client + Send + Sync,
         T: Send + Sync,
