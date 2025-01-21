@@ -37,7 +37,7 @@ struct UsageArgs {
 
 /// Storage commands handler.
 pub async fn handle_storage(cfg: NetworkConfig, args: &StorageArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
     match &args.command {
         StorageCommands::Stats(args) => {

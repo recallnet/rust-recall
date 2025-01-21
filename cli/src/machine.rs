@@ -48,7 +48,8 @@ struct InfoArgs {
 pub async fn handle_machine(cfg: NetworkConfig, args: &MachineArgs) -> anyhow::Result<()> {
     match &args.command {
         MachineCommands::Info(args) => {
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+            let provider =
+                JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
             let metadata = info(&provider, args.address, args.height).await?;
             let owner = get_eth_address(metadata.owner)?.encode_hex_with_prefix();
 

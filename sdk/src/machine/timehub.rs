@@ -7,7 +7,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use bytes::Bytes;
 use fendermint_actor_timehub::Method::{Count, Get, Peaks, Push, Root};
-use fendermint_vm_actor_interface::adm::Kind;
+use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
@@ -17,12 +17,12 @@ use hoku_provider::{
     message::{local_message, GasParams},
     query::{FvmQueryHeight, QueryProvider},
     response::{decode_bytes, Cid},
-    tx::{BroadcastMode, TxReceipt},
+    tx::{BroadcastMode, TxResult},
     Client, Provider,
 };
 use hoku_signer::Signer;
 
-use crate::machine::{deploy_machine, DeployTxReceipt, Machine};
+use crate::machine::{deploy_machine, Machine};
 
 const MAX_ACC_PAYLOAD_SIZE: usize = 1024 * 500;
 
@@ -85,7 +85,7 @@ impl Machine for Timehub {
         owner: Option<Address>,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
-    ) -> anyhow::Result<(Self, DeployTxReceipt)>
+    ) -> anyhow::Result<(Self, TxResult<CreateExternalReturn>)>
     where
         C: Client + Send + Sync,
     {
@@ -111,7 +111,7 @@ impl Timehub {
         signer: &mut impl Signer,
         payload: Bytes,
         options: PushOptions,
-    ) -> anyhow::Result<TxReceipt<PushReturn>>
+    ) -> anyhow::Result<TxResult<PushReturn>>
     where
         C: Client + Send + Sync,
     {

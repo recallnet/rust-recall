@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use async_trait::async_trait;
-use hoku_provider::message::{GasParams, Message, SignedMessage};
-use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
-use hoku_provider::util::get_eth_address;
+
 use hoku_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
+    message::{GasParams, Message, SignedMessage},
+    tx::{BroadcastMode, DeliverTx, TxResult},
+    util::get_eth_address,
     Client, Provider,
 };
 
@@ -54,7 +55,7 @@ pub trait Signer: Clone + Send + Sync {
         gas_params: GasParams,
         broadcast_mode: BroadcastMode,
         decode_fn: F,
-    ) -> anyhow::Result<TxReceipt<T>>;
+    ) -> anyhow::Result<TxResult<T>>;
 
     /// Returns a raw [`SignedMessage`].  
     fn sign_message(&self, message: Message) -> anyhow::Result<SignedMessage>;

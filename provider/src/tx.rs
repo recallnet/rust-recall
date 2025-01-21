@@ -6,7 +6,7 @@ use std::str::FromStr;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use num_traits::Zero;
+use ethers::core::types as et;
 use serde::Serialize;
 
 use crate::message::ChainMessage;
@@ -39,31 +39,23 @@ impl FromStr for BroadcastMode {
 }
 
 /// The current status of a transaction.
-#[derive(Debug, Copy, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum TxStatus {
     /// The transaction is in the memory pool waiting to be included in a block.
-    Pending,
+    Pending(et::Transaction),
     /// The transaction has been committed to a finalized block.
-    Committed,
+    Committed(et::TransactionReceipt),
 }
 
-/// The receipt of a transaction.
-#[derive(Debug, Copy, Clone, Serialize)]
-pub struct TxReceipt<T>
+/// The result of a transaction.
+#[derive(Debug, Clone, Serialize)]
+pub struct TxResult<T>
 where
     T: 'static,
 {
     /// The transaction's current status.
     pub status: TxStatus,
-    /// The hash of the transaction.
-    pub hash: Hash,
-    /// The block height at which the transaction was included.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub height: Option<Height>,
-    /// Gas used by the transaction.
-    #[serde(skip_serializing_if = "i64::is_zero")]
-    pub gas_used: i64,
     /// Data returned by the transaction.
     #[serde(skip_serializing_if = "is_data_empty")]
     pub data: Option<T>,
@@ -80,26 +72,28 @@ where
     }
 }
 
-impl<D> TxReceipt<D> {
-    /// Create a new receipt with status pending.
-    pub fn pending(hash: Hash) -> Self {
-        TxReceipt {
-            status: TxStatus::Pending,
-            hash,
-            height: None,
-            gas_used: 0,
+impl<T> TxResult<T> {
+    /// Create a new result with status pending.
+    pub fn pending(tx: et::Transaction) -> Self {
+        TxResult {
+            status: TxStatus::Pending(tx),
             data: None,
         }
     }
 
     /// Create a new receipt with status committed.
-    pub fn committed(hash: Hash, height: Height, gas_used: i64, data: Option<D>) -> Self {
-        TxReceipt {
-            status: TxStatus::Committed,
-            hash,
-            height: Some(height),
-            gas_used,
+    pub fn committed(receipt: et::TransactionReceipt, data: Option<T>) -> Self {
+        TxResult {
+            status: TxStatus::Committed(receipt),
             data,
+        }
+    }
+
+    /// Returns the transaction hash.
+    pub fn hash(&self) -> et::TxHash {
+        match self.status {
+            TxStatus::Pending(ref tx) => tx.hash(),
+            TxStatus::Committed(ref receipt) => receipt.transaction_hash,
         }
     }
 }
@@ -113,8 +107,15 @@ pub trait TxProvider: Send + Sync {
         message: ChainMessage,
         broadcast_mode: BroadcastMode,
         f: F,
-    ) -> anyhow::Result<TxReceipt<T>>
+    ) -> anyhow::Result<TxResult<T>>
     where
         F: FnOnce(&DeliverTx) -> anyhow::Result<T> + Sync + Send,
         T: Sync + Send;
+
+    /// Returns a transaction by hash in Ethereum format.
+    async fn eth_tx_receipt(
+        &self,
+        hash: Hash,
+        prove: bool,
+    ) -> anyhow::Result<et::TransactionReceipt>;
 }

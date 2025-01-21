@@ -5,9 +5,6 @@
 use fendermint_vm_actor_interface::system::SYSTEM_ACTOR_ADDR;
 use fvm_shared::{address::Address, econ::TokenAmount};
 
-const MIN_GAS_FEE_CAP: u64 = 100;
-const MIN_GAS_PREMIUM: u64 = 1;
-
 pub use crate::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{message::Message, MethodNum},
@@ -16,6 +13,9 @@ pub use fendermint_vm_message::{
     chain::ChainMessage,
     signed::{OriginKind, SignedMessage},
 };
+
+const MIN_GAS_FEE_CAP: u64 = 100;
+const MIN_GAS_PREMIUM: u64 = 1;
 
 /// Gas parameters for transactions.
 #[derive(Clone, Debug)]

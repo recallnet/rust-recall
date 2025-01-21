@@ -4,15 +4,16 @@
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use hoku_provider::util::parse_token_credit_rate;
-use hoku_provider::{fvm_shared::clock::ChainEpoch, json_rpc::JsonRpcProvider};
-use hoku_sdk::credits::TokenCreditRate;
-use hoku_sdk::subnet::SetConfigOptions;
-use hoku_sdk::{network::NetworkConfig, subnet::Subnet, TxParams};
-use hoku_signer::key::SecretKey;
-use hoku_signer::{AccountKind, Wallet};
+use hoku_provider::{
+    fvm_shared::clock::ChainEpoch, json_rpc::JsonRpcProvider, util::parse_token_credit_rate,
+};
+use hoku_sdk::{
+    credits::TokenCreditRate, network::NetworkConfig, subnet::SetConfigOptions, subnet::Subnet,
+    TxParams,
+};
+use hoku_signer::{key::SecretKey, AccountKind, Wallet};
 
-use crate::{parse_secret_key, print_json, AddressArgs, BroadcastMode, TxArgs};
+use crate::{parse_secret_key, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct SubnetArgs {
@@ -72,7 +73,7 @@ struct GetConfigArgs {
 
 /// Subnet commands handler.
 pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
     match &args.command {
         SubnetCommands::ChainId => {
@@ -109,7 +110,7 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                 )
                 .await?;
 
-                print_json(&tx)
+                print_tx_json(&tx)
             }
             ConfigCommands::Get(args) => {
                 let config = Subnet::get_config(&provider, args.address.height).await?;

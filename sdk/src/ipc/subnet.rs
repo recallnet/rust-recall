@@ -3,9 +3,9 @@
 
 use std::time::Duration;
 
-use hoku_provider::fvm_shared::address::Address;
 use reqwest::Url;
 
+use hoku_provider::fvm_shared::address::Address;
 use hoku_signer::SubnetID;
 
 /// The EVM subnet config parameters.

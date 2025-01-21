@@ -18,7 +18,7 @@ use fendermint_actor_bucket::{
     Method::{AddObject, DeleteObject, GetObject, ListObjects, UpdateObjectMetadata},
     UpdateObjectMetadataParams, MAX_METADATA_KEY_SIZE, MAX_METADATA_VALUE_SIZE,
 };
-use fendermint_vm_actor_interface::adm::Kind;
+use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use infer::Type;
 use iroh::blobs::{provider::AddProgress, util::SetTagOption, Hash as IrohHash};
@@ -43,14 +43,14 @@ use hoku_provider::{
     object::ObjectProvider,
     query::{FvmQueryHeight, QueryProvider},
     response::{decode_as, decode_bytes},
-    tx::{BroadcastMode, TxReceipt},
+    tx::{BroadcastMode, TxResult},
     Client, Provider,
 };
 use hoku_signer::Signer;
 
 use crate::progress::{new_message_bar, new_multi_bar, SPARKLE};
 use crate::{
-    machine::{deploy_machine, DeployTxReceipt, Machine},
+    machine::{deploy_machine, Machine},
     progress::new_progress_bar,
 };
 
@@ -163,7 +163,7 @@ impl Machine for Bucket {
         owner: Option<Address>,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
-    ) -> anyhow::Result<(Self, DeployTxReceipt)>
+    ) -> anyhow::Result<(Self, TxResult<CreateExternalReturn>)>
     where
         C: Client + Send + Sync,
     {
@@ -271,7 +271,7 @@ impl Bucket {
         key: &str,
         reader: R,
         options: AddOptions,
-    ) -> anyhow::Result<TxReceipt<Object>>
+    ) -> anyhow::Result<TxResult<Object>>
     where
         C: Client + Send + Sync,
         R: AsyncRead + Unpin + Send + 'static,
@@ -307,7 +307,7 @@ impl Bucket {
         key: &str,
         path: impl AsRef<Path>,
         options: AddOptions,
-    ) -> anyhow::Result<TxReceipt<Object>>
+    ) -> anyhow::Result<TxResult<Object>>
     where
         C: Client + Send + Sync,
     {
@@ -353,7 +353,7 @@ impl Bucket {
         bars: Arc<MultiProgress>,
         msg_bar: ProgressBar,
         mut progress: iroh::client::blobs::AddProgress,
-    ) -> anyhow::Result<TxReceipt<Object>>
+    ) -> anyhow::Result<TxResult<Object>>
     where
         C: Client + Send + Sync,
     {
@@ -570,7 +570,7 @@ impl Bucket {
         signer: &mut impl Signer,
         key: &str,
         options: DeleteOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {
@@ -685,7 +685,7 @@ impl Bucket {
         key: &str,
         metadata: HashMap<String, Option<String>>,
         options: UpdateObjectMetadataOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {
