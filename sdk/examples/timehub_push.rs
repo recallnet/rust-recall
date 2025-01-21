@@ -28,7 +28,7 @@ async fn main() -> anyhow::Result<()> {
     let cfg = Network::Testnet.get_config();
 
     // Setup network provider
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
     // Setup local wallet using private key from arg
     let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, cfg.subnet_id)?;
@@ -44,7 +44,7 @@ async fn main() -> anyhow::Result<()> {
     )
     .await?;
     println!("Created new timehub {}", machine.address(),);
-    println!("Transaction hash: 0x{}", tx.hash);
+    println!("Transaction hash: 0x{}", tx.hash());
 
     // Push a value to the accumulator
     let value =
@@ -55,9 +55,9 @@ async fn main() -> anyhow::Result<()> {
     println!(
         "Pushed to timehub {} with index {}",
         machine.address(),
-        tx.data.unwrap().index // Safe if broadcast mode is "commit". See `PushOptions`.
+        tx.data.clone().unwrap().index // Safe if broadcast mode is "commit". See `PushOptions`.
     );
-    println!("Transaction hash: 0x{}", tx.hash);
+    println!("Transaction hash: 0x{}", tx.hash());
 
     // Get the value back
     let result = machine

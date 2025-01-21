@@ -11,31 +11,22 @@ use fendermint_vm_actor_interface::adm::{
     Method::CreateExternal, Method::ListMetadata, ADM_ACTOR_ADDR,
 };
 use fendermint_vm_actor_interface::eam::EthAddress;
-use serde::Serialize;
-use tendermint::{abci::response::DeliverTx, block::Height, Hash};
+use tendermint::abci::response::DeliverTx;
 
-use hoku_provider::util::get_eth_address;
 use hoku_provider::{
     fvm_ipld_encoding::{self, RawBytes},
     fvm_shared::address::Address,
     message::{local_message, GasParams},
     query::{FvmQueryHeight, QueryProvider},
     response::decode_bytes,
-    tx::BroadcastMode,
+    tx::{BroadcastMode, TxResult},
+    util::get_eth_address,
     Client, Provider,
 };
 use hoku_signer::Signer;
 
 pub mod bucket;
 pub mod timehub;
-
-/// Deployed machine transaction receipt details.
-#[derive(Copy, Clone, Debug, Serialize)]
-pub struct DeployTxReceipt {
-    pub hash: Hash,
-    pub height: Height,
-    pub gas_used: i64,
-}
 
 /// Trait implemented by different machine kinds.
 /// This is modeled after Ethers contract deployment UX.
@@ -50,7 +41,7 @@ pub trait Machine: Send + Sync + Sized {
         owner: Option<Address>,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
-    ) -> anyhow::Result<(Self, DeployTxReceipt)>
+    ) -> anyhow::Result<(Self, TxResult<CreateExternalReturn>)>
     where
         C: Client + Send + Sync;
 
@@ -114,7 +105,7 @@ async fn deploy_machine<C>(
     kind: Kind,
     metadata: HashMap<String, String>,
     gas_params: GasParams,
-) -> anyhow::Result<(Address, DeployTxReceipt)>
+) -> anyhow::Result<(Address, TxResult<CreateExternalReturn>)>
 where
     C: Client + Send + Sync,
 {
@@ -139,17 +130,10 @@ where
         .await?;
 
     // In commit broadcast mode, if the data or address does not exist, something fatal happened.
-    let actor_id = tx.data.expect("data exists").actor_id;
+    let actor_id = tx.data.clone().expect("data exists").actor_id;
     let address = Address::new_id(actor_id);
 
-    Ok((
-        address,
-        DeployTxReceipt {
-            hash: tx.hash,
-            height: tx.height.expect("height exists"),
-            gas_used: tx.gas_used,
-        },
-    ))
+    Ok((address, tx))
 }
 
 fn decode_create(deliver_tx: &DeliverTx) -> anyhow::Result<CreateExternalReturn> {

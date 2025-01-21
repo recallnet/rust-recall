@@ -12,7 +12,7 @@ use hoku_provider::{
     json_rpc::Url,
     message::GasParams,
     query::FvmQueryHeight,
-    tx::BroadcastMode as SDKBroadcastMode,
+    tx::{BroadcastMode as SDKBroadcastMode, TxResult, TxStatus},
     util::{parse_address, parse_query_height, parse_token_amount_from_atto},
 };
 use hoku_sdk::{network::Network as SdkNetwork, TxParams};
@@ -230,6 +230,16 @@ pub fn parse_address_list(s: &str) -> anyhow::Result<HashSet<Address>> {
 /// Print serializable to stdout as pretty formatted JSON.
 fn print_json<T: Serialize>(value: &T) -> anyhow::Result<()> {
     let json = serde_json::to_string_pretty(&value)?;
+    println!("{}", json);
+    Ok(())
+}
+
+/// Print serializable to stdout as pretty formatted JSON.
+fn print_tx_json<T: 'static>(tx_res: &TxResult<T>) -> anyhow::Result<()> {
+    let json = match &tx_res.status {
+        TxStatus::Pending(tx) => serde_json::to_string_pretty(tx)?,
+        TxStatus::Committed(receipt) => serde_json::to_string_pretty(receipt)?,
+    };
     println!("{}", json);
     Ok(())
 }

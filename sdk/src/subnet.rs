@@ -12,7 +12,7 @@ use hoku_provider::json_rpc::JsonRpcProvider;
 use hoku_provider::message::{local_message, GasParams, RawBytes};
 use hoku_provider::query::{FvmQueryHeight, QueryProvider};
 use hoku_provider::response::{decode_as, decode_empty};
-use hoku_provider::tx::{BroadcastMode, TxReceipt};
+use hoku_provider::tx::{BroadcastMode, TxResult};
 use hoku_provider::{Client, Provider, TendermintClient};
 use hoku_signer::Signer;
 
@@ -48,7 +48,7 @@ impl Subnet {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         options: SetConfigOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {

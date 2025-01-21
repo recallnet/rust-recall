@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use async_trait::async_trait;
+
 use hoku_provider::message::{ChainMessage, GasParams, Message, SignedMessage};
 use hoku_provider::util::get_eth_address;
 use hoku_provider::{

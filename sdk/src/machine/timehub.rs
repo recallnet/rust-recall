@@ -7,7 +7,7 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use bytes::Bytes;
 use fendermint_actor_timehub::Method::{Count, Get, Peaks, Push, Root};
-use fendermint_vm_actor_interface::adm::Kind;
+use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
@@ -16,13 +16,13 @@ use hoku_provider::{
     fvm_shared::address::Address,
     message::{local_message, GasParams},
     query::{FvmQueryHeight, QueryProvider},
-    response::{decode_as, decode_bytes, Cid},
-    tx::{BroadcastMode, TxReceipt},
+    response::{decode_bytes, Cid},
+    tx::{BroadcastMode, TxResult},
     Client, Provider,
 };
 use hoku_signer::Signer;
 
-use crate::machine::{deploy_machine, DeployTxReceipt, Machine};
+use crate::machine::{deploy_machine, Machine};
 
 const MAX_ACC_PAYLOAD_SIZE: usize = 1024 * 500;
 
@@ -85,7 +85,7 @@ impl Machine for Timehub {
         owner: Option<Address>,
         metadata: HashMap<String, String>,
         gas_params: GasParams,
-    ) -> anyhow::Result<(Self, DeployTxReceipt)>
+    ) -> anyhow::Result<(Self, TxResult<CreateExternalReturn>)>
     where
         C: Client + Send + Sync,
     {
@@ -111,7 +111,7 @@ impl Timehub {
         signer: &mut impl Signer,
         payload: Bytes,
         options: PushOptions,
-    ) -> anyhow::Result<TxReceipt<PushReturn>>
+    ) -> anyhow::Result<TxResult<PushReturn>>
     where
         C: Client + Send + Sync,
     {
@@ -180,7 +180,7 @@ impl Timehub {
         height: FvmQueryHeight,
     ) -> anyhow::Result<Cid> {
         let message = local_message(self.address, Root as u64, Default::default());
-        let response = provider.call(message, height, decode_as).await?;
+        let response = provider.call(message, height, decode_root).await?;
         Ok(response.value)
     }
 }
@@ -212,4 +212,11 @@ fn decode_peaks(deliver_tx: &DeliverTx) -> anyhow::Result<Vec<Cid>> {
         .map(|v| v.iter().map(|c| (*c).into()).collect())
         .map_err(|e| anyhow!("error parsing as Vec<Cid>: {e}"))?;
     Ok(items)
+}
+
+fn decode_root(deliver_tx: &DeliverTx) -> anyhow::Result<Cid> {
+    let data = decode_bytes(deliver_tx)?;
+    let root = fvm_ipld_encoding::from_slice::<cid::Cid>(&data)
+        .map_err(|e| anyhow!("error parsing as Cid: {e}"))?;
+    Ok(Cid::from(root))
 }

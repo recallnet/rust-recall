@@ -21,7 +21,7 @@ use hoku_provider::{
 use hoku_sdk::{
     machine::{
         bucket::{
-            AddOptions, Bucket, DeleteOptions, GetOptions, Object, ObjectState, QueryOptions,
+            AddOptions, Bucket, DeleteOptions, GetOptions, ObjectState, QueryOptions,
             UpdateObjectMetadataOptions,
         },
         Machine,
@@ -34,7 +34,7 @@ use hoku_signer::{
     AccountKind, Void, Wallet,
 };
 
-use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
+use crate::{get_address, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct BucketArgs {
@@ -216,6 +216,18 @@ struct BucketMetadataArgs {
     tx_args: TxArgs,
 }
 
+// #[derive(Serialize)]
+// struct AddResponse {
+//     pub hash: String,
+//     #[serde(skip_serializing_if = "Option::is_none")]
+//     pub height: Option<u64>,
+//     #[serde(skip_serializing_if = "i64::is_zero")]
+//     pub gas_used: i64,
+//     pub status: TxStatus,
+//     #[serde(skip_serializing_if = "Option::is_none")]
+//     pub object: Option<Value>,
+// }
+
 /// Bucket commands handler.
 pub async fn handle_bucket(
     cfg: NetworkConfig,
@@ -224,7 +236,8 @@ pub async fn handle_bucket(
 ) -> anyhow::Result<()> {
     match &args.command {
         BucketCommands::Create(args) => {
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+            let provider =
+                JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
             let TxParams {
                 sequence,
@@ -247,7 +260,8 @@ pub async fn handle_bucket(
             print_json(&json!({"address": address.encode_hex_with_prefix(), "tx": &tx}))
         }
         BucketCommands::List(args) => {
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+            let provider =
+                JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
             let address = get_address(args.clone(), &cfg.subnet_id)?;
             let metadata = Bucket::list(&provider, &Void::new(address), args.height).await?;
@@ -264,7 +278,12 @@ pub async fn handle_bucket(
         }
         BucketCommands::Add(args) => {
             let object_api_url = args.object_api_url.clone().unwrap_or(cfg.object_api_url);
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(object_api_url))?;
+            let provider = JsonRpcProvider::new_http(
+                cfg.rpc_url,
+                cfg.subnet_id.chain_id(),
+                None,
+                Some(object_api_url),
+            )?;
 
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
@@ -300,16 +319,19 @@ pub async fn handle_bucket(
                 )
                 .await?;
 
-            print_json(&json!({
-                "hash": tx.hash.to_string(),
-                "height": tx.height,
-                "gas_used": tx.gas_used,
-                "status": tx.status,
-                "object": object_to_json(&tx.data),
-            }))
+            print_tx_json(&tx)
+
+            // print_json(&json!(AddResponse {
+            //     hash: tx.hash.to_string(),
+            //     height: tx.height.map(|h| u64::from(h)),
+            //     gas_used: tx.gas_used,
+            //     status: tx.status,
+            //     object: object_to_json(&tx.data),
+            // }))
         }
         BucketCommands::Delete(args) => {
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+            let provider =
+                JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
@@ -337,11 +359,16 @@ pub async fn handle_bucket(
                 )
                 .await?;
 
-            print_json(&tx)
+            print_tx_json(&tx)
         }
         BucketCommands::Get(args) => {
             let object_api_url = args.object_api_url.clone().unwrap_or(cfg.object_api_url);
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(object_api_url))?;
+            let provider = JsonRpcProvider::new_http(
+                cfg.rpc_url,
+                cfg.subnet_id.chain_id(),
+                None,
+                Some(object_api_url),
+            )?;
 
             let machine = Bucket::attach(args.address).await?;
             machine
@@ -358,7 +385,8 @@ pub async fn handle_bucket(
                 .await
         }
         BucketCommands::Query(args) => {
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+            let provider =
+                JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
             let machine = Bucket::attach(args.address).await?;
             let list = machine
@@ -402,7 +430,8 @@ pub async fn handle_bucket(
             )
         }
         BucketCommands::Metadata(args) => {
-            let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+            let provider =
+                JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
@@ -434,29 +463,43 @@ pub async fn handle_bucket(
                 )
                 .await?;
 
-            print_json(&tx)
+            print_tx_json(&tx)
         }
     }
 }
 
-fn object_to_json(object: &Option<Object>) -> Value {
-    if let Some(object) = object {
-        json!({
-            "hash": object.hash.to_string(),
-            "recovery_hash": object.recovery_hash.to_string(),
-            "size": object.size,
-            "expiry": object.expiry,
-            "metadata": object.metadata,
-        })
-    } else {
-        json!("none")
-    }
-}
+// fn object_to_json(object: &Option<Object>) -> Option<Value> {
+//     if let Some(object) = object {
+//         let mut val = json!({
+//             "hash": object.hash.to_string(),
+//             "recovery_hash": object.recovery_hash.to_string(),
+//             "size": object.size,
+//             "expiry": object.expiry,
+//             "metadata": object.metadata,
+//         });
+//         let obj = val.as_object_mut().unwrap();
+//         if !object.metadata.is_empty() {
+//             let mut val = json!({"metadata": object.metadata});
+//             let mut meta = val.as_object_mut().unwrap().clone();
+//             obj.append(&mut meta);
+//         }
+//         Some(json!(obj))
+//     } else {
+//         None
+//     }
+// }
 
 fn object_state_to_json(object: &ObjectState) -> Value {
-    json!({
+    let mut val = json!({
         "hash": object.hash.to_string(),
         "size": object.size,
         "metadata": object.metadata,
-    })
+    });
+    let obj = val.as_object_mut().unwrap();
+    if !object.metadata.is_empty() {
+        let mut val = json!({"metadata": object.metadata});
+        let meta = val.as_object_mut().unwrap();
+        obj.append(meta);
+    }
+    json!(obj)
 }

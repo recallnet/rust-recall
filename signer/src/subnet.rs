@@ -35,8 +35,7 @@ pub struct SubnetID {
     faux: String,
     /// A valid [`ipc_api::subnet_id::SubnetID`].
     real: ipc_api::subnet_id::SubnetID,
-
-    /// Explicitely set chain ID. If not set the chain ID is computed as a hash from the subnet ID.
+    /// Explicitely set chain ID. If not set, the chain ID is computed as a hash from the subnet ID.
     explicit_chain_id: Option<ChainID>,
 }
 

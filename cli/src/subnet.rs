@@ -12,7 +12,7 @@ use hoku_sdk::{network::NetworkConfig, subnet::Subnet, TxParams};
 use hoku_signer::key::SecretKey;
 use hoku_signer::{AccountKind, Wallet};
 
-use crate::{parse_secret_key, print_json, AddressArgs, BroadcastMode, TxArgs};
+use crate::{parse_secret_key, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct SubnetArgs {
@@ -72,7 +72,7 @@ struct GetConfigArgs {
 
 /// Subnet commands handler.
 pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
     match &args.command {
         SubnetCommands::ChainId => {
@@ -109,7 +109,7 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                 )
                 .await?;
 
-                print_json(&tx)
+                print_tx_json(&tx)
             }
             ConfigCommands::Get(args) => {
                 let config = Subnet::get_config(&provider, args.address.height).await?;
