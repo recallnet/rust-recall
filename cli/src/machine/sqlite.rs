@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 use std::collections::HashMap;
 
+use anyhow::bail;
 use clap::{Args, Subcommand};
 use hoku_provider::fvm_shared::address::Address;
 use hoku_provider::query::FvmQueryHeight;
@@ -88,7 +89,7 @@ struct ExecuteArgs {
     #[arg(short, long, value_parser = parse_address)]
     address: Address,
     /// Comma delimited array of SQL statements to execute
-    #[arg(short, long, use_value_delimiter = true, value_delimiter = ',')]
+    #[arg(short, long, use_value_delimiter = true, value_delimiter = '\n')]
     statements: Vec<String>,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env, default_value_t = BroadcastMode::Commit)]
@@ -138,6 +139,9 @@ pub async fn handle_sqlite(cfg: NetworkConfig, args: &SqliteArgs) -> anyhow::Res
             print_json(&res)
         }
         SqliteCommands::Execute(args) => {
+            if args.statements.is_empty() {
+                bail!("statement to execute is required");
+            }
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
                 gas_params,
