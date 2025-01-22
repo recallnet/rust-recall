@@ -104,17 +104,17 @@ impl Account {
             sponsor,
         };
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 SetAccountSponsor as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_empty,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 }

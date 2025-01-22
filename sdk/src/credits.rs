@@ -237,6 +237,7 @@ impl Credits {
         }
     }
 
+    /// Buy credits for an account.
     pub async fn buy<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
@@ -249,20 +250,21 @@ impl Credits {
     {
         let params = BuyCreditParams(to);
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 amount,
                 BuyCredit as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_buy,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_buy)
             .await
     }
 
+    /// Approve credits for an account.
     pub async fn approve<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
@@ -282,20 +284,21 @@ impl Credits {
             ttl: options.ttl,
         };
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 ApproveCredit as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_approve,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_approve)
             .await
     }
 
+    /// Revoke credits for an account.
     pub async fn revoke<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
@@ -312,17 +315,17 @@ impl Credits {
             for_caller: None, // TODO: remove this when it's been removed in ipc
         };
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 RevokeCredit as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_empty,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 }

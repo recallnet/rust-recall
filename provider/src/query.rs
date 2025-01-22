@@ -51,23 +51,27 @@ pub trait QueryProvider: Send + Sync {
     }
 
     /// Estimate the gas limit of a message.
-    async fn estimate_gas(
+    async fn estimate_gas_limit(
         &self,
         mut message: Message,
         height: FvmQueryHeight,
-    ) -> anyhow::Result<QueryResponse<GasEstimate>> {
+    ) -> anyhow::Result<u64> {
+        if message.gas_limit != 0 {
+            return Ok(message.gas_limit);
+        }
+
         // Using a sequence of 0 so estimation doesn't get tripped over by nonce mismatch.
         message.sequence = 0;
 
         let res = self
             .query(FvmQuery::EstimateGas(Box::new(message)), height)
             .await?;
-        let height = res.height;
-        let value = extract(res, |res| {
+        let estimate: GasEstimate = extract(res, |res| {
             fvm_ipld_encoding::from_slice(&res.value)
                 .context("failed to decode GasEstimate from query")
         })?;
-        Ok(QueryResponse { height, value })
+
+        Ok(estimate.gas_limit)
     }
 
     /// Query the state of an actor.

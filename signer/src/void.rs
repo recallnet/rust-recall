@@ -1,6 +1,8 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use crate::signer::Signer;
+use crate::SubnetID;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use fendermint_crypto::SecretKey;
@@ -8,10 +10,9 @@ use hoku_provider::fvm_ipld_encoding::RawBytes;
 use hoku_provider::fvm_shared::{
     address::Address, crypto::signature::Signature, econ::TokenAmount, message::Message, MethodNum,
 };
-use hoku_provider::message::{ChainMessage, GasParams, SignedMessage};
-
-use crate::signer::Signer;
-use crate::SubnetID;
+use hoku_provider::message::{GasParams, SignedMessage};
+use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
+use hoku_provider::{Client, Provider};
 
 /// [`Signer`] implementation that is not capable of signing messages.
 #[derive(Clone, Debug)]
@@ -39,14 +40,21 @@ impl Signer for Void {
         None
     }
 
-    async fn transaction(
+    async fn send_transaction<
+        C: Client + Send + Sync,
+        T: Send + Sync,
+        F: FnOnce(&DeliverTx) -> anyhow::Result<T> + Send + Sync,
+    >(
         &mut self,
+        _provider: &impl Provider<C>,
         _to: Address,
         _value: TokenAmount,
         _method_num: MethodNum,
         _params: RawBytes,
         _gas_params: GasParams,
-    ) -> anyhow::Result<ChainMessage> {
+        _broadcast_mode: BroadcastMode,
+        _decode_fn: F,
+    ) -> anyhow::Result<TxReceipt<T>> {
         Err(anyhow!("void signer cannot create transactions"))
     }
 

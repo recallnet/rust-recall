@@ -16,7 +16,7 @@ use hoku_provider::{
     fvm_shared::address::Address,
     message::{local_message, GasParams},
     query::{FvmQueryHeight, QueryProvider},
-    response::{decode_as, decode_bytes, Cid},
+    response::{decode_bytes, Cid},
     tx::{BroadcastMode, TxReceipt},
     Client, Provider,
 };
@@ -123,17 +123,17 @@ impl Timehub {
         }
 
         let params = RawBytes::serialize(BytesSer(&payload))?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 self.address,
                 Default::default(),
                 Push as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_push_return,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_push_return)
             .await
     }
 
@@ -180,7 +180,7 @@ impl Timehub {
         height: FvmQueryHeight,
     ) -> anyhow::Result<Cid> {
         let message = local_message(self.address, Root as u64, Default::default());
-        let response = provider.call(message, height, decode_as).await?;
+        let response = provider.call(message, height, decode_root).await?;
         Ok(response.value)
     }
 }
@@ -212,4 +212,11 @@ fn decode_peaks(deliver_tx: &DeliverTx) -> anyhow::Result<Vec<Cid>> {
         .map(|v| v.iter().map(|c| (*c).into()).collect())
         .map_err(|e| anyhow!("error parsing as Vec<Cid>: {e}"))?;
     Ok(items)
+}
+
+fn decode_root(deliver_tx: &DeliverTx) -> anyhow::Result<Cid> {
+    let data = decode_bytes(deliver_tx)?;
+    let cid = fvm_ipld_encoding::from_slice::<cid::Cid>(&data)
+        .map_err(|e| anyhow!("error parsing as Cid: {e}"))?;
+    Ok(cid.into())
 }

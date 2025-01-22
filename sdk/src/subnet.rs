@@ -60,17 +60,17 @@ impl Subnet {
             blob_default_ttl: options.blob_default_ttl,
         };
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 HOKU_CONFIG_ACTOR_ADDR,
                 Default::default(),
                 SetConfig as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_empty,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_empty)
             .await
     }
 

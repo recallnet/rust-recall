@@ -491,18 +491,18 @@ impl Bucket {
         };
         let serialized_params = RawBytes::serialize(params.clone())?;
         let token_amount = options.token_amount.unwrap_or(TokenAmount::zero());
-        let message = signer
-            .transaction(
+
+        let tx = signer
+            .send_transaction(
+                provider,
                 self.address,
                 token_amount,
                 AddObject as u64,
                 serialized_params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_as,
             )
-            .await?;
-
-        let tx = provider
-            .perform(message, options.broadcast_mode, decode_as)
             .await?;
 
         msg_bar.println(format!(
@@ -576,18 +576,14 @@ impl Bucket {
     {
         let params = DeleteParams(key.into());
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 self.address,
                 Default::default(),
                 DeleteObject as u64,
                 params,
                 options.gas_params,
-            )
-            .await?;
-        provider
-            .perform(
-                message,
                 options.broadcast_mode,
                 |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
             )
@@ -700,18 +696,14 @@ impl Bucket {
             metadata,
         };
         let params = RawBytes::serialize(params)?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 self.address,
                 Default::default(),
                 UpdateObjectMetadata as u64,
                 params,
                 options.gas_params,
-            )
-            .await?;
-        provider
-            .perform(
-                message,
                 options.broadcast_mode,
                 |_: &DeliverTx| -> anyhow::Result<()> { Ok(()) },
             )
