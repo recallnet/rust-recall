@@ -92,11 +92,11 @@ impl Signer for Wallet {
         let mut sequence_guard = self.sequence.lock().await;
         let sequence = *sequence_guard;
         message.sequence = sequence;
+        *sequence_guard += 1;
 
         // Check gas fee cap and premium are within the limits
         gas_params.set_limits();
 
-        *sequence_guard += 1;
         let signed = SignedMessage::new_secp256k1(message, &self.sk, &self.subnet_id.chain_id())?;
         let signed_message = ChainMessage::Signed(signed);
         Ok(provider
