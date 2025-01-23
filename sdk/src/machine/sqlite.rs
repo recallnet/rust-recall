@@ -95,17 +95,17 @@ impl Sqlite {
         C: Client + Send + Sync,
     {
         let params = RawBytes::serialize(ExecuteParams { stmts })?;
-        let message = signer
-            .transaction(
+        signer
+            .send_transaction(
+                provider,
                 self.address,
                 Default::default(),
                 Method::Execute as u64,
                 params,
                 options.gas_params,
+                options.broadcast_mode,
+                decode_execute_result,
             )
-            .await?;
-        provider
-            .perform(message, options.broadcast_mode, decode_execute_result)
             .await
     }
 }
