@@ -95,6 +95,12 @@ impl Sqlite {
         C: Client + Send + Sync,
     {
         let params = RawBytes::serialize(ExecuteParams { stmts })?;
+        let msg = local_message(self.address, Method::Execute as u64, params.clone());
+        let estimated_gas = provider.estimate_gas_limit(msg, Default::default()).await?;
+        let gas_params = GasParams {
+            gas_limit: estimated_gas,
+            ..options.gas_params
+        };
         signer
             .send_transaction(
                 provider,
@@ -102,7 +108,7 @@ impl Sqlite {
                 Default::default(),
                 Method::Execute as u64,
                 params,
-                options.gas_params,
+                gas_params,
                 options.broadcast_mode,
                 decode_execute_result,
             )
