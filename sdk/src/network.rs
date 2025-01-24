@@ -25,7 +25,7 @@ const DEVNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc4434888
 const DEVNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
-const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6gbdxrbehnaeeo4mrq7wc5hgq6smnefys4qanwi"; // chain ID: 534485604105794
+const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6gbdxrbehnaeeo4mrq7wc5hgq6smnefys4qanwi";
 const LOCALNET_CHAIN_ID: u64 = 248163216;
 const LOCALNET_EVM_RPC_URL: &str = "http://127.0.0.1:8645";
 const LOCALNET_OBJECT_API_URL: &str = "http://127.0.0.1:8001";
@@ -38,16 +38,16 @@ const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x322813Fd9A801c5507c9de605d
 
 // Ignition
 const TESTNET_RPC_URL: &str = "https://api-ignition-0.hoku.sh";
-const TESTNET_SUBNET_ID: &str = "/r314159/t410f4f5jzfsftk6zqvcq3c4rrt372itjg6qh5b33dwq";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410fl5qbhrkyp6jpi2sdh2tryqtssvoe2yrxyl5arzy";
 const TESTNET_CHAIN_ID: u64 = 2481632;
 const TESTNET_OBJECT_API_URL: &str = "https://object-api-ignition-0.hoku.sh";
 const TESTNET_EVM_RPC_URL: &str = "https://evm-ignition-0.hoku.sh";
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
-const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x88b497225c33dDF92A4F94C0C82a20044e68Bc9E";
-const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x4665468636B81481adac664993782609a1F3cB30";
+const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0xb4C4590A2E5Da56aA8310bFF343AFc0645121205";
+const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x87CeEfF99935393BdC28c22163344a9498FC44A0";
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
-const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xA7D1A73173A6854b7C8c1DF4d22a1d39BfcFb021";
+const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x63DEDA399100Dc536CD4d98FC564ea4Eaf88479F";
 
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
