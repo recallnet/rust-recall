@@ -49,6 +49,7 @@ ipc-api = { workspace = true }
 
 hoku_provider = { path = "../provider" }
 hoku_signer = { path = "../signer" }
+more-asserts = "0.3.1"
 
 [dev-dependencies]
 hex = { workspace = true }
