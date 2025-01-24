@@ -21,7 +21,10 @@ cid = { workspace = true }
 clap = { workspace = true }
 clap-stdin = { workspace = true }
 ethers = { workspace = true }
+#fvm_shared = { workspace = true }
 hex = { workspace = true }
+ipc-api = { workspace = true }
+ipc-provider = { workspace = true }
 iroh = { workspace = true }
 humantime = { workspace = true }
 reqwest = { workspace = true }
@@ -31,6 +34,7 @@ stderrlog = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { workspace = true }
 tracing = { workspace = true }
+url = { workspace = true }
 
 hoku_provider = { path = "../provider" }
 hoku_sdk = { path = "../sdk" }

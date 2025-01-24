@@ -27,16 +27,18 @@ use crate::machine::{
     bucket::{handle_bucket, BucketArgs},
     handle_machine,
     timehub::{handle_timehub, TimehubArgs},
-    MachineArgs,
+    MachineArgs, 
 };
 use crate::storage::{handle_storage, StorageArgs};
 use crate::subnet::{handle_subnet, SubnetArgs};
+use crate::validator::{handle_validator, ValidatorArgs};
 
 mod account;
 mod credit;
 mod machine;
 mod storage;
 mod subnet;
+mod validator;
 
 #[derive(Clone, Debug, Parser)]
 #[command(name = "hoku", author, version, about, long_about = None)]
@@ -82,6 +84,9 @@ enum Commands {
     /// Timehub related commands (alias: th).
     #[clap(alias = "th")]
     Timehub(TimehubArgs),
+    /// Validator related commands (alias: va).
+    #[clap(alias = "va")]
+    Validator(ValidatorArgs),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -199,6 +204,7 @@ async fn main() -> anyhow::Result<()> {
         Commands::Bucket(args) => handle_bucket(cfg, !cli.quiet, args).await,
         Commands::Timehub(args) => handle_timehub(cfg, args).await,
         Commands::Machine(args) => handle_machine(cfg, args).await,
+        Commands::Validator(args) => handle_validator(cfg, args).await,
     }
 }
 

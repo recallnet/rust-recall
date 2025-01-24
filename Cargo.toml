@@ -55,6 +55,7 @@ tokio-stream = "0.1.0"
 tracing = "0.1.40"
 rand = "0.8.4"
 rust_decimal = "1.36"
+url = { version = "2.4.1", features = ["serde"] }
 
 # Using the same tendermint-rs dependency as tower-abci. For both, we are interested in v037 modules.
 tendermint = { version = "0.31.1", features = ["secp256k1"] }
@@ -80,6 +81,7 @@ fendermint_vm_message = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "9
 
 ipc_actors_abis = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "919f44ca50c687d5059bc556e4bdd1feba126e67" }
 ipc-api = { git = "ssh://git@github.com/hokunet/ipc.git", rev = "919f44ca50c687d5059bc556e4bdd1feba126e67" }
+ipc-provider = { package = "ipc-provider", git = "ssh://git@github.com/hokunet/ipc.git", rev = "919f44ca50c687d5059bc556e4bdd1feba126e67" }
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.
