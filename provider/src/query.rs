@@ -71,7 +71,15 @@ pub trait QueryProvider: Send + Sync {
                 .context("failed to decode GasEstimate from query")
         })?;
 
-        Ok(estimate.gas_limit)
+        if estimate.exit_code.is_success() {
+            Ok(estimate.gas_limit)
+        } else {
+            Err(anyhow!(
+                "estimate gas returned non-zero exit code: {}; {}",
+                estimate.exit_code.value(),
+                estimate.info,
+            ))
+        }
     }
 
     /// Query the state of an actor.
