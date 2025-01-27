@@ -330,6 +330,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "atomic-waker"
+version = "1.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
+
+[[package]]
 name = "attohttpc"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2346,7 +2352,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_blobs_shared"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "data-encoding",
@@ -2363,7 +2369,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_bucket"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "blake3",
@@ -2385,7 +2391,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_eam"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -2406,7 +2412,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_hoku_config_shared"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "fendermint_actor_blobs_shared",
  "fil_actors_runtime",
@@ -2421,7 +2427,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_machine"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "fil_actor_adm",
@@ -2437,7 +2443,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_timehub"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -2458,7 +2464,7 @@ dependencies = [
 [[package]]
 name = "fendermint_crypto"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -2470,7 +2476,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_actor_interface"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -2498,7 +2504,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_core"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "cid",
  "fnv",
@@ -2512,7 +2518,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_encoding"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "cid",
  "fvm_shared",
@@ -2525,7 +2531,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_genesis"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "fendermint_actor_eam",
@@ -2543,7 +2549,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_message"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "blake2b_simd",
@@ -2585,7 +2591,7 @@ checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 [[package]]
 name = "fil_actor_adm"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -2605,7 +2611,7 @@ dependencies = [
 [[package]]
 name = "fil_actor_eam"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -2626,7 +2632,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_evm_shared"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "fil_actors_runtime",
  "fvm_ipld_encoding",
@@ -2639,7 +2645,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_runtime"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -3362,6 +3368,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "h2"
+version = "0.4.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccae279728d634d083c00f6099cb58f01cc99c145b84b8be2f6c74618d79922e"
+dependencies = [
+ "atomic-waker",
+ "bytes",
+ "fnv",
+ "futures-core",
+ "futures-sink",
+ "http 1.2.0",
+ "indexmap 2.7.0",
+ "slab",
+ "tokio",
+ "tokio-util",
+ "tracing",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3622,7 +3647,7 @@ dependencies = [
 [[package]]
 name = "hoku_ipld"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -3835,7 +3860,7 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
- "h2",
+ "h2 0.3.26",
  "http 0.2.12",
  "http-body 0.4.6",
  "httparse",
@@ -3858,6 +3883,7 @@ dependencies = [
  "bytes",
  "futures-channel",
  "futures-util",
+ "h2 0.4.7",
  "http 1.2.0",
  "http-body 1.0.1",
  "httparse",
@@ -4150,16 +4176,18 @@ dependencies = [
 
 [[package]]
 name = "igd-next"
-version = "0.14.3"
+version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "064d90fec10d541084e7b39ead8875a5a80d9114a2b18791565253bae25f49e4"
+checksum = "76b0d7d4541def58a37bf8efc559683f21edce7c82f0d866c93ac21f7e098f93"
 dependencies = [
  "async-trait",
  "attohttpc",
  "bytes",
  "futures",
- "http 0.2.12",
- "hyper 0.14.32",
+ "http 1.2.0",
+ "http-body-util",
+ "hyper 1.5.2",
+ "hyper-util",
  "log",
  "rand",
  "tokio",
@@ -4300,7 +4328,7 @@ dependencies = [
 [[package]]
 name = "ipc-api"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -4329,7 +4357,7 @@ dependencies = [
 [[package]]
 name = "ipc-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
@@ -4353,7 +4381,7 @@ dependencies = [
 [[package]]
 name = "ipc_actors_abis"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "ethers",
@@ -4380,9 +4408,9 @@ checksum = "ddc24109865250148c2e0f3d25d4f0f479571723792d3802153c60922a4fb708"
 
 [[package]]
 name = "iroh"
-version = "0.26.0"
+version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abda3be73097cc12c2e0fd3dd8babc37aad43711bb7ff9c8952ff6a33986a45a"
+checksum = "47cbc2cde0ac94db88a2f0442cf0d18f1f59403cc21c81f7994a6287e78e60dd"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -4402,6 +4430,7 @@ dependencies = [
  "iroh-metrics",
  "iroh-net",
  "iroh-quinn",
+ "iroh-router",
  "nested_enum_utils",
  "num_cpus",
  "parking_lot",
@@ -4412,6 +4441,7 @@ dependencies = [
  "rand",
  "ref-cast",
  "serde",
+ "serde-error",
  "strum 0.25.0",
  "tempfile",
  "thiserror 1.0.69",
@@ -4425,9 +4455,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-base"
-version = "0.26.0"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "973c0b3c7851fa2e8e6cf4cb81c9f4cab1373848828fafa43dfe25b123a89ff2"
+checksum = "1c21fd8eb71f166a172a9779c2244db992218e9a9bd929b9df6fc355d2b630c9"
 dependencies = [
  "aead",
  "anyhow",
@@ -4444,7 +4474,6 @@ dependencies = [
  "rand_core",
  "redb 2.3.0",
  "serde",
- "serde-error",
  "ssh-key",
  "thiserror 1.0.69",
  "ttl_cache",
@@ -4467,9 +4496,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-blobs"
-version = "0.26.0"
+version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9afc7ad5c2aaa1b17071fe99065c6cfbe7a3f0597ecc44381afdddb47965521f"
+checksum = "cce615635f60b5a01f6d066084cc0fca8281df594b6b735840d4796a06422604"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -4487,6 +4516,7 @@ dependencies = [
  "iroh-metrics",
  "iroh-net",
  "iroh-quinn",
+ "iroh-router",
  "num_cpus",
  "oneshot",
  "parking_lot",
@@ -4499,6 +4529,7 @@ dependencies = [
  "reflink-copy",
  "self_cell",
  "serde",
+ "serde-error",
  "smallvec",
  "tempfile",
  "thiserror 1.0.69",
@@ -4510,9 +4541,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-docs"
-version = "0.26.0"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8138011bd4e9a5b24a6bdddd50232aa2778a8b430d0f91d32ddba5f88a126ddc"
+checksum = "1b4e9283e9a05a1e1c2b702ea743445a8e41ffd651deccddc2884d05f941db58"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -4529,6 +4560,7 @@ dependencies = [
  "iroh-gossip",
  "iroh-metrics",
  "iroh-net",
+ "iroh-router",
  "lru",
  "num_enum",
  "postcard",
@@ -4549,9 +4581,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-gossip"
-version = "0.26.0"
+version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b44749f361aca7cddcb357b62ef84cad1023771aee03d427c8922991fc4a9561"
+checksum = "c078057037f0e741c5ef285c67fd9cfdb928163dd046fb547089898bdb02990e"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -4566,10 +4598,16 @@ dependencies = [
  "iroh-blake3",
  "iroh-metrics",
  "iroh-net",
+ "iroh-router",
+ "nested_enum_utils",
  "postcard",
+ "quic-rpc",
+ "quic-rpc-derive",
  "rand",
  "rand_core",
  "serde",
+ "serde-error",
+ "strum 0.26.3",
  "tokio",
  "tokio-util",
  "tracing",
@@ -4590,9 +4628,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-metrics"
-version = "0.26.0"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02edfa7ca1aa89b0b9793d94671e32b79c97d61e9022f082c5eb2b95b64e90c0"
+checksum = "e0d40f2ee3997489d47403d204a06514ed65373d224b5b43a8ea133f543e5db1"
 dependencies = [
  "anyhow",
  "erased_set",
@@ -4611,9 +4649,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-net"
-version = "0.26.0"
+version = "0.28.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "329553be056a92eec7802e1c087eed951eec6e60f0f0740491ef16a295be4ca2"
+checksum = "3840888c255de51bfa56d5a0c3ebe1fba63f9568ce97733b34548c4394313558"
 dependencies = [
  "anyhow",
  "backoff",
@@ -4648,11 +4686,13 @@ dependencies = [
  "netlink-packet-core",
  "netlink-packet-route",
  "netlink-sys",
+ "netwatch",
  "num_enum",
  "once_cell",
  "parking_lot",
  "pin-project",
  "pkarr",
+ "portmapper",
  "postcard",
  "rand",
  "rcgen",
@@ -4689,9 +4729,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-quinn"
-version = "0.11.3"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fd590a39a14cfc168efa4d894de5039d65641e62d8da4a80733018ababe3c33"
+checksum = "35ba75a5c57cff299d2d7ca1ddee053f66339d1756bd79ec637bcad5aa61100e"
 dependencies = [
  "bytes",
  "iroh-quinn-proto",
@@ -4707,9 +4747,9 @@ dependencies = [
 
 [[package]]
 name = "iroh-quinn-proto"
-version = "0.11.6"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fd0538ff12efe3d61ea1deda2d7913f4270873a519d43e6995c6e87a1558538"
+checksum = "e2c869ba52683d3d067c83ab4c00a2fda18eaf13b1434d4c1352f428674d4a5d"
 dependencies = [
  "bytes",
  "rand",
@@ -4734,6 +4774,22 @@ dependencies = [
  "socket2",
  "tracing",
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "iroh-router"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1fd18ec6325dd3f01625f12c01acff50a4374ee1ab708e7b2078885fd63ad30"
+dependencies = [
+ "anyhow",
+ "futures-buffered",
+ "futures-lite 2.5.0",
+ "futures-util",
+ "iroh-net",
+ "tokio",
+ "tokio-util",
+ "tracing",
 ]
 
 [[package]]
@@ -5141,7 +5197,7 @@ dependencies = [
 [[package]]
 name = "merkle-tree-rs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "ethers",
@@ -5391,6 +5447,35 @@ dependencies = [
  "libc",
  "log",
  "tokio",
+]
+
+[[package]]
+name = "netwatch"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a639d52c0996ac640e2a7052a5265c8f71efdbdadc83188435ffc358b7ca931"
+dependencies = [
+ "anyhow",
+ "bytes",
+ "derive_more",
+ "futures-lite 2.5.0",
+ "futures-sink",
+ "futures-util",
+ "libc",
+ "netdev",
+ "netlink-packet-core",
+ "netlink-packet-route",
+ "netlink-sys",
+ "once_cell",
+ "rtnetlink",
+ "serde",
+ "socket2",
+ "thiserror 1.0.69",
+ "time",
+ "tokio",
+ "tracing",
+ "windows 0.51.1",
+ "wmi",
 ]
 
 [[package]]
@@ -6238,6 +6323,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "280dc24453071f1b63954171985a0b0d30058d287960968b9b2aca264c8d4ee6"
 
 [[package]]
+name = "portmapper"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93d60045fdcfe8ff6b781cf1027fdbb08ed319d93aff7da4bedc018e3bc92226"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "bytes",
+ "derive_more",
+ "futures-lite 2.5.0",
+ "futures-util",
+ "igd-next",
+ "iroh-metrics",
+ "libc",
+ "netwatch",
+ "num_enum",
+ "rand",
+ "serde",
+ "smallvec",
+ "socket2",
+ "thiserror 1.0.69",
+ "time",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "positioned-io"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6562,9 +6676,9 @@ dependencies = [
 
 [[package]]
 name = "quic-rpc"
-version = "0.12.1"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77b3ae032988c83ac7ce072be3c2605e90671e8830a34d6ebf24095add68b4d5"
+checksum = "1d8431b2e7c22929347b61a354d4936d71fe7ab1e6b0475dc50e98276970dfec"
 dependencies = [
  "anyhow",
  "bincode",
@@ -6587,9 +6701,9 @@ dependencies = [
 
 [[package]]
 name = "quic-rpc-derive"
-version = "0.12.1"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59e222c3c9829e6e0de27e5a8fb34047cb31c39093fc00746d30457167a44252"
+checksum = "403bc8506c847468e00170dbbbfe2c54d13b090031bcbe474cd3faea021cbd9f"
 dependencies = [
  "proc-macro2",
  "quic-rpc",
@@ -6922,7 +7036,7 @@ dependencies = [
  "encoding_rs",
  "futures-core",
  "futures-util",
- "h2",
+ "h2 0.3.26",
  "http 0.2.12",
  "http-body 0.4.6",
  "hyper 0.14.32",
@@ -9289,7 +9403,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vm_api"
 version = "1.0.0"
-source = "git+ssh://git@github.com/hokunet/ipc.git?rev=be6e99249a4c5f50d1cb3d4911530ccad0f09628#be6e99249a4c5f50d1cb3d4911530ccad0f09628"
+source = "git+ssh://git@github.com/hokunet/ipc.git?rev=282cb9278d5758ea6aaa0695222ac5f0c20aedee#282cb9278d5758ea6aaa0695222ac5f0c20aedee"
 dependencies = [
  "anyhow",
  "cid",
