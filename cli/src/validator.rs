@@ -6,6 +6,7 @@ use std::str::FromStr;
 //use crate::commands::validator::batch_claim::{BatchClaim, BatchClaimArgs};
 //use crate::commands::validator::list::{ListActivities, ListActivitiesArgs};
 use crate::print_json;
+use anyhow::anyhow;
 //use crate::{CommandLineHandler, GlobalArguments};
 use clap::{Args, Subcommand};
 use hoku_provider::fvm_shared::{address::Address, clock::ChainEpoch};
@@ -13,7 +14,11 @@ use hoku_sdk::network::NetworkConfig;
 //use fvm_shared::{address::Address, clock::ChainEpoch};
 //use ipc_api::subnet_id::SubnetID;
 use hex;
-use ipc_provider::{config, IpcProvider};
+use ipc_provider::{
+    config,
+    manager::{EthSubnetManager, ValidatorRewarder, *},
+    IpcProvider,
+};
 use serde_json::json;
 //use crate::{
 //f64_to_token_amount, get_ipc_provider, require_fil_addr_from_str, CommandLineHandler,
@@ -88,7 +93,7 @@ pub async fn handle_validator(cfg: NetworkConfig, args: &ValidatorArgs) -> anyho
 
     print!(">>> subnet: {:?}\n", subnet);
 
-    let ipc_provider = IpcProvider::new_with_subnet(None, subnet)?;
+    //let ipc_provider = IpcProvider::new_with_subnet(None, subnet)?;
 
     match &args.command {
         Commands::BatchClaim(args) => {
@@ -96,32 +101,53 @@ pub async fn handle_validator(cfg: NetworkConfig, args: &ValidatorArgs) -> anyho
 
             let bytes = hex::decode(&args.validator[2..]).expect("Invalid hex string");
             let eth_addr = EthAddress(bytes.try_into().expect("Wrong length"));
-            //let mut bbb = [0u8; 20];
-            //bbb.copy_from_slice(&hex::decode(&args.validator[2..]).expect("Invalid hex string"));
-            //let eth_addr = EthAddress(bbb);
-
-            //let eth_address = EthAddress{args.validator.as_bytes().to_owned()};
 
             let validator = Address::from(eth_addr);
-            //cfg.subnet_id
 
             print!(">>> validator: {}\n", validator);
 
-            let res = ipc_provider
-                .batch_subnet_claim(
-                    &cfg.subnet_id.inner(),
-                    &cfg.subnet_id.inner(),
-                    args.from,
-                    args.to,
-                    &validator,
-                )
-                .await;
+            let child_manager = EthSubnetManager::from_subnet_with_wallet_store(&subnet, None)?;
 
-            print!(">>> res: {:?}\n", res);
+            print!(">>> child_manager\n");
 
-            res?;
+            let claims = child_manager
+                .query_reward_claims(&validator, args.from, args.to)
+                .await?;
 
-            //let res = BatchClaim::handle(global, args).await?;
+            print!(">>> claims: {:?}\n", claims);
+
+            let parent = cfg
+                .parent_subnet_config()
+                .ok_or_else(|| anyhow!("no parent found"))?;
+
+            print!(">>> parent: {:?}\n", parent);
+
+            let parent_evm_subnet = config::subnet::EVMSubnet {
+                provider_http: parent.provider_http,
+                provider_timeout: None,
+                auth_token: None,
+                registry_addr: parent.registry_addr,
+                gateway_addr: parent.gateway_addr,
+            };
+            let parent_subnet = config::Subnet {
+                id: subnet
+                    .id
+                    .parent()
+                    .ok_or_else(|| anyhow!("no parent found"))?,
+                config: config::subnet::SubnetConfig::Fevm(parent_evm_subnet),
+            };
+
+            print!(">>> parent_subnet: {:?}\n", parent_subnet);
+
+            let parent_manager =
+                EthSubnetManager::from_subnet_with_wallet_store(&parent_subnet, None)?;
+
+            print!(">>> parent_manager\n");
+
+            parent_manager
+                .batch_subnet_claim(&validator, &subnet.id, &subnet.id, claims)
+                .await?;
+
             print_json(&json!("rewards claimed"))
         } /*Commands::ListValidatorActivities(args) => {
               let res = ListActivities::handle(global, args).await?;
