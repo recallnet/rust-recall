@@ -6,18 +6,19 @@ use tokio::time::{sleep, Duration};
 
 mod common;
 use hoku_provider::fvm_shared::econ::TokenAmount;
-use hoku_provider::message::GasParams;
 use hoku_provider::json_rpc::JsonRpcProvider;
+use hoku_provider::message::GasParams;
+use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
 use hoku_sdk::{
     account::Account,
     ipc::subnet::EVMSubnet,
     machine::{bucket::Bucket, Machine},
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
-use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
 
 // TODO: remove the ignore once we have CI setup
-#[tokio::test] #[ignore]
+#[tokio::test]
+#[ignore]
 async fn runner_has_token() {
     let network_config = common::get_network();
     let sk_env = common::get_runner_secret_key();
@@ -81,7 +82,8 @@ async fn runner_has_token() {
 //
 //}
 
-#[tokio::test] #[ignore]
+#[tokio::test]
+#[ignore]
 async fn can_add_bucket() {
     let network_config = common::get_network();
     let sk_env = common::get_runner_secret_key();
