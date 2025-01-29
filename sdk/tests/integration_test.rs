@@ -43,7 +43,7 @@ async fn runner_has_token() {
     .await
     .unwrap();
 
-    // TODO: These values are arbitrary, the actual localnet value is just under 5000, and the testnet and mainnet will be different
+    // TODO: These values are arbitrary, the localnet value is just under 5000, and the testnet and mainnet will depend on the runner wallet
     assert_gt!(balance, TokenAmount::from_whole(1));
     assert_lt!(balance, TokenAmount::from_whole(10000));
 }
@@ -87,7 +87,7 @@ async fn can_deposit() {
         hex::encode(tx.transaction_hash.to_fixed_bytes())
     );
 
-    // TODO: assert that deposit worked
+    // TODO: some failures will throw, but we should assert that deposit worked too
 }
 
 #[tokio::test]
@@ -190,5 +190,5 @@ async fn can_add_bucket() {
         .await
         .unwrap();
 
-    // TODO: add test/assertion for deleting
+    // TODO: failure might throw, but need to add assertion for deleting
 }
