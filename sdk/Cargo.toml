@@ -33,6 +33,7 @@ serde = { workspace = true }
 tendermint = { workspace = true }
 tokio = { workspace = true }
 tokio-stream = { workspace = true }
+tokio-util = { workspace = true }
 
 fendermint_actor_blobs_shared = { workspace = true }
 fendermint_actor_bucket = { workspace = true }

@@ -3,9 +3,8 @@
 
 use async_trait::async_trait;
 use fvm_shared::address::Address;
-
-pub use iroh::blobs::Hash;
 pub use iroh::net::NodeAddr;
+use serde::Deserialize;
 
 /// Provider for object interactions.
 #[async_trait]
@@ -13,15 +12,8 @@ pub trait ObjectProvider: Send + Sync {
     /// Get Iroh [`NodeAddr`].
     async fn node_addr(&self) -> anyhow::Result<NodeAddr>;
 
-    /// Upload an object.
-    async fn upload(
-        &self,
-        hash: Hash,
-        source: NodeAddr,
-        size: u64,
-        msg: String,
-        chain_id: u64,
-    ) -> anyhow::Result<reqwest::Response>;
+    /// Upload an object using multipart form data.
+    async fn upload(&self, body: reqwest::Body, size: u64) -> anyhow::Result<UploadResponse>;
 
     /// Download an object.
     async fn download(
@@ -34,4 +26,10 @@ pub trait ObjectProvider: Send + Sync {
 
     /// Gets the object size.
     async fn size(&self, address: Address, key: &str, height: u64) -> anyhow::Result<u64>;
+}
+
+#[derive(Deserialize)]
+pub struct UploadResponse {
+    pub hash: String,
+    pub metadata_hash: String,
 }
