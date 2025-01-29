@@ -187,7 +187,7 @@ impl Bucket {
         validate_metadata(&options.metadata)?;
         let options = self.add_content_type_to_metadata(options, content_type);
 
-        let total_size = reader.seek(std::io::SeekFrom::End(0)).await?;
+        let object_size = reader.seek(std::io::SeekFrom::End(0)).await?;
         reader.seek(std::io::SeekFrom::Start(0)).await?; // Reset to start
 
         let started = Instant::now();
@@ -197,7 +197,7 @@ impl Bucket {
         msg_bar.set_prefix("[1/2]");
         msg_bar.set_message("Uploading data...");
 
-        let pro_bar = bars.add(new_progress_bar(total_size));
+        let pro_bar = bars.add(new_progress_bar(object_size));
         pro_bar.set_position(0);
 
         let mut stream = ReaderStream::new(reader);
@@ -205,7 +205,7 @@ impl Bucket {
             let mut progress: u64 = 0;
             while let Some(chunk) = stream.next().await {
                 if let Ok(chunk) = &chunk {
-                    progress = min(progress + chunk.len() as u64, total_size);
+                    progress = min(progress + chunk.len() as u64, object_size);
                     pro_bar.set_position(progress);
                 }
                 yield chunk;
@@ -213,7 +213,7 @@ impl Bucket {
             pro_bar.finish_and_clear();
         };
         let body = reqwest::Body::wrap_stream(async_stream);
-        let upload_response = provider.upload(body, total_size).await?;
+        let upload_response = provider.upload(body, object_size).await?;
         let metadata_hash =
             IrohHash::from_str(&upload_response.metadata_hash).expect("invalid hash");
         let object_hash = IrohHash::from_str(&upload_response.hash).expect("invalid hash");
@@ -228,7 +228,7 @@ impl Bucket {
             key: key.into(),
             hash: Hash(*object_hash.as_bytes()),
             recovery_hash: Hash(*metadata_hash.as_bytes()),
-            size: total_size,
+            size: object_size,
             ttl: options.ttl,
             metadata: options.metadata,
             overwrite: options.overwrite,
@@ -250,10 +250,11 @@ impl Bucket {
             .await?;
 
         msg_bar.println(format!(
-            "{} Added object in {} (size={})",
+            "{} Added object in {} (hash={}; size={})",
             SPARKLE,
             HumanDuration(started.elapsed()),
-            total_size
+            object_hash,
+            object_size
         ));
 
         msg_bar.finish_and_clear();
