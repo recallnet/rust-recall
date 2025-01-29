@@ -24,7 +24,7 @@ use ipc_api::evm::{fil_to_eth_amount, payload_to_evm_address};
 use num_traits::ToPrimitive;
 use reqwest::{header::HeaderValue, Client};
 
-use hoku_signer::Signer;
+use hoku_signer::{Signer, SubnetID};
 
 use crate::ipc::subnet::EVMSubnet;
 
@@ -165,11 +165,12 @@ impl EvmManager {
     pub async fn deposit(
         signer: &impl Signer,
         to: Address,
-        subnet: EVMSubnet,
+        from_subnet: EVMSubnet,
+        to_subnet: SubnetID,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
-        let gateway = get_gateway(signer, &subnet)?;
-        let subnet_id = GatewaySubnetID::try_from(&subnet.id.inner())?;
+        let gateway = get_gateway(signer, &from_subnet)?;
+        let subnet_id = GatewaySubnetID::try_from(&to_subnet.inner())?;
 
         let value = amount
             .atto()

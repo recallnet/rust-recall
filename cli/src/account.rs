@@ -204,6 +204,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                 &signer,
                 args.to.unwrap_or(signer.address()),
                 config,
+                cfg.subnet_id,
                 args.amount.clone(),
             )
             .await?;

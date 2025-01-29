@@ -15,7 +15,7 @@ use hoku_provider::{
     query::{FvmQueryHeight, QueryProvider},
     Client, Provider,
 };
-use hoku_signer::Signer;
+use hoku_signer::{Signer, SubnetID};
 
 pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
 pub use ethers::prelude::TransactionReceipt;
@@ -59,14 +59,15 @@ impl Account {
     pub async fn deposit(
         signer: &impl Signer,
         to: Address,
-        subnet: EVMSubnet,
+        from_subnet: EVMSubnet,
+        to_subnet: SubnetID,
         amount: TokenAmount,
     ) -> anyhow::Result<TransactionReceipt> {
         // Approve the gateway to spend funds on behalf of the user.
         // This is required when the subnet uses a custom ERC20 token as
         // the gateway's supply source.
-        EvmManager::approve_gateway(signer, subnet.clone(), amount.clone()).await?;
-        EvmManager::deposit(signer, to, subnet, amount).await
+        EvmManager::approve_gateway(signer, from_subnet.clone(), amount.clone()).await?;
+        EvmManager::deposit(signer, to, from_subnet, to_subnet, amount).await
     }
 
     /// Withdraw funds from a [`Signer`] to an address in the given subnet.
