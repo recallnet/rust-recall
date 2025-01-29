@@ -16,7 +16,8 @@ use hoku_sdk::{
 use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
 use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
 
-#[tokio::test]
+// TODO: remove the ignore once we have CI setup
+#[tokio::test] #[ignore]
 async fn runner_has_token() {
     let network_config = common::get_network();
     let sk_env = common::get_runner_secret_key();
@@ -45,7 +46,7 @@ async fn runner_has_token() {
 }
 
 // TODO: this test fails, but it seems like it's because account deplosit is broken...
-//#[tokio::test]
+//#[tokio::test] #[ignore]
 //async fn can_deposit() {
 //    let network_config = common::get_network();
 //
@@ -80,7 +81,7 @@ async fn runner_has_token() {
 //
 //}
 
-#[tokio::test]
+#[tokio::test] #[ignore]
 async fn can_add_bucket() {
     let network_config = common::get_network();
     let sk_env = common::get_runner_secret_key();
