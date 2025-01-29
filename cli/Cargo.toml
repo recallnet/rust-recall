@@ -16,21 +16,25 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = { workspace = true }
+async-trait = { workspace = true }
 bytes = { workspace = true }
 cid = { workspace = true }
 clap = { workspace = true }
 clap-stdin = { workspace = true }
 ethers = { workspace = true }
-#fvm_shared = { workspace = true }
+ethers-contract = { workspace = true }
+fvm_shared = { workspace = true }
 hex = { workspace = true }
 ipc-api = { workspace = true }
 ipc-provider = { workspace = true }
+ipc_actors_abis = { workspace = true }
 iroh = { workspace = true }
 humantime = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true, features = ["preserve_order"] }
 stderrlog = { workspace = true }
+thiserror = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { workspace = true }
 tracing = { workspace = true }

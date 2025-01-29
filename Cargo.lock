@@ -2728,7 +2728,7 @@ dependencies = [
  "fvm_ipld_encoding",
  "fvm_shared",
  "ipc-api",
- "iroh-base",
+ "iroh-base 0.28.0",
  "lazy_static",
  "num-traits",
  "serde",
@@ -3810,11 +3810,14 @@ name = "hoku_cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "bytes",
  "cid",
  "clap",
  "clap-stdin",
  "ethers",
+ "ethers-contract",
+ "fvm_shared",
  "hex",
  "hoku_provider",
  "hoku_sdk",
@@ -3822,11 +3825,13 @@ dependencies = [
  "humantime",
  "ipc-api",
  "ipc-provider",
+ "ipc_actors_abis",
  "iroh",
  "reqwest 0.11.27",
  "serde",
  "serde_json",
  "stderrlog",
+ "thiserror 1.0.69",
  "tokio",
  "tokio-util",
  "tracing",
@@ -4701,7 +4706,7 @@ dependencies = [
  "futures-util",
  "genawaiter",
  "hex",
- "iroh-base",
+ "iroh-base 0.26.0",
  "iroh-blobs",
  "iroh-docs",
  "iroh-gossip",
@@ -4761,6 +4766,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "iroh-base"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c21fd8eb71f166a172a9779c2244db992218e9a9bd929b9df6fc355d2b630c9"
+dependencies = [
+ "aead",
+ "anyhow",
+ "crypto_box",
+ "data-encoding",
+ "derive_more",
+ "ed25519-dalek",
+ "getrandom",
+ "hex",
+ "iroh-blake3",
+ "once_cell",
+ "postcard",
+ "rand",
+ "rand_core",
+ "serde",
+ "ssh-key",
+ "thiserror 1.0.69",
+ "ttl_cache",
+ "url",
+ "zeroize",
+]
+
+[[package]]
 name = "iroh-blake3"
 version = "1.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4790,7 +4822,7 @@ dependencies = [
  "genawaiter",
  "hashlink",
  "hex",
- "iroh-base",
+ "iroh-base 0.26.0",
  "iroh-io",
  "iroh-metrics",
  "iroh-net",
@@ -4833,7 +4865,7 @@ dependencies = [
  "futures-lite 2.5.0",
  "futures-util",
  "hex",
- "iroh-base",
+ "iroh-base 0.26.0",
  "iroh-blake3",
  "iroh-blobs",
  "iroh-gossip",
@@ -4873,7 +4905,7 @@ dependencies = [
  "futures-lite 2.5.0",
  "futures-util",
  "indexmap 2.7.0",
- "iroh-base",
+ "iroh-base 0.26.0",
  "iroh-blake3",
  "iroh-metrics",
  "iroh-net",
@@ -4955,7 +4987,7 @@ dependencies = [
  "hyper 1.5.2",
  "hyper-util",
  "igd-next",
- "iroh-base",
+ "iroh-base 0.26.0",
  "iroh-metrics",
  "iroh-quinn",
  "iroh-quinn-proto",

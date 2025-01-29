@@ -27,7 +27,7 @@ use crate::machine::{
     bucket::{handle_bucket, BucketArgs},
     handle_machine,
     timehub::{handle_timehub, TimehubArgs},
-    MachineArgs, 
+    MachineArgs,
 };
 use crate::storage::{handle_storage, StorageArgs};
 use crate::subnet::{handle_subnet, SubnetArgs};
@@ -35,6 +35,7 @@ use crate::validator::{handle_validator, ValidatorArgs};
 
 mod account;
 mod credit;
+mod gas_estimator_middleware;
 mod machine;
 mod storage;
 mod subnet;
