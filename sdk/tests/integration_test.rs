@@ -1,3 +1,5 @@
+use anyhow::anyhow;
+use hoku_signer::Signer;
 use more_asserts::{assert_gt, assert_lt};
 use rand::{thread_rng, Rng};
 use std::collections::HashMap;
@@ -47,40 +49,46 @@ async fn runner_has_token() {
 }
 
 // TODO: this test fails, but it seems like it's because account deplosit is broken...
-//#[tokio::test] #[ignore]
-//async fn can_deposit() {
-//    let network_config = common::get_network();
-//
-//    let sk_env = common::get_runner_secret_key();
-//    let sk = parse_secret_key(&sk_env).unwrap();
-//    let signer = Wallet::new_secp256k1(sk, AccountKind::Ethereum, network_config.subnet_id.parent().unwrap()).unwrap();
-//
-//    // Deposit some funds into the subnet
-//    // Note: The debit account _must_ have Funds on parent
-//    let tx = match Account::deposit(
-//        &signer,
-//        signer.address(),
-//        network_config.parent_subnet_config()
-//            .ok_or(anyhow!("network does not have parent")).unwrap(),
-//        TokenAmount::from_whole(10),
-//    )
-//    .await {
-//        Ok(txr) => txr,
-//        Err(e) => panic!("transaction failed {}", e)
-//    };
-//
-//    println!(
-//        "Deposited 1 HOKU to {}",
-//        signer.eth_address().unwrap()
-//    );
-//    println!(
-//        "Transaction hash: 0x{}",
-//        hex::encode(tx.transaction_hash.to_fixed_bytes())
-//    );
-//
-//    // TODO: assert that deposit worked
-//
-//}
+#[tokio::test]
+#[ignore]
+async fn can_deposit() {
+    let network_config = common::get_network();
+
+    let sk_env = common::get_runner_secret_key();
+    let sk = parse_secret_key(&sk_env).unwrap();
+    let signer = Wallet::new_secp256k1(
+        sk,
+        AccountKind::Ethereum,
+        network_config.subnet_id.parent().unwrap(),
+    )
+    .unwrap();
+
+    // Deposit some funds into the subnet
+    // Note: The debit account _must_ have Funds on parent
+    let tx = match Account::deposit(
+        &signer,
+        signer.address(),
+        network_config
+            .parent_subnet_config()
+            .ok_or(anyhow!("network does not have parent"))
+            .unwrap(),
+        network_config.subnet_id,
+        TokenAmount::from_whole(10),
+    )
+    .await
+    {
+        Ok(txr) => txr,
+        Err(e) => panic!("transaction failed {}", e),
+    };
+
+    println!("Deposited 1 HOKU to {}", signer.eth_address().unwrap());
+    println!(
+        "Transaction hash: 0x{}",
+        hex::encode(tx.transaction_hash.to_fixed_bytes())
+    );
+
+    // TODO: assert that deposit worked
+}
 
 #[tokio::test]
 #[ignore]
