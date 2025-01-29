@@ -35,6 +35,7 @@ async fn main() -> anyhow::Result<()> {
         signer.address(),
         cfg.parent_subnet_config()
             .ok_or(anyhow!("network does not have parent"))?,
+        cfg.subnet_id,
         TokenAmount::from_whole(1),
     )
     .await?;
