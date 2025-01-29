@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
@@ -18,13 +18,13 @@ use ethers::{
 };
 use ethers_contract::ContractCall;
 use gateway_manager_facet::{FvmAddress, GatewayManagerFacet, SubnetID as GatewaySubnetID};
-use hoku_provider::fvm_shared::{address::Address, econ::TokenAmount};
 use ipc_actors_abis::gateway_manager_facet;
 use ipc_api::evm::{fil_to_eth_amount, payload_to_evm_address};
 use num_traits::ToPrimitive;
+use recall_provider::fvm_shared::{address::Address, econ::TokenAmount};
 use reqwest::{header::HeaderValue, Client};
 
-use hoku_signer::{Signer, SubnetID};
+use recall_signer::{Signer, SubnetID};
 
 use crate::ipc::subnet::EVMSubnet;
 

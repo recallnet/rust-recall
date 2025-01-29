@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::env;
@@ -7,15 +7,13 @@ use std::{collections::HashMap, str::FromStr as _};
 use anyhow::anyhow;
 use cid::Cid;
 
-use hoku_provider::{json_rpc::JsonRpcProvider, query::FvmQueryHeight};
-use hoku_sdk::{
-    machine::{
-        timehub::{Leaf, Timehub},
-        Machine,
-    },
+use recall_provider::{json_rpc::JsonRpcProvider, query::FvmQueryHeight};
+use recall_sdk::machine::timehub::Leaf;
+use recall_sdk::{
+    machine::{timehub::Timehub, Machine},
     network::Network,
 };
-use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
+use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

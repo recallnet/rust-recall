@@ -1,12 +1,12 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::time::Duration;
 
+use recall_provider::fvm_shared::address::Address;
 use reqwest::Url;
 
-use hoku_provider::fvm_shared::address::Address;
-use hoku_signer::SubnetID;
+use recall_signer::SubnetID;
 
 /// The EVM subnet config parameters.
 #[derive(Debug, Clone)]

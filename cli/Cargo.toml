@@ -1,6 +1,6 @@
 [package]
-name = "hoku_cli"
-description = "A command line interface (CLI) for Hoku."
+name = "recall_cli"
+description = "A command line interface (CLI) for Recall."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -11,7 +11,7 @@ keywords.workspace = true
 version.workspace = true
 
 [[bin]]
-name = "hoku"
+name = "recall"
 path = "src/main.rs"
 
 [dependencies]
@@ -32,6 +32,6 @@ tokio = { workspace = true }
 tokio-util = { workspace = true }
 tracing = { workspace = true }
 
-hoku_provider = { path = "../provider" }
-hoku_sdk = { path = "../sdk" }
-hoku_signer = { path = "../signer" }
+recall_provider = { path = "../provider" }
+recall_sdk = { path = "../sdk" }
+recall_signer = { path = "../signer" }

@@ -1,17 +1,17 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
 use ethers::utils::hex::ToHexExt;
 use serde_json::json;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
     query::FvmQueryHeight,
     util::{get_eth_address, parse_address, parse_query_height},
 };
-use hoku_sdk::{machine::info, network::NetworkConfig};
+use recall_sdk::{machine::info, network::NetworkConfig};
 
 use crate::print_json;
 

@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -13,7 +13,7 @@ use fendermint_vm_actor_interface::adm::{
 use fendermint_vm_actor_interface::eam::EthAddress;
 use tendermint::abci::response::DeliverTx;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_ipld_encoding::{self, RawBytes},
     fvm_shared::address::Address,
     message::{local_message, GasParams},
@@ -23,7 +23,7 @@ use hoku_provider::{
     util::get_eth_address,
     Client, Provider,
 };
-use hoku_signer::Signer;
+use recall_signer::Signer;
 
 pub mod bucket;
 pub mod timehub;

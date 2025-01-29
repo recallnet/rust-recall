@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashSet;
@@ -7,7 +7,7 @@ use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum
 use serde::Serialize;
 use stderrlog::Timestamp;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_shared::{address::Address, econ::TokenAmount},
     json_rpc::Url,
     message::GasParams,
@@ -15,8 +15,8 @@ use hoku_provider::{
     tx::{BroadcastMode as SDKBroadcastMode, TxResult, TxStatus},
     util::{parse_address, parse_query_height, parse_token_amount_from_atto},
 };
-use hoku_sdk::{network::Network as SdkNetwork, TxParams};
-use hoku_signer::{
+use recall_sdk::{network::Network as SdkNetwork, TxParams};
+use recall_signer::{
     key::{parse_secret_key, SecretKey},
     AccountKind, Signer, SubnetID, Wallet,
 };
@@ -38,24 +38,24 @@ mod storage;
 mod subnet;
 
 #[derive(Clone, Debug, Parser)]
-#[command(name = "hoku", author, version, about, long_about = None)]
+#[command(name = "recall", author, version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
     /// Network presets for subnet and RPC URLs.
-    #[arg(short, long, env = "HOKU_NETWORK", value_enum, default_value_t = Network::Testnet)]
+    #[arg(short, long, env = "RECALL_NETWORK", value_enum, default_value_t = Network::Testnet)]
     network: Network,
     /// The ID of the target subnet.
-    #[arg(short, long, env = "HOKU_SUBNET")]
+    #[arg(short, long, env = "RECALL_SUBNET")]
     subnet: Option<SubnetID>,
     /// Node CometBFT RPC URL.
-    #[arg(long, env = "HOKU_RPC_URL")]
+    #[arg(long, env = "RECALL_RPC_URL")]
     rpc_url: Option<Url>,
     /// Logging verbosity (repeat for more verbose logging).
-    #[arg(short, long, env = "HOKU_LOG_VERBOSITY", action = clap::ArgAction::Count)]
+    #[arg(short, long, env = "RECALL_LOG_VERBOSITY", action = clap::ArgAction::Count)]
     verbosity: u8,
     /// Silence logging.
-    #[arg(short, long, env = "HOKU_LOG_QUIET", default_value_t = false)]
+    #[arg(short, long, env = "RECALL_LOG_QUIET", default_value_t = false)]
     quiet: bool,
 }
 
@@ -126,17 +126,17 @@ impl BroadcastMode {
 #[derive(Clone, Debug, Args)]
 struct TxArgs {
     /// Gas limit for the transaction.
-    #[arg(long, env = "HOKU_GAS_LIMIT")]
+    #[arg(long, env = "RECALL_GAS_LIMIT")]
     gas_limit: Option<u64>,
-    /// Maximum gas fee for the transaction in attoHOKU.
-    /// The client will enforce a minimum value of 100 attoHOKU.
-    /// 1HOKU = 10**18 attoHOKU.
-    #[arg(long, env = "HOKU_GAS_FEE_CAP", value_parser = parse_token_amount_from_atto)]
+    /// Maximum gas fee for the transaction in attoRECALL.
+    /// The client will enforce a minimum value of 100 attoRECALL.
+    /// 1RECALL = 10**18 attoRECALL.
+    #[arg(long, env = "RECALL_GAS_FEE_CAP", value_parser = parse_token_amount_from_atto)]
     gas_fee_cap: Option<TokenAmount>,
-    /// Gas premium for the transaction in attoHOKU.
-    /// The client will enforce a minimum value of 100,000 attoHOKU.
-    /// 1HOKU = 10**18 attoHOKU.
-    #[arg(long, env = "HOKU_GAS_PREMIUM", value_parser = parse_token_amount_from_atto)]
+    /// Gas premium for the transaction in attoRECALL.
+    /// The client will enforce a minimum value of 100,000 attoRECALL.
+    /// 1RECALL = 10**18 attoRECALL.
+    #[arg(long, env = "RECALL_GAS_PREMIUM", value_parser = parse_token_amount_from_atto)]
     gas_premium: Option<TokenAmount>,
     /// Sequence for the transaction.
     #[arg(long)]
@@ -160,7 +160,7 @@ impl TxArgs {
 #[derive(Clone, Debug, Args)]
 struct AddressArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: Option<SecretKey>,
     /// Account address. The signer address is used if no address is given.
     #[arg(short, long, value_parser = parse_address)]

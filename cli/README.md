@@ -1,9 +1,9 @@
-# Hoku CLI
+# Recall CLI
 
-[![License](https://img.shields.io/github/license/hokunet/rust-hoku.svg)](../LICENSE)
+[![License](https://img.shields.io/github/license/recallnet/rust-recall.svg)](../LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
 
-> Hoku CLI
+> Recall CLI
 
 <!-- omit from toc -->
 
@@ -46,7 +46,7 @@
 
 ## Background
 
-Hoku CLI is a tool for managing your account and data machines.
+Recall CLI is a tool for managing your account and data machines.
 
 - _Machine manager_:
   This singleton machine is responsible for creating new buckets and/or timehubs.
@@ -63,11 +63,11 @@ Read more about data machines [here](../README.md).
 
 ### Prerequisites
 
-All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use Hoku
-network. For example, any EVM-compatible wallet will work, or you can run the `hoku account create` command to create a
+All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use Recall
+network. For example, any EVM-compatible wallet will work, or you can run the `recall account create` command to create a
 private key for you.
 
-Then, make sure your account is funded with HOKU, so you can pay to execute a transaction (you can use the
+Then, make sure your account is funded with RECALL, so you can pay to execute a transaction (you can use the
 faucet [here](https://faucet.calibnet.chainsafe-fil.io/funds.html)). When you `deposit` funds from the parent (Filecoin
 Calibration) to the child subnet, it will register your account on the subnet. If you ever want to move funds back to
 the parent, the `withdraw` command can be used. Note these differ from moving funds intra-subnet, which requires you
@@ -80,20 +80,20 @@ to use the `transfer` command. These are described in more detail below.
 To install the CLI, you'll need to download it from source, build, and install it.
 
 ```sh
-git clone https://github.com/hokunet/rust-hoku
-cd rust-hoku
+git clone https://github.com/recallnet/rust-recall
+cd rust-recall
 make install
 ```
 
-Once installed, you can run the `hoku` command from your terminal.
+Once installed, you can run the `recall` command from your terminal.
 
 ```sh
-hoku --help
+recall --help
 ```
 
 ### Configuration
 
-There are two flags required for the majority of the `hoku` subcommands:
+There are two flags required for the majority of the `recall` subcommands:
 
 - `--network`: Specify the chain location with RPC presets and settings that map to either `mainnet`, `testnet`,
   or `devnet`.
@@ -105,8 +105,8 @@ The default network is `ignition`, so it's not necessary to set the variable unl
 developing locally (`devnet`).
 
 ```
-HOKU_PRIVATE_KEY=your_private_key
-HOKU_NETWORK=devnet
+RECALL_PRIVATE_KEY=your_private_key
+RECALL_NETWORK=devnet
 ```
 
 Each of the following sections includes examples that presume you've completed this setup step.
@@ -123,8 +123,8 @@ modes are also possible.
 
 ### Global options
 
-All the global flags can also be passed as all-caps, snake case environment variables with a HOKU_ prefix
-(e.g., `--rpc-url` => `HOKU_RPC_URL`) that are set and sourced in a `.env` file.
+All the global flags can also be passed as all-caps, snake case environment variables with a RECALL_ prefix
+(e.g., `--rpc-url` => `RECALL_RPC_URL`) that are set and sourced in a `.env` file.
 
 | Flag              | Description                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------ |
@@ -138,15 +138,15 @@ All the global flags can also be passed as all-caps, snake case environment vari
 
 ### Account management
 
-Interaction with Hoku network requires an account (ECDSA, secp256k1). As with any blockchain system, an account can
+Interaction with Recall network requires an account (ECDSA, secp256k1). As with any blockchain system, an account can
 be created at will, receive / transfer funds, and send transactions. Recall that on Filecoin, and EVM `0x` prefixed
 address is equivalent to a `t410...`/`f410...` address, which is a special namespace that enables for EVM-compatiablity
 in the FVM.
 
-The `account` command allows you to execute these actions within Hoku:
+The `account` command allows you to execute these actions within Recall:
 
 ```
-hoku account
+recall account
 ```
 
 The following subcommands are available:
@@ -162,7 +162,7 @@ The following subcommands are available:
 Create a new account from a random seed.
 
 ```
-hoku account create
+recall account create
 ```
 
 This command logs a JSON object to stdout with three properties: the private key, public key, and its corresponding
@@ -173,7 +173,7 @@ FVM-converted address.
 Create a new private key:
 
 ```
-> hoku account create
+> recall account create
 
 {
   "private_key": "d5020dd0b12d4d8d8793ff0edbaa29bd7197879ddf82d475b7e9a6a34de765b0",
@@ -185,7 +185,7 @@ Create a new private key:
 - Optionally, pipe its output into a file to store the key and metadata:
 
 ```
-> hoku account create > account.json
+> recall account create > account.json
 ```
 
 #### Get account info
@@ -193,7 +193,7 @@ Create a new private key:
 Get account information.
 
 ```
-hoku account info {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+recall account info {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 This commands logs a JSON object to stdout: its public key, FVM address, current sequence (nonce), current subnet
@@ -215,7 +215,7 @@ balance, and its balance on the parent subnet.
 Get account info for a specific address:
 
 ```
-> hoku account info \
+> recall account info \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 {
@@ -232,15 +232,15 @@ Get account info for a specific address:
 Get an account sequence (i.e., nonce) in a subnet.
 
 ```
-hoku account sequence {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+recall account sequence {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `hoku account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
+- `recall account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
   (e.g., read from your `.env` file).
-- `hoku account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `recall account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -255,7 +255,7 @@ Get the sequence by:
 - Hex address:
 
 ```
-> hoku bucket list \
+> recall bucket list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 {
@@ -266,7 +266,7 @@ Get the sequence by:
 - Its equivalent `t410` address:
 
 ```
-> hoku bucket list \
+> recall bucket list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
@@ -275,14 +275,14 @@ Get the sequence by:
 Get an account balance within a specific subnet.
 
 ```
-hoku account balance {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+recall account balance {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `hoku account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
-- `hoku account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `recall account sequence --private-key <PRIVATE_KEY>`: Query with a private key (e.g., read from your `.env` file).
+- `recall account sequence --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 The `--parent` flag allows you to get the balance of the parent.
 If the `--network` flag is set, it will handle all the required `--evm-...` flag presets for you,
@@ -305,7 +305,7 @@ but you _can_ override them with your own values.
 - Get the signer's balance on the subnet:
 
 ```
-> hoku account balance
+> recall account balance
 
 {
   "balance": "0.2"
@@ -315,7 +315,7 @@ but you _can_ override them with your own values.
 - Get its balance on the parent subnet:
 
 ```
-> hoku account balance --parent
+> recall account balance --parent
 
 {
   "balance": "100.5"
@@ -325,7 +325,7 @@ but you _can_ override them with your own values.
 - Get the balance at a specific address on the subnet:
 
 ```
-> hoku account balance \
+> recall account balance \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 ```
 
@@ -334,7 +334,7 @@ but you _can_ override them with your own values.
 Deposit funds into a subnet from its parent.
 
 ```
-hoku account deposit [--to <TO>] <AMOUNT>
+recall account deposit [--to <TO>] <AMOUNT>
 ```
 
 Think of the `deposit` command as a typical transfer but _only_ from a parent to a child subnet. Both a transfer _out
@@ -364,7 +364,7 @@ values.
 - Deposit funds to the signer's address:
 
 ```
-> hoku account deposit 0.1
+> recall account deposit 0.1
 
 {
   "transactionHash": "0xcc7fdf8057dd9f024582b24fce2abe0f5e0c01f1e925fb52bd002c4456333bfc",
@@ -403,7 +403,7 @@ values.
 - Deposit funds to some other, non-signer address:
 
 ```
-> hoku account deposit --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
+> recall account deposit --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
 ```
 
 #### Withdraw funds
@@ -411,7 +411,7 @@ values.
 Withdraw funds from a subnet to its parent.
 
 ```
-hoku account withdraw [--to <TO>] <AMOUNT>
+recall account withdraw [--to <TO>] <AMOUNT>
 ```
 
 The `withdraw` command is the opposite of a `deposit`. It's somewhat like a typical transfer but _only_ from a child
@@ -440,7 +440,7 @@ will handle all the required `--evm-...` flag presets for you, but you _can_ ove
 - Withdraw funds to the signer's address:
 
 ```
-> hoku account withdraw 0.1
+> recall account withdraw 0.1
 
 {
   "transactionHash": "0xb098e39c4b358e5f55cd6f2db941092ff50b46d99db53c34101cac3f0f65f20d",
@@ -464,7 +464,7 @@ will handle all the required `--evm-...` flag presets for you, but you _can_ ove
 - Withdraw funds to some other, non-signer address:
 
 ```
-> hoku account withdraw --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
+> recall account withdraw --to 0x181c2d11DbB674147Ba53F2cf26Cf6DF9d9cc0aC 0.1
 ```
 
 #### Transfer funds
@@ -472,7 +472,7 @@ will handle all the required `--evm-...` flag presets for you, but you _can_ ove
 Transfer funds to another account in a subnet.
 
 ```
-hoku account transfer --to <TO> <AMOUNT>
+recall account transfer --to <TO> <AMOUNT>
 ```
 
 | Positionals | Description                      |
@@ -496,7 +496,7 @@ values.
 **Example:**
 
 ```
-> hoku account transfer \
+> recall account transfer \
 --to 0x4D5286d81317E284Cd377cB98b478552Bbe641ae \
 0.1
 
@@ -521,7 +521,7 @@ values.
 
 ### Machine
 
-Machines are the core building blocks of Hoku. The `machine` command allows you to retrieve machine information
+Machines are the core building blocks of Recall. The `machine` command allows you to retrieve machine information
 relative to a specific address. This helps track which `Bucket` or `Timehub` machines are tied to your account,
 which are later used in the `bucket` and `timehub` subcommands.
 
@@ -530,7 +530,7 @@ which are later used in the `bucket` and `timehub` subcommands.
 Get machine metadata at a specific address.
 
 ```
-hoku machine info <ADDRESS>
+recall machine info <ADDRESS>
 ```
 
 | Positionals | Description      |
@@ -544,7 +544,7 @@ hoku machine info <ADDRESS>
 **Example:**
 
 ```
-> hoku machine info t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
+> recall machine info t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
 
 {
     "kind": "Bucket",
@@ -557,8 +557,8 @@ hoku machine info <ADDRESS>
 Interact with an bucket machine using either the `bucket` or aliased `bu` subcommand:
 
 ```
-hoku bucket <SUBCOMMAND>
-hoku bu <SUBCOMMAND>
+recall bucket <SUBCOMMAND>
+recall bu <SUBCOMMAND>
 ```
 
 The `bucket` subcommand has the following subcommands:
@@ -581,21 +581,21 @@ the `query` subcommand).
 Create a new bucket machine.
 
 ```
-hoku bucket create
+recall bucket create
 ```
 
 | Flag                | Required? | Description                                                               |
 | ------------------- | --------- | ------------------------------------------------------------------------- |
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
-| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
-| `--gas-premium`     | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL). |
+| `--gas-premium`     | No        | Gas premium for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL). |
 | `--sequence`        | No        | Sequence (i.e., nonce) for the transaction.                               |
 
 **Example:**
 
 ```
-> hoku bucket create
+> recall bucket create
 
 {
   "address": "t2pefhfyobx2tdgznhcf2anr6p34z2rgso2ix7x5y",
@@ -612,14 +612,14 @@ hoku bucket create
 List buckets by owner in a subnet.
 
 ```
-hoku bucket list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+recall bucket list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `hoku bucket list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
-- `hoku bucket list --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `recall bucket list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
+- `recall bucket list --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -634,7 +634,7 @@ Query machines by:
 - A hex address:
 
 ```
-> hoku bucket list \
+> recall bucket list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 [
@@ -652,7 +652,7 @@ Query machines by:
 - Its equivalent `t410` address:
 
 ```
-> hoku bucket list \
+> recall bucket list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
@@ -660,7 +660,7 @@ Query machines by:
   recent `committed` height above):
 
 ```
-> hoku bucket list --height 114345
+> recall bucket list --height 114345
 [
   {
     "address": "t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa",
@@ -674,7 +674,7 @@ Query machines by:
 Add an object with a key prefix.
 
 ```
-hoku bucket add \
+recall bucket add \
 --address <ADDRESS> \
 --key <KEY> \
 [INPUT]
@@ -690,8 +690,8 @@ The `INPUT` can be a file path.
 | `-o, --overwrite`      | No        | Overwrite the object if it already exists.                                            |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
-| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
-| `--gas-premium`        | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL). |
+| `--gas-premium`        | No        | Gas premium for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL). |
 | `--sequence`           | No        | Sequence (i.e., nonce) for the transaction.                                           |
 
 **Examples:**
@@ -699,7 +699,7 @@ The `INPUT` can be a file path.
 - Push a file to the bucket:
 
 ```
-> hoku bucket add \
+> recall bucket add \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --key "my/object" \
 ./hello.json
@@ -718,7 +718,7 @@ The `INPUT` can be a file path.
 Get an object from the bucket machine.
 
 ```
-hoku bucket get --address <ADDRESS> <KEY>
+recall bucket get --address <ADDRESS> <KEY>
 ```
 
 | Positionals | Description               |
@@ -739,7 +739,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Get an object and write to stdout (default behavior):
 
 ```
-> hoku bucket get \
+> recall bucket get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object"
 
@@ -749,7 +749,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Download the output to a file by piping the output:
 
 ```
-> hoku bucket get \
+> recall bucket get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object" > downloaded.json
 ```
@@ -757,7 +757,7 @@ Note that when you retrieve the object, it will be written to stdout.
 - Range request for a subset of bytes:
 
 ```
-> hoku bucket get \
+> recall bucket get \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --range "10-14" \
 "my/object"
@@ -770,7 +770,7 @@ world
 Delete an object from the bucket.
 
 ```
-hoku bucket delete \
+recall bucket delete \
 --address <ADDRESS> \
 <KEY>
 ```
@@ -788,8 +788,8 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 | `--object-api-url`     | No        | Node Object API URL.                                                                  |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
-| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
-| `--gas-premium`        | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL). |
+| `--gas-premium`        | No        | Gas premium for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL). |
 | `--sequence`           | No        | Sequence (i.e., nonce) for the transaction.                                           |
 
 **Example:**
@@ -797,7 +797,7 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 - Delete an existing object:
 
 ```
-> hoku bucket delete \
+> recall bucket delete \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 "my/object"
 
@@ -815,7 +815,7 @@ Similar to when you `add` an object, you can specify gas settings or alter the b
 Query across all objects in the store.
 
 ```
-hoku bucket query --address <ADDRESS>
+recall bucket query --address <ADDRESS>
 ```
 
 Performing a `query` lists all keys that match a given prefix _up to and including the delimiter_.
@@ -843,7 +843,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   prefix `my/`, but no objects are listed since the "root" is the prefix:
 
 ```
-> hoku bucket query \
+> recall bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa
 
 {
@@ -859,7 +859,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   empty, so you know there are no more sub-objects to list:
 
 ```
-> hoku bucket query \
+> recall bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --prefix "my/"
 
@@ -894,7 +894,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   as above.
 
 ```
-> hoku bucket query \
+> recall bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --delimiter "*"
 ```
@@ -903,7 +903,7 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
   _after_ `"my/object"`, so it will be the first object listed starting at `my/key.txt`:
 
 ```
-> hoku bucket query \
+> recall bucket query \
 --address t2weumc7otsi3kniwjgy2xnemws5jpi3vmbnxg4fa \
 --delimiter "/" \
 --prefix "my/" \
@@ -930,8 +930,8 @@ prefix `my/object/` (note: inclusive of the `/` at the end).
 Interact with an timehub machine type using either the `timehub` or aliased `th` subcommand:
 
 ```
-hoku timehub <SUBCOMMAND>
-hoku th <SUBCOMMAND>
+recall timehub <SUBCOMMAND>
+recall th <SUBCOMMAND>
 ```
 
 The `timehub` subcommand has the following subcommands:
@@ -949,21 +949,21 @@ The `timehub` subcommand has the following subcommands:
 Create a new timehub machine.
 
 ```
-hoku timehub create
+recall timehub create
 ```
 
 | Flag                | Required? | Description                                                               |
 | ------------------- | --------- | ------------------------------------------------------------------------- |
 | `-p, --private-key` | Yes       | Wallet private key (ECDSA, secp256k1) for signing transactions.           |
 | `--gas-limit`       | No        | Gas limit for the transaction.                                            |
-| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoHOKU. The client will enforce a minimum value of 100 attoHOKU. 1HOKU = 10**18 attoHOKU. |
-| `--gas-premium`     | No        | Gas premium for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU) |
+| `--gas-fee-cap`     | No        | Maximum gas fee for the transaction in attoRECALL. The client will enforce a minimum value of 100 attoRECALL. 1RECALL = 10**18 attoRECALL. |
+| `--gas-premium`     | No        | Gas premium for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL) |
 | `--sequence`        | No        | Sequence (i.e., nonce) for the transaction.                               |
 
 **Example:**
 
 ```
-> hoku timehub create
+> recall timehub create
 
 {
   "address": "t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia",
@@ -980,14 +980,14 @@ hoku timehub create
 List timehubs by owner in a subnet.
 
 ```
-hoku timehub list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
+recall timehub list {--private-key <PRIVATE_KEY> | --address <ADDRESS>}
 ```
 
 You must pass _either_ the `--private-key` or `--address` flag. An address must be in the delegated `t410` or `0x`
 format.
 
-- `hoku timehub list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
-- `hoku timehub list --address <ADDRESS>`: Query a `t410` or `0x` address.
+- `recall timehub list --private-key <PRIVATE_KEY>`: Query with a private key (or read from your `.env` file).
+- `recall timehub list --address <ADDRESS>`: Query a `t410` or `0x` address.
 
 | Flag                | Required?                | Description                                                           |
 | ------------------- | ------------------------ | --------------------------------------------------------------------- |
@@ -1002,7 +1002,7 @@ Query machines by:
 - A hex address:
 
 ```
-> hoku timehub list \
+> recall timehub list \
 --address 0x4D5286d81317E284Cd377cB98b478552Bbe641ae
 
 [
@@ -1016,14 +1016,14 @@ Query machines by:
 - Its equivalent `t410` address:
 
 ```
-> hoku timehub list \
+> recall timehub list \
 --address t410fjvjinwatc7rijtjxps4ywr4fkk56mqnolzpcnrq
 ```
 
 - At a specific block height:
 
 ```
-> hoku timehub list --height 339004
+> recall timehub list --height 339004
 ```
 
 #### Push
@@ -1031,7 +1031,7 @@ Query machines by:
 Push a value to the timehub.
 
 ```
-hoku timehub push --address <ADDRESS> [INPUT]
+recall timehub push --address <ADDRESS> [INPUT]
 ```
 
 The `INPUT` can be a file path or piped from stdin.
@@ -1042,8 +1042,8 @@ The `INPUT` can be a file path or piped from stdin.
 | `-a, --address`        | Yes       | Timehub machine address.                                                          |
 | `-b, --broadcast-mode` | No        | Broadcast mode for the transaction: `commit`, `sync`, or `async` (default: `commit`). |
 | `--gas-limit`          | No        | Gas limit for the transaction.                                                        |
-| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoHOKU (1HOKU = 10\*\*18 attoHOKU). |
-| `--gas-premium`        | No        | Gas premium for the transaction in attoHOKU ( 1HOKU = 10\*\*18 attoHOKU). |
+| `--gas-fee-cap`        | No        | Maximum gas fee for the transaction in attoRECALL (1RECALL = 10\*\*18 attoRECALL). |
+| `--gas-premium`        | No        | Gas premium for the transaction in attoRECALL ( 1RECALL = 10\*\*18 attoRECALL). |
 | `--sequence`           | No        | Sequence (i.e., nonce) for the transaction.                                           |
 
 **Examples:**
@@ -1051,7 +1051,7 @@ The `INPUT` can be a file path or piped from stdin.
 - Push a file to the timehub:
 
 ```
-> hoku timehub push \
+> recall timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 ./hello.json
 
@@ -1070,7 +1070,7 @@ The `INPUT` can be a file path or piped from stdin.
 - Pipe from stdin:
 
 ```
-> echo "hello world" | hoku timehub push \
+> echo "hello world" | recall timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 ```
 
@@ -1079,7 +1079,7 @@ The `INPUT` can be a file path or piped from stdin.
 Get leaf at a given index and height.
 
 ```
-hoku timehub leaf --address <ADDRESS> <INDEX>
+recall timehub leaf --address <ADDRESS> <INDEX>
 ```
 
 | Positionals | Description |
@@ -1096,7 +1096,7 @@ hoku timehub leaf --address <ADDRESS> <INDEX>
 - Get leaf at index `0` (the "hello world" byte string pushed above):
 
 ```
-> hoku timehub leaf \
+> recall timehub leaf \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia \
 0
 
@@ -1108,7 +1108,7 @@ Ok((1729201398, [72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 10]))
 Get the leaf counts at a given height.
 
 ```
-hoku timehub count --address <ADDRESS>
+recall timehub count --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                                                                                  |
@@ -1121,7 +1121,7 @@ hoku timehub count --address <ADDRESS>
 - Get the leaf count, which is just a single leaf at this point:
 
 ```
-> hoku timehub root \
+> recall timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1132,10 +1132,10 @@ hoku timehub count --address <ADDRESS>
 - If you push another piece of data, the count will increase:
 
 ```
-> echo "hello again" | hoku timehub push \
+> echo "hello again" | recall timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> hoku timehub root \
+> recall timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1148,7 +1148,7 @@ hoku timehub count --address <ADDRESS>
 Get the peaks at a given height.
 
 ```
-hoku timehub peaks --address <ADDRESS>
+recall timehub peaks --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
@@ -1161,7 +1161,7 @@ hoku timehub peaks --address <ADDRESS>
 - Since there are only two leaves, there is only one peak since it's a balanced tree:
 
 ```
-> hoku timehub peaks \
+> recall timehub peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1174,10 +1174,10 @@ hoku timehub peaks --address <ADDRESS>
 - Pushing another piece of data (i.e., three total) leads to another peak:
 
 ```
-> echo "hello basin" | hoku timehub push \
+> echo "hello basin" | recall timehub push \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
-> hoku timehub peaks \
+> recall timehub peaks \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1193,7 +1193,7 @@ hoku timehub peaks --address <ADDRESS>
 Get the root at a given height.
 
 ```
-hoku timehub root --address <ADDRESS>
+recall timehub root --address <ADDRESS>
 ```
 
 | Flag            | Required? | Description                                              |
@@ -1204,7 +1204,7 @@ hoku timehub root --address <ADDRESS>
 **Example:**
 
 ```
-> hoku timehub root \
+> recall timehub root \
 --address t2ous5hrcemefjn76ks2oiylz3ae2qkpkuydyu4ia
 
 {
@@ -1221,4 +1221,4 @@ the [standard-readme](https://github.com/RichardLitt/standard-readme) specificat
 
 ## License
 
-MIT OR Apache-2.0, © 2024 Hoku Contributors
+MIT OR Apache-2.0, © 2025 Recall Contributors

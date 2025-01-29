@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::env;
@@ -6,8 +6,8 @@ use std::env;
 use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
 
-use hoku_sdk::{account::Account, ipc::subnet::EVMSubnet, network::Network};
-use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
+use recall_sdk::{account::Account, ipc::subnet::EVMSubnet, network::Network};
+use recall_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

@@ -1,8 +1,8 @@
 # SDK Examples
 
-Explore Hoku's functionalities through these practical examples.
+Explore Recall's functionalities through these practical examples.
 
-All the examples target an `hoku` testnet subnet anchored to the Filecoin Calibration network.
+All the examples target an `recall` testnet subnet anchored to the Filecoin Calibration network.
 You can run them with `cargo run --example [example name] - [ARG]`.
 
 ## Accounts
@@ -25,15 +25,15 @@ FVM address: t410ftqeuusqto3jezobwm5lh33bnnmv2jfcoijdi44q
 
 ### Deposit funds
 
-To create transactions in the `hoku` testnet, you need to first deposit some Calibration HOKU in the `hoku` subnet.
+To create transactions in the `recall` testnet, you need to first deposit some Calibration RECALL in the `recall` subnet.
 
 1. Go to the [Calibration faucet](https://faucet.calibnet.chainsafe-fil.io/) and click "Send Funds".
 2. Enter an Ethereum address.
    This can be any valid Ethereum address,
    like the one given by running the [`account_create.rs`](account_create.rs) example.
 3. Look up the address you used on the [Calibration explorer](https://calibration.filfox.info/en).
-   After about a minute, you should have 100 HOKU.
-4. Now you're ready to make a deposit to the `hoku` testnet subnet.
+   After about a minute, you should have 100 RECALL.
+4. Now you're ready to make a deposit to the `recall` testnet subnet.
 
 Run the [`account_deposit.rs`](account_deposit.rs) example using the private key for the address you used above.
 
@@ -44,13 +44,13 @@ cargo run --example account_deposit -- [YOUR_HEX_ENCODED_PRIVATE_KEY]
 Example output:
 
 ```text
-Deposited 1 HOKU to 0x9c094a4a1376d24cb83667567dec2d6b2ba4944e
+Deposited 1 RECALL to 0x9c094a4a1376d24cb83667567dec2d6b2ba4944e
 Transaction hash: 0x03d40fc3e8d629b2b52805e4fd1fb93f2d31bb06feaa3da55408091cbde6a654
 ```
 
 ### Check account balance
 
-[`account_balance.rs`](account_balance.rs) shows the balance of an account in the `hoku` testnet subnet.
+[`account_balance.rs`](account_balance.rs) shows the balance of an account in the `recall` testnet subnet.
 If you ran the [`account_deposit.rs`](account_deposit.rs), this should show a non-zero balance after a few minutes.
 
 ```shell
@@ -68,7 +68,7 @@ Read the docs (run `make doc` from the repo root) for more account methods.
 ### Buckets
 
 [`bucket_add.rs`](bucket_add.rs) creates a new bucket, adds an object, and then queries for it by key.
-To run this example, you must deposit some funds into the `hoku` testnet subnet.
+To run this example, you must deposit some funds into the `recall` testnet subnet.
 
 ```shell
 cargo run --example bucket_add -- [YOUR_HEX_ENCODED_PRIVATE_KEY]
@@ -90,7 +90,7 @@ Read the docs (run `make doc` from the repo root) for more bucket methods.
 
 [`timehub_push.rs`](timehub_push.rs) creates a new timehub for state updates, pushes a new value,
 gets it back, and then qeuries for the timehub's count and state root.
-To run this example, you must deposit some funds into the `hoku` testnet subnet.
+To run this example, you must deposit some funds into the `recall` testnet subnet.
 
 ```shell
 cargo run --example timehub_push -- [YOUR_HEX_ENCODED_PRIVATE_KEY]

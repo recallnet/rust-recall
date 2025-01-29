@@ -1,20 +1,19 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::env;
 
 use anyhow::anyhow;
-
-use hoku_provider::{
+use recall_provider::{
     fvm_shared::econ::TokenAmount, json_rpc::JsonRpcProvider, message::GasParams,
     query::FvmQueryHeight, tx::TxStatus,
 };
-use hoku_sdk::{
+use recall_sdk::{
     account::{Account, EVMSubnet},
     credits::{ApproveOptions, BuyOptions, Credits, RevokeOptions},
     network::Network,
 };
-use hoku_signer::{
+use recall_signer::{
     key::{parse_secret_key, random_secretkey},
     AccountKind, Signer, Wallet,
 };

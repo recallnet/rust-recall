@@ -1,21 +1,21 @@
 use anyhow::anyhow;
-use hoku_signer::Signer;
 use more_asserts::{assert_gt, assert_lt};
 use rand::{thread_rng, Rng};
+use recall_signer::Signer;
 use std::collections::HashMap;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 mod common;
-use hoku_provider::fvm_shared::econ::TokenAmount;
-use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
-use hoku_sdk::{
+use recall_provider::fvm_shared::econ::TokenAmount;
+use recall_provider::json_rpc::JsonRpcProvider;
+use recall_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
+use recall_sdk::{
     account::Account,
     ipc::subnet::EVMSubnet,
     machine::{bucket::Bucket, Machine},
 };
-use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
+use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
 
 // TODO: remove the ignore once we have CI setup
 #[tokio::test]

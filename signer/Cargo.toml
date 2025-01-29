@@ -1,6 +1,6 @@
 [package]
-name = "hoku_signer"
-description = "A transaction signer for Hoku."
+name = "recall_signer"
+description = "A transaction signer for Recall."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -24,7 +24,7 @@ tendermint-rpc = { workspace = true }
 
 ipc-api = { workspace = true }
 
-hoku_provider = { path = "../provider" }
+recall_provider = { path = "../provider" }
 
 [dev-dependencies]
 serde_json = { workspace = true }

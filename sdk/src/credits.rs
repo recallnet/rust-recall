@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -14,17 +14,15 @@ use fendermint_actor_blobs_shared::Method::{
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use serde::{Deserialize, Serialize};
 
-use hoku_provider::{
-    fvm_ipld_encoding::{self, RawBytes},
-    fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
-    message::{local_message, GasParams},
-    query::{FvmQueryHeight, QueryProvider},
-    response::{decode_bytes, decode_empty},
-    tx::{BroadcastMode, DeliverTx, TxResult},
-    util::{get_eth_address, parse_address},
-    Client, Provider,
-};
-use hoku_signer::Signer;
+use recall_provider::fvm_ipld_encoding::{self, RawBytes};
+use recall_provider::fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount};
+use recall_provider::message::{local_message, GasParams};
+use recall_provider::query::{FvmQueryHeight, QueryProvider};
+use recall_provider::response::{decode_bytes, decode_empty};
+use recall_provider::tx::{BroadcastMode, DeliverTx, TxResult};
+use recall_provider::util::{get_eth_address, parse_address};
+use recall_provider::{Client, Provider};
+use recall_signer::Signer;
 
 pub use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
 
@@ -210,7 +208,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats
     }
 }
 
-/// A static wrapper around Hoku credit methods.
+/// A static wrapper around Recall credit methods.
 pub struct Credits {}
 
 impl Credits {

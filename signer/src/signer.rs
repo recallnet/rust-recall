@@ -1,9 +1,8 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use async_trait::async_trait;
-
-use hoku_provider::{
+use recall_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
     message::{GasParams, Message, SignedMessage},

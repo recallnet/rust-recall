@@ -1,4 +1,4 @@
-use hoku_sdk::network::{Network, NetworkConfig};
+use recall_sdk::network::{Network, NetworkConfig};
 use std::env;
 
 #[allow(dead_code)]

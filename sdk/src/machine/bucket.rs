@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::path::Path;
@@ -23,7 +23,7 @@ use iroh::blobs::Hash as IrohHash;
 use peekable::tokio::AsyncPeekable;
 use tendermint::abci::response::DeliverTx;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_ipld_encoding,
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
@@ -34,7 +34,7 @@ use hoku_provider::{
     tx::{BroadcastMode, TxResult},
     Client, Provider,
 };
-use hoku_signer::Signer;
+use recall_signer::Signer;
 
 use crate::progress::{new_message_bar, new_multi_bar, SPARKLE};
 use crate::{

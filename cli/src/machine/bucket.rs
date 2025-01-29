@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -9,7 +9,7 @@ use ethers::utils::hex::ToHexExt;
 use serde_json::{json, Value};
 use tokio::io::{self};
 
-use hoku_provider::{
+use recall_provider::{
     fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
     json_rpc::{JsonRpcProvider, Url},
     query::FvmQueryHeight,
@@ -19,7 +19,7 @@ use hoku_provider::{
         parse_query_height, parse_token_amount,
     },
 };
-use hoku_sdk::{
+use recall_sdk::{
     machine::{
         bucket::{
             AddOptions, Bucket, DeleteOptions, GetOptions, ObjectState, QueryOptions,
@@ -30,7 +30,7 @@ use hoku_sdk::{
     network::NetworkConfig,
     TxParams,
 };
-use hoku_signer::{
+use recall_signer::{
     key::{parse_secret_key, SecretKey},
     AccountKind, Void, Wallet,
 };
@@ -65,7 +65,7 @@ enum BucketCommands {
 #[derive(Clone, Debug, Args)]
 struct BucketCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Bucket owner address.
     /// The owner defaults to the signer if not specified.
@@ -81,10 +81,10 @@ struct BucketCreateArgs {
 #[derive(Clone, Debug, Parser)]
 struct BucketAddArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Node Object API URL.
-    #[arg(long, env = "HOKU_OBJECT_API_URL")]
+    #[arg(long, env = "RECALL_OBJECT_API_URL")]
     object_api_url: Option<Url>,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -109,7 +109,7 @@ struct BucketAddArgs {
     #[arg(long, value_parser = parse_token_amount)]
     token_amount: Option<TokenAmount>,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -118,7 +118,7 @@ struct BucketAddArgs {
 #[derive(Clone, Debug, Parser)]
 struct BucketDeleteArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -126,7 +126,7 @@ struct BucketDeleteArgs {
     /// Key of the object to delete.
     key: String,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -149,7 +149,7 @@ struct BucketAddressArgs {
 #[derive(Clone, Debug, Args)]
 struct BucketGetArgs {
     /// Node Object API URL.
-    #[arg(long, env = "HOKU_OBJECT_API_URL")]
+    #[arg(long, env = "RECALL_OBJECT_API_URL")]
     object_api_url: Option<Url>,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -199,7 +199,7 @@ struct BucketQueryArgs {
 #[derive(Clone, Debug, Args)]
 struct BucketMetadataArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Bucket machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -211,7 +211,7 @@ struct BucketMetadataArgs {
     #[arg(short, long, value_parser = parse_metadata_optional, required=true)]
     metadata: Vec<(String, Option<String>)>,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,

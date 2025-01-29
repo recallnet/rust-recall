@@ -1,11 +1,11 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-//! # Hoku SDK
+//! # Recall SDK
 //!
-//! The top-level user interface for managing Hoku object storage and timehubs.
+//! The top-level user interface for managing Recall object storage and timehubs.
 
-use hoku_provider::message::GasParams;
+use recall_provider::message::GasParams;
 
 pub mod account;
 pub mod credits;

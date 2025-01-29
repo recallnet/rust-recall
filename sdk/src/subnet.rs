@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use fendermint_actor_blobs_shared::state::TokenCreditRate;
@@ -7,16 +7,14 @@ use fendermint_actor_recall_config_shared::{RecallConfig, SetConfigParams};
 use fendermint_vm_actor_interface::recall_config::RECALL_CONFIG_ACTOR_ADDR;
 use tendermint::chain;
 
-use hoku_provider::{
-    fvm_shared::clock::ChainEpoch,
-    json_rpc::JsonRpcProvider,
-    message::{local_message, GasParams, RawBytes},
-    query::{FvmQueryHeight, QueryProvider},
-    response::{decode_as, decode_empty},
-    tx::{BroadcastMode, TxResult},
-    Client, Provider, TendermintClient,
-};
-use hoku_signer::Signer;
+use recall_provider::fvm_shared::clock::ChainEpoch;
+use recall_provider::json_rpc::JsonRpcProvider;
+use recall_provider::message::{local_message, GasParams, RawBytes};
+use recall_provider::query::{FvmQueryHeight, QueryProvider};
+use recall_provider::response::{decode_as, decode_empty};
+use recall_provider::tx::{BroadcastMode, TxResult};
+use recall_provider::{Client, Provider, TendermintClient};
+use recall_signer::Signer;
 
 /// Options for setting config.
 #[derive(Clone, Default, Debug)]

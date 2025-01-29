@@ -1,17 +1,16 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use hoku_provider::{
-    fvm_shared::clock::ChainEpoch, json_rpc::JsonRpcProvider, util::parse_token_credit_rate,
-};
-use hoku_sdk::{
-    credits::TokenCreditRate, network::NetworkConfig, subnet::SetConfigOptions, subnet::Subnet,
-    TxParams,
-};
-use hoku_signer::{key::SecretKey, AccountKind, Wallet};
+use recall_provider::util::parse_token_credit_rate;
+use recall_provider::{fvm_shared::clock::ChainEpoch, json_rpc::JsonRpcProvider};
+use recall_sdk::credits::TokenCreditRate;
+use recall_sdk::subnet::SetConfigOptions;
+use recall_sdk::{network::NetworkConfig, subnet::Subnet, TxParams};
+use recall_signer::key::SecretKey;
+use recall_signer::{AccountKind, Wallet};
 
 use crate::{parse_secret_key, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
@@ -41,7 +40,7 @@ enum ConfigCommands {
 #[derive(Clone, Debug, Args)]
 struct SetConfigArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The total storage capacity of the subnet.
     #[arg(long)]
@@ -59,7 +58,7 @@ struct SetConfigArgs {
     #[arg(long)]
     blob_default_ttl: ChainEpoch,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,

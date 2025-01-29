@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
@@ -39,7 +39,7 @@ fn new_backoff_policy(max_elapsed_secs: u64) -> ExponentialBackoff {
     eb
 }
 
-/// A JSON RPC Hoku chain provider.
+/// A JSON RPC Recall chain provider.
 #[derive(Clone)]
 pub struct JsonRpcProvider<C = HttpClient> {
     inner: C,

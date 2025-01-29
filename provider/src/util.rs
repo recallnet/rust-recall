@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
@@ -58,7 +58,7 @@ pub fn parse_token_amount(s: &str) -> anyhow::Result<TokenAmount> {
     )?))
 }
 
-/// Parse the token amount in attoHOKU (10**18) from string.
+/// Parse the token amount in attoRECALL (10**18) from string.
 pub fn parse_token_amount_from_atto(s: &str) -> anyhow::Result<TokenAmount> {
     Ok(TokenAmount::from_atto(BigInt::from_str(s)?))
 }

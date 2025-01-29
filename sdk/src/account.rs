@@ -1,11 +1,11 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use fendermint_actor_blobs_shared::params::SetSponsorParams;
 use fendermint_actor_blobs_shared::Method::SetAccountSponsor;
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, econ::TokenAmount},
     message::GasParams,
@@ -14,7 +14,7 @@ use hoku_provider::{
     tx::{BroadcastMode, TxResult},
     Client, Provider,
 };
-use hoku_signer::{Signer, SubnetID};
+use recall_signer::{Signer, SubnetID};
 
 pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
 pub use ethers::prelude::TransactionReceipt;
@@ -28,7 +28,7 @@ pub struct SetSponsorOptions {
     pub gas_params: GasParams,
 }
 
-/// A static wrapper around Hoku account methods.
+/// A static wrapper around Recall account methods.
 pub struct Account {}
 
 impl Account {
