@@ -55,6 +55,14 @@ impl Account {
         EvmManager::balance(signer.address(), subnet).await
     }
 
+    /// Get the balance of the supply source (ERC20) for a [`Signer`] at the given height.
+    pub async fn supply_source_balance(
+        signer: &impl Signer,
+        subnet: EVMSubnet,
+    ) -> anyhow::Result<TokenAmount> {
+        EvmManager::supply_source_balance(signer.address(), subnet).await
+    }
+
     /// Deposit funds from a [`Signer`] to an address in the given subnet.
     pub async fn deposit(
         signer: &impl Signer,

@@ -173,7 +173,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             .await?;
             match cfg.parent_network_config {
                 Some(parent) => {
-                    let parent_balance = Account::balance(
+                    let parent_balance = Account::supply_source_balance(
                         &Void::new(address),
                         get_parent_subnet_config(&cfg.subnet_id, parent, args.subnet.clone())?,
                     )

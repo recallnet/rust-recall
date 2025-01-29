@@ -46,7 +46,7 @@ const TRANSACTION_RECEIPT_RETRIES: usize = 200;
 // Generate ABI for `approval` method on ERC20
 abigen!(
     IERC20,
-    r#"[{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}]"#
+    r#"[{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]"#
 );
 
 /// Returns an Ethereum provider for the given subnet configuration.
@@ -129,17 +129,46 @@ fn get_supply_source(
     Ok(Box::new(IERC20::new(address, Arc::new(signer))))
 }
 
+/// Get the balance of the supply source (ERC20) for the given subnet (e.g., the parent subnet).
+async fn get_supply_source_balance(
+    provider: Provider<Http>,
+    subnet: EVMSubnet,
+    address: Address,
+) -> anyhow::Result<TokenAmount> {
+    let supply_source = match subnet.supply_source {
+        Some(addr) => addr,
+        None => return Err(anyhow!("supply source is not configured for subnet")),
+    };
+    let supply_source_address = payload_to_evm_address(supply_source.payload())?;
+
+    let supply_source = Box::new(IERC20::new(supply_source_address, Arc::new(provider)));
+    let balance = supply_source
+        .balance_of(payload_to_evm_address(address.payload())?)
+        .await?;
+    Ok(TokenAmount::from_atto(balance.as_u128()))
+}
+
 /// A static wrapper around common EVM subnet methods.
 pub struct EvmManager {}
 
 impl EvmManager {
-    /// Get the balance of an account in a subnet.
+    /// Get the balance (native token) of an account in a subnet.
     pub async fn balance(address: Address, subnet: EVMSubnet) -> anyhow::Result<TokenAmount> {
         let provider = get_eth_provider(&subnet)?;
         let balance = provider
             .get_balance(payload_to_evm_address(address.payload())?, None)
             .await?;
         Ok(TokenAmount::from_atto(balance.as_u128()))
+    }
+
+    /// Get the balance of the supply source (ERC20) of an account in a subnet.
+    pub async fn supply_source_balance(
+        address: Address,
+        subnet: EVMSubnet,
+    ) -> anyhow::Result<TokenAmount> {
+        let provider = get_eth_provider(&subnet)?;
+        let balance = get_supply_source_balance(provider, subnet, address).await?;
+        Ok(balance)
     }
 
     /// Approve the gateway to spend funds on behalf of the user.
