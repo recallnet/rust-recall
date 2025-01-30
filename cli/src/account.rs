@@ -24,6 +24,7 @@ use hoku_signer::{
     AccountKind, EthAddress, Signer, SubnetID, Void, Wallet,
 };
 
+use crate::credit::{handle_credit, CreditArgs};
 use crate::{get_address, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
@@ -47,6 +48,8 @@ enum AccountCommands {
     /// Sponsor related commands.
     #[command(subcommand)]
     Sponsor(SponsorCommands),
+    /// Credit related commands.
+    Credit(CreditArgs),
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -300,6 +303,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                 print_tx_json(&tx)
             }
         },
+        AccountCommands::Credit(args) => handle_credit(cfg, args).await,
     }
 }
 

@@ -40,9 +40,9 @@ enum CreditCommands {
     /// Buy credits for an account.
     /// Use the `stats` command to see the subnet credit per atto token rate.
     Buy(BuyArgs),
-    /// Approve an account to use credits from another acccount.
+    /// Approve an account to use credits from another account.
     Approve(ApproveArgs),
-    /// Revoke an account from using credits from another acccount.
+    /// Revoke an account from using credits from another account.
     Revoke(RevokeArgs),
 }
 

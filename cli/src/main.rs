@@ -22,7 +22,6 @@ use hoku_signer::{
 };
 
 use crate::account::{handle_account, AccountArgs};
-use crate::credit::{handle_credit, CreditArgs};
 use crate::machine::{
     bucket::{handle_bucket, BucketArgs},
     handle_machine,
@@ -68,9 +67,6 @@ enum Commands {
     Account(AccountArgs),
     /// Subnet related commands.
     Subnet(SubnetArgs),
-    /// Credit related commands.
-    #[clap(alias = "credits")]
-    Credit(CreditArgs),
     /// Storage related commands.
     Storage(StorageArgs),
     /// Machine related commands.
@@ -194,7 +190,6 @@ async fn main() -> anyhow::Result<()> {
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cfg, args).await,
         Commands::Subnet(args) => handle_subnet(cfg, args).await,
-        Commands::Credit(args) => handle_credit(cfg, args).await,
         Commands::Storage(args) => handle_storage(cfg, args).await,
         Commands::Bucket(args) => handle_bucket(cfg, !cli.quiet, args).await,
         Commands::Timehub(args) => handle_timehub(cfg, args).await,
