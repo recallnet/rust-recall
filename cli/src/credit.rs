@@ -21,9 +21,7 @@ use hoku_signer::{
     AccountKind, Signer, Wallet,
 };
 
-use crate::{
-    get_address, parse_address_list, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs,
-};
+use crate::{parse_address_list, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct CreditArgs {
