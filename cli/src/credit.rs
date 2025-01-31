@@ -21,9 +21,7 @@ use hoku_signer::{
     AccountKind, Signer, Wallet,
 };
 
-use crate::{
-    get_address, parse_address_list, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs,
-};
+use crate::{parse_address_list, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct CreditArgs {
@@ -35,14 +33,12 @@ pub struct CreditArgs {
 enum CreditCommands {
     /// Get subnet-wide credit usage statistics.
     Stats(StatsArgs),
-    /// Get credit balance for an account.
-    Balance(BalanceArgs),
     /// Buy credits for an account.
     /// Use the `stats` command to see the subnet credit per atto token rate.
     Buy(BuyArgs),
-    /// Approve an account to use credits from another acccount.
+    /// Approve an account to use credits from another account.
     Approve(ApproveArgs),
-    /// Revoke an account from using credits from another acccount.
+    /// Revoke an account from using credits from another account.
     Revoke(RevokeArgs),
 }
 
@@ -137,11 +133,6 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
         CreditCommands::Stats(args) => {
             let stats = Credits::stats(&provider, args.address.height).await?;
             print_json(&json!(stats))
-        }
-        CreditCommands::Balance(args) => {
-            let address = get_address(args.address.clone(), &cfg.subnet_id)?;
-            let balance = Credits::balance(&provider, address, args.address.height).await?;
-            print_json(&json!(balance))
         }
         CreditCommands::Buy(args) => {
             let broadcast_mode = args.broadcast_mode.get();
