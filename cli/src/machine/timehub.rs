@@ -1,6 +1,8 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::{collections::HashMap, io::Cursor, str::FromStr as _};
+
 use anyhow::{anyhow, Context as _};
 use bytes::Bytes;
 use cid::Cid;
@@ -8,7 +10,6 @@ use clap::{Args, Subcommand};
 use clap_stdin::FileOrStdin;
 use ethers::utils::hex::ToHexExt;
 use serde_json::{json, Value};
-use std::{collections::HashMap, io::Cursor, str::FromStr as _};
 use tokio::io::AsyncReadExt;
 
 use hoku_provider::util::get_eth_address;
@@ -16,6 +17,7 @@ use hoku_provider::{
     fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
     query::FvmQueryHeight,
+    tx::TxStatus,
     util::{parse_address, parse_metadata, parse_query_height},
 };
 use hoku_sdk::{
@@ -31,7 +33,7 @@ use hoku_signer::{
     AccountKind, Void, Wallet,
 };
 
-use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
+use crate::{get_address, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct TimehubArgs {
@@ -124,7 +126,7 @@ struct TimehubLeafArgs {
 
 /// Timehub commmands handler.
 pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
     let subnet_id = cfg.subnet_id;
 
     match &args.command {
@@ -144,7 +146,12 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
                 Timehub::new(&provider, &mut signer, args.owner, metadata, gas_params).await?;
             let address = store.eth_address()?;
 
-            print_json(&json!({"address": address.encode_hex_with_prefix(), "tx": &tx}))
+            let tx_json = match &tx.status {
+                TxStatus::Pending(tx) => serde_json::to_value(tx)?,
+                TxStatus::Committed(receipt) => serde_json::to_value(receipt)?,
+            };
+
+            print_json(&json!({"address": address.encode_hex_with_prefix(), "tx": &tx_json}))
         }
         TimehubCommands::List(args) => {
             let address = get_address(args.clone(), &subnet_id)?;
@@ -201,7 +208,7 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
                 )
                 .await?;
 
-            print_json(&tx)
+            print_tx_json(&tx)
         }
         TimehubCommands::Leaf(args) => {
             let machine = Timehub::attach(args.address).await?;

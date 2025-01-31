@@ -10,9 +10,11 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
 use hoku_sdk::{
-    machine::{bucket::Bucket, Machine},
+    machine::{
+        bucket::{AddOptions, Bucket, GetOptions, QueryOptions},
+        Machine,
+    },
     network::Network,
 };
 use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
@@ -31,7 +33,12 @@ async fn main() -> anyhow::Result<()> {
     let cfg = Network::Testnet.get_config();
 
     // Setup network provider
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, Some(cfg.object_api_url))?;
+    let provider = JsonRpcProvider::new_http(
+        cfg.rpc_url,
+        cfg.subnet_id.chain_id(),
+        None,
+        Some(cfg.object_api_url),
+    )?;
 
     // Setup local wallet using private key from arg
     let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, cfg.subnet_id)?;
@@ -47,7 +54,7 @@ async fn main() -> anyhow::Result<()> {
     )
     .await?;
     println!("Created new bucket {}", machine.address());
-    println!("Transaction hash: 0x{}", tx.hash);
+    println!("Transaction hash: 0x{}", tx.hash());
 
     // Create a temp file to add
     let mut file = async_tempfile::TempFile::new().await?;
@@ -74,7 +81,7 @@ async fn main() -> anyhow::Result<()> {
         machine.address(),
         key,
     );
-    println!("Transaction hash: 0x{}", tx.hash);
+    println!("Transaction hash: 0x{}", tx.hash());
 
     // Wait some time for the network to resolve the object
     sleep(Duration::from_secs(2)).await;
@@ -113,7 +120,7 @@ async fn main() -> anyhow::Result<()> {
     let tx = machine
         .delete(&provider, &mut signer, key, Default::default())
         .await?;
-    println!("Deleted object with key {} at tx 0x{}", key, tx.hash);
+    println!("Deleted object with key {} at tx 0x{}", key, tx.hash());
 
     Ok(())
 }

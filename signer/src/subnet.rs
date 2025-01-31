@@ -2,12 +2,12 @@
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use anyhow::anyhow;
 use std::fmt;
 use std::fmt::Write;
 use std::hash::Hasher;
 use std::str::FromStr;
 
+use anyhow::anyhow;
 use fnv::FnvHasher;
 use ipc_api::{error::Error, subnet_id::MAX_CHAIN_ID};
 
@@ -35,8 +35,7 @@ pub struct SubnetID {
     faux: String,
     /// A valid [`ipc_api::subnet_id::SubnetID`].
     real: ipc_api::subnet_id::SubnetID,
-
-    /// Explicitely set chain ID. If not set the chain ID is computed as a hash from the subnet ID.
+    /// Explicitely set chain ID. If not set, the chain ID is computed as a hash from the subnet ID.
     explicit_chain_id: Option<ChainID>,
 }
 

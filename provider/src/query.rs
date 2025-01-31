@@ -56,11 +56,7 @@ pub trait QueryProvider: Send + Sync {
         mut message: Message,
         height: FvmQueryHeight,
     ) -> anyhow::Result<u64> {
-        if message.gas_limit != 0 {
-            return Ok(message.gas_limit);
-        }
-
-        // Using a sequence of 0 so estimation doesn't get tripped over by nonce mismatch.
+        // Using a sequence of 0, so estimation doesn't get tripped over by nonce mismatch.
         message.sequence = 0;
 
         let res = self

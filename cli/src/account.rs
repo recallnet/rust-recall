@@ -24,7 +24,7 @@ use hoku_signer::{
     AccountKind, EthAddress, Signer, SubnetID, Void, Wallet,
 };
 
-use crate::{get_address, print_json, AddressArgs, BroadcastMode, TxArgs};
+use crate::{get_address, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
 #[derive(Clone, Debug, Args)]
 pub struct AccountArgs {
@@ -147,7 +147,8 @@ struct UnsetSponsorArgs {
 
 /// Account commands handler.
 pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::Result<()> {
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url.clone(), None, None)?;
+    let provider =
+        JsonRpcProvider::new_http(cfg.rpc_url.clone(), cfg.subnet_id.chain_id(), None, None)?;
 
     match &args.command {
         AccountCommands::Create => {
@@ -269,7 +270,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                 )
                 .await?;
 
-                print_json(&tx)
+                print_tx_json(&tx)
             }
             SponsorCommands::Unset(args) => {
                 let broadcast_mode = args.broadcast_mode.get();
@@ -296,7 +297,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                 )
                 .await?;
 
-                print_json(&tx)
+                print_tx_json(&tx)
             }
         },
     }

@@ -7,13 +7,15 @@ use fendermint_actor_hoku_config_shared::{HokuConfig, SetConfigParams};
 use fendermint_vm_actor_interface::hoku_config::HOKU_CONFIG_ACTOR_ADDR;
 use tendermint::chain;
 
-use hoku_provider::fvm_shared::clock::ChainEpoch;
-use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_provider::message::{local_message, GasParams, RawBytes};
-use hoku_provider::query::{FvmQueryHeight, QueryProvider};
-use hoku_provider::response::{decode_as, decode_empty};
-use hoku_provider::tx::{BroadcastMode, TxReceipt};
-use hoku_provider::{Client, Provider, TendermintClient};
+use hoku_provider::{
+    fvm_shared::clock::ChainEpoch,
+    json_rpc::JsonRpcProvider,
+    message::{local_message, GasParams, RawBytes},
+    query::{FvmQueryHeight, QueryProvider},
+    response::{decode_as, decode_empty},
+    tx::{BroadcastMode, TxResult},
+    Client, Provider, TendermintClient,
+};
 use hoku_signer::Signer;
 
 /// Options for setting config.
@@ -48,7 +50,7 @@ impl Subnet {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         options: SetConfigOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {

@@ -1,18 +1,17 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use anyhow::anyhow;
 use fendermint_actor_blobs_shared::params::SetSponsorParams;
 use fendermint_actor_blobs_shared::Method::SetAccountSponsor;
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 
-use hoku_provider::fvm_ipld_encoding::RawBytes;
-use hoku_provider::message::GasParams;
-use hoku_provider::response::decode_empty;
-use hoku_provider::tx::{BroadcastMode, TxReceipt};
 use hoku_provider::{
+    fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, econ::TokenAmount},
+    message::GasParams,
     query::{FvmQueryHeight, QueryProvider},
+    response::decode_empty,
+    tx::{BroadcastMode, TxResult},
     Client, Provider,
 };
 use hoku_signer::{Signer, SubnetID};
@@ -40,14 +39,10 @@ impl Account {
         height: FvmQueryHeight,
     ) -> anyhow::Result<u64> {
         let response = provider.actor_state(&signer.address(), height).await?;
-
-        match response.value {
-            Some((_, state)) => Ok(state.sequence),
-            None => Err(anyhow!(
-                "failed to get sequence; actor {} cannot be found",
-                signer.address()
-            )),
-        }
+        Ok(response
+            .value
+            .map(|(_, state)| state.sequence)
+            .unwrap_or_default())
     }
 
     /// Get the balance for a [`Signer`] at the given height.
@@ -104,7 +99,7 @@ impl Account {
         signer: &mut impl Signer,
         sponsor: Option<Address>,
         options: SetSponsorOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {

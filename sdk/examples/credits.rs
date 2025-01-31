@@ -4,9 +4,10 @@
 use std::env;
 
 use anyhow::anyhow;
+
 use hoku_provider::{
     fvm_shared::econ::TokenAmount, json_rpc::JsonRpcProvider, message::GasParams,
-    query::FvmQueryHeight,
+    query::FvmQueryHeight, tx::TxStatus,
 };
 use hoku_sdk::{
     account::{Account, EVMSubnet},
@@ -32,7 +33,7 @@ async fn main() -> anyhow::Result<()> {
     let cfg = Network::Testnet.get_config();
 
     // Setup network provider
-    let provider = JsonRpcProvider::new_http(cfg.rpc_url, None, None)?;
+    let provider = JsonRpcProvider::new_http(cfg.rpc_url, cfg.subnet_id.chain_id(), None, None)?;
 
     // Setup local wallet using private key from arg
     let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, cfg.subnet_id.clone())?;
@@ -90,8 +91,10 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let tx = Credits::buy(&provider, &mut signer, signer_address, amount, buy_options).await?;
-    println!("Bought credits - Transaction hash: 0x{}", tx.hash);
-    println!("Gas used: {}", tx.gas_used);
+    println!("Bought credits - Transaction hash: 0x{}", tx.hash());
+    if let TxStatus::Committed(receipt) = tx.status {
+        println!("Gas used: {}", receipt.gas_used.unwrap_or_default());
+    }
     println!("New balance: {:?}", tx.data);
 
     // Approve credits for the second wallet
@@ -114,14 +117,16 @@ async fn main() -> anyhow::Result<()> {
         approve_options,
     )
     .await?;
-    println!("Approved credits - Transaction hash: 0x{}", tx.hash);
-    println!("Gas used: {}", tx.gas_used);
+    println!("Approved credits - Transaction hash: 0x{}", tx.hash());
+    if let TxStatus::Committed(receipt) = tx.status {
+        println!("Gas used: {}", receipt.gas_used.unwrap_or_default());
+    }
     println!("Approval details: {:?}", tx.data);
 
     // Wait for the approval to be confirmed
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
 
-    // Check second wallet's balance and approvals
+    // Check the second wallet's balance and approvals
     let second_balance =
         Credits::balance(&provider, second_address, FvmQueryHeight::Committed).await?;
     println!("Second wallet credit balance: {:?}", second_balance);
@@ -147,8 +152,10 @@ async fn main() -> anyhow::Result<()> {
         revoke_options,
     )
     .await?;
-    println!("Revoked credits - Transaction hash: 0x{}", tx.hash);
-    println!("Gas used: {}", tx.gas_used);
+    println!("Revoked credits - Transaction hash: 0x{}", tx.hash());
+    if let TxStatus::Committed(receipt) = tx.status {
+        println!("Gas used: {}", receipt.gas_used.unwrap_or_default());
+    }
 
     // Wait for revocation to be confirmed
     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;

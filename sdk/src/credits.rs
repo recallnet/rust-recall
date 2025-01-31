@@ -14,14 +14,16 @@ use fendermint_actor_blobs_shared::Method::{
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use serde::{Deserialize, Serialize};
 
-use hoku_provider::fvm_ipld_encoding::{self, RawBytes};
-use hoku_provider::fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount};
-use hoku_provider::message::{local_message, GasParams};
-use hoku_provider::query::{FvmQueryHeight, QueryProvider};
-use hoku_provider::response::{decode_bytes, decode_empty};
-use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
-use hoku_provider::util::{get_eth_address, parse_address};
-use hoku_provider::{Client, Provider};
+use hoku_provider::{
+    fvm_ipld_encoding::{self, RawBytes},
+    fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
+    message::{local_message, GasParams},
+    query::{FvmQueryHeight, QueryProvider},
+    response::{decode_bytes, decode_empty},
+    tx::{BroadcastMode, DeliverTx, TxResult},
+    util::{get_eth_address, parse_address},
+    Client, Provider,
+};
 use hoku_signer::Signer;
 
 pub use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
@@ -244,7 +246,7 @@ impl Credits {
         to: Address,
         amount: TokenAmount,
         options: BuyOptions,
-    ) -> anyhow::Result<TxReceipt<Balance>>
+    ) -> anyhow::Result<TxResult<Balance>>
     where
         C: Client + Send + Sync,
     {
@@ -271,7 +273,7 @@ impl Credits {
         from: Address,
         to: Address,
         options: ApproveOptions,
-    ) -> anyhow::Result<TxReceipt<Approval>>
+    ) -> anyhow::Result<TxResult<Approval>>
     where
         C: Client + Send + Sync,
     {
@@ -305,7 +307,7 @@ impl Credits {
         from: Address,
         to: Address,
         options: RevokeOptions,
-    ) -> anyhow::Result<TxReceipt<()>>
+    ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {

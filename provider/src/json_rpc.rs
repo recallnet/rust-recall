@@ -3,30 +3,47 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::fmt::Display;
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use fvm_shared::address::Address;
+use backoff::{backoff::Backoff, future::retry, ExponentialBackoff};
+use ethers::core::types as et;
+use ethers::utils::hex::ToHexExt;
+use fendermint_eth_api::conv::from_tm::{
+    to_chain_message, to_cumulative, to_eth_receipt, to_eth_transaction_response,
+};
+use fvm_shared::{address::Address, chainid::ChainID};
 use reqwest::multipart::Form;
-use tendermint::abci::response::DeliverTx;
-use tendermint::block::Height;
+use tendermint::{abci::response::DeliverTx, block::Height, hash::Hash};
 use tendermint_rpc::{
-    endpoint::abci_query::AbciQuery, Client, Scheme, WebSocketClient, WebSocketClientDriver,
-    WebSocketClientUrl,
+    endpoint::abci_query::AbciQuery, endpoint::block_results, Client, Scheme, WebSocketClient,
+    WebSocketClientDriver, WebSocketClientUrl,
 };
 
 pub use tendermint_rpc::{HttpClient, Url};
 
-use crate::message::ChainMessage;
-use crate::object::{Hash, NodeAddr, ObjectProvider};
+use crate::message::{serialize, ChainMessage};
+use crate::object::{Hash as IrohHash, NodeAddr, ObjectProvider};
 use crate::query::{FvmQuery, FvmQueryHeight, QueryProvider};
-use crate::tx::{BroadcastMode, TxProvider, TxReceipt};
+use crate::tx::{BroadcastMode, TxProvider, TxResult};
 use crate::{Provider, TendermintClient};
+
+/// Creates a new backoff policy.
+fn new_backoff_policy(max_elapsed_secs: u64) -> ExponentialBackoff {
+    let mut eb = ExponentialBackoff {
+        max_elapsed_time: Some(Duration::from_secs(max_elapsed_secs)),
+        ..Default::default()
+    };
+    eb.reset();
+    eb
+}
 
 /// A JSON RPC Hoku chain provider.
 #[derive(Clone)]
 pub struct JsonRpcProvider<C = HttpClient> {
     inner: C,
+    chain_id: ChainID,
     objects: Option<ObjectClient>,
 }
 
@@ -39,6 +56,7 @@ struct ObjectClient {
 impl JsonRpcProvider<HttpClient> {
     pub fn new_http(
         url: Url,
+        chain_id: ChainID,
         proxy_url: Option<Url>,
         object_url: Option<Url>,
     ) -> anyhow::Result<Self> {
@@ -47,7 +65,11 @@ impl JsonRpcProvider<HttpClient> {
             inner: reqwest::Client::new(),
             url,
         });
-        Ok(Self { inner, objects })
+        Ok(Self {
+            inner,
+            chain_id,
+            objects,
+        })
     }
 }
 
@@ -89,28 +111,35 @@ where
         message: ChainMessage,
         broadcast_mode: BroadcastMode,
         f: F,
-    ) -> anyhow::Result<TxReceipt<T>>
+    ) -> anyhow::Result<TxResult<T>>
     where
         F: FnOnce(&DeliverTx) -> anyhow::Result<T> + Sync + Send,
         T: Sync + Send,
     {
-        match broadcast_mode {
-            BroadcastMode::Async => {
-                let data = crate::message::serialize(&message)?;
-                let response = self.inner.broadcast_tx_async(data).await?;
+        let data = serialize(&message)?;
 
-                Ok(TxReceipt::pending(response.hash))
-            }
-            BroadcastMode::Sync => {
-                let data = crate::message::serialize(&message)?;
-                let response = self.inner.broadcast_tx_sync(data).await?;
-                if response.code.is_err() {
-                    return Err(anyhow!(response.log));
+        match broadcast_mode {
+            BroadcastMode::Async | BroadcastMode::Sync => {
+                // Build minimal tx from the signed message.
+                let tx = if let ChainMessage::Signed(signed) = message.clone() {
+                    to_eth_transaction_response(signed, self.chain_id)
+                        .context("failed to convert to eth transaction")?
+                } else {
+                    return Err(anyhow!("message is not signed"));
+                };
+
+                if matches!(broadcast_mode, BroadcastMode::Async) {
+                    self.inner.broadcast_tx_async(data).await?;
+                    Ok(TxResult::pending(tx))
+                } else {
+                    let response = self.inner.broadcast_tx_sync(data).await?;
+                    if response.code.is_err() {
+                        return Err(anyhow!(format_err("", &response.log)));
+                    }
+                    Ok(TxResult::pending(tx))
                 }
-                Ok(TxReceipt::pending(response.hash))
             }
             BroadcastMode::Commit => {
-                let data = crate::message::serialize(&message)?;
                 let response = self.inner.broadcast_tx_commit(data).await?;
                 if response.check_tx.code.is_err() {
                     return Err(anyhow!(format_err(
@@ -127,13 +156,66 @@ where
                 let return_data = f(&response.deliver_tx)
                     .context("error decoding data from deliver_tx in commit")?;
 
-                Ok(TxReceipt::committed(
-                    response.hash,
-                    response.height,
-                    response.deliver_tx.gas_used,
-                    Some(return_data),
-                ))
+                let receipt = self.eth_tx_receipt(response.hash, false).await?;
+
+                Ok(TxResult::committed(receipt, Some(return_data)))
             }
+        }
+    }
+
+    async fn eth_tx_receipt(
+        &self,
+        hash: Hash,
+        prove: bool,
+    ) -> anyhow::Result<et::TransactionReceipt> {
+        // Get tx and block header using backoff because they do not immediately show up
+        // in the indexer.
+        let tx_res = retry(new_backoff_policy(10), || async {
+            self.inner.tx(hash, prove).await.map_err(|e| {
+                backoff::Error::transient(anyhow!(
+                    "cometbft transaction not found (tx_hash={}): {}",
+                    hash.encode_hex_with_prefix(),
+                    e
+                ))
+            })
+        })
+        .await?;
+        let header = retry(new_backoff_policy(10), || async {
+            self.inner.header(tx_res.height).await.map_err(|e| {
+                backoff::Error::transient(anyhow!(
+                    "transaction block header not found (tx_hash={}): {}",
+                    hash.encode_hex_with_prefix(),
+                    e
+                ))
+            })
+        })
+        .await?;
+
+        // Header is found, block results are expected to be present, raise error is not found
+        let block_results: block_results::Response =
+            self.inner.block_results(tx_res.height).await?;
+        let cumulative = to_cumulative(&block_results);
+        let state_params = self
+            .state_params(FvmQueryHeight::Height(header.header.height.value()))
+            .await?;
+        let msg = to_chain_message(&tx_res.tx)?;
+        if let ChainMessage::Signed(msg) = msg {
+            let receipt = to_eth_receipt(
+                &msg,
+                &tx_res,
+                &cumulative,
+                &header.header,
+                &state_params.value.base_fee,
+            )
+            .await
+            .context("failed to convert to receipt")?;
+
+            Ok(receipt)
+        } else {
+            Err(anyhow!(
+                "transaction is not convertible to Ethereum (tx_hash={})",
+                hash.encode_hex_with_prefix()
+            ))
         }
     }
 }
@@ -164,7 +246,7 @@ where
 
     async fn upload(
         &self,
-        hash: Hash,
+        hash: IrohHash,
         source: NodeAddr,
         size: u64,
         msg: String,
@@ -260,11 +342,17 @@ where
 
 /// Format transaction receipt errors.
 fn format_err(info: &str, log: &str) -> String {
-    if log.is_empty() {
-        info.into()
-    } else {
-        format!("info: {}; log: {}", info, log)
+    let mut output = String::new();
+    if !info.is_empty() {
+        output.push_str(info);
     }
+    if !log.is_empty() {
+        if !output.is_empty() {
+            output.push_str("\n\n");
+        }
+        output.push_str(log);
+    }
+    output
 }
 
 // Retrieve the proxy URL with precedence:

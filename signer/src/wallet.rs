@@ -1,21 +1,23 @@
 // Copyright 2024 Hoku Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+use std::sync::Arc;
+
 use anyhow::anyhow;
 use async_trait::async_trait;
-use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use crate::signer::{EthAddress, Signer};
-use crate::SubnetID;
-use hoku_provider::tx::{BroadcastMode, DeliverTx, TxReceipt};
 use hoku_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
     message::{ChainMessage, GasParams, Message, OriginKind, SignedMessage},
     query::{FvmQueryHeight, QueryProvider},
+    tx::{BroadcastMode, DeliverTx, TxResult},
     Client, Provider,
 };
+
+use crate::signer::{EthAddress, Signer};
+use crate::SubnetID;
 
 pub use fendermint_crypto::SecretKey;
 
@@ -69,33 +71,36 @@ impl Signer for Wallet {
         mut gas_params: GasParams,
         broadcast_mode: BroadcastMode,
         decode_fn: F,
-    ) -> anyhow::Result<TxReceipt<T>> {
+    ) -> anyhow::Result<TxResult<T>> {
+        // Check gas fee cap and premium are within the limits
+        gas_params.set_limits();
+
         let mut message = Message {
             version: Default::default(),
             from: self.addr,
             to,
-            sequence: 0,
+            sequence: 0, // set to 0 for gas estimation and updated below
             value,
             method_num,
             params,
             gas_limit: gas_params.gas_limit,
-            gas_fee_cap: gas_params.gas_fee_cap.clone(),
-            gas_premium: gas_params.gas_premium.clone(),
+            gas_fee_cap: gas_params.gas_fee_cap,
+            gas_premium: gas_params.gas_premium,
         };
-        // Set gas limit to the estimated value
-        let gas_limit = provider
-            .estimate_gas_limit(message.clone(), FvmQueryHeight::Committed)
-            .await?;
-        message.gas_limit = gas_limit;
+
+        // Estimate gas limit if the message does not have one
+        if message.gas_limit == 0 {
+            let gas_limit = provider
+                .estimate_gas_limit(message.clone(), FvmQueryHeight::Committed)
+                .await?;
+            message.gas_limit = gas_limit;
+        }
 
         // Set sequence to the current value
         let mut sequence_guard = self.sequence.lock().await;
         let sequence = *sequence_guard;
         message.sequence = sequence;
         *sequence_guard += 1;
-
-        // Check gas fee cap and premium are within the limits
-        gas_params.set_limits();
 
         let signed = SignedMessage::new_secp256k1(message, &self.sk, &self.subnet_id.chain_id())?;
         let signed_message = ChainMessage::Signed(signed);

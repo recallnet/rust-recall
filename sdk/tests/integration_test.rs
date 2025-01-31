@@ -9,7 +9,6 @@ use tokio::time::{sleep, Duration};
 mod common;
 use hoku_provider::fvm_shared::econ::TokenAmount;
 use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_provider::message::GasParams;
 use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
 use hoku_sdk::{
     account::Account,
@@ -97,11 +96,12 @@ async fn can_add_bucket() {
     let sk_env = common::get_runner_secret_key();
     let sk = parse_secret_key(&sk_env).unwrap();
     let mut signer =
-        Wallet::new_secp256k1(sk, AccountKind::Ethereum, network_config.subnet_id).unwrap();
+        Wallet::new_secp256k1(sk, AccountKind::Ethereum, network_config.subnet_id.clone()).unwrap();
 
     // Setup network provider
     let provider = JsonRpcProvider::new_http(
         network_config.rpc_url,
+        network_config.subnet_id.chain_id(),
         None,
         Some(network_config.object_api_url),
     )
@@ -125,8 +125,8 @@ async fn can_add_bucket() {
     let mut rng = thread_rng();
     let mut random_data = vec![0; 1024 * 1024]; // 1 MiB
     rng.fill(&mut random_data[..]);
-    file.write_all(&random_data).await;
-    file.flush().await;
+    file.write_all(&random_data).await.unwrap();
+    file.flush().await.unwrap();
 
     // Add a file to the bucket
     let key = "foo/my_file";
@@ -180,7 +180,7 @@ async fn can_add_bucket() {
     // Read the first 10 bytes of your downloaded 100 bytes
     let mut read_file = tokio::fs::File::open(&obj_path).await.unwrap();
     let mut contents = vec![0; 10];
-    read_file.read_exact(&mut contents).await;
+    read_file.read_exact(&mut contents).await.unwrap();
 
     assert_eq!(contents, &random_data[0..10]);
 

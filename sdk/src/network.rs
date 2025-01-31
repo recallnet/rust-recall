@@ -7,12 +7,14 @@ use std::time::Duration;
 
 use serde::{Deserialize, Deserializer};
 
-use hoku_provider::fvm_shared::{
-    address::{self, Address, Error, Network as FvmNetwork},
-    chainid::ChainID,
+use hoku_provider::{
+    fvm_shared::{
+        address::{self, Address, Error, Network as FvmNetwork},
+        chainid::ChainID,
+    },
+    json_rpc::Url,
+    util::parse_address,
 };
-use hoku_provider::json_rpc::Url;
-use hoku_provider::util::parse_address;
 use hoku_signer::SubnetID;
 
 use crate::ipc::subnet::EVMSubnet;
