@@ -9,8 +9,10 @@ use crate::print_json;
 use anyhow::{anyhow, Result};
 use std::borrow::Borrow;
 //use crate::{CommandLineHandler, GlobalArguments};
+use super::gas_estimator_middleware::Eip1559GasEstimatorMiddleware;
 use clap::{Args, Subcommand};
 use ethers::middleware::Middleware;
+use ethers::prelude::k256::ecdsa::SigningKey;
 use ethers::prelude::{Signer, SignerMiddleware};
 use ethers::providers::{Authorization, Http, Provider};
 use ethers::signers::{LocalWallet, Wallet};
@@ -20,6 +22,7 @@ use ethers::{
     providers::{MiddlewareError, PendingTransaction, ProviderError},
 };
 use ethers_contract::{ContractError, EthLogDecode, LogMeta};
+use hex;
 use hoku_provider::fvm_shared::{address::Address, address::Payload, clock::ChainEpoch};
 use hoku_sdk::network::NetworkConfig;
 use ipc_actors_abis::{
@@ -42,51 +45,27 @@ use ipc_provider::{config, manager::EthSubnetManager, IpcProvider};
 use reqwest::Client;
 use serde_json::json;
 use std::sync::{Arc, RwLock};
-//use fvm_shared::{address::Address, clock::ChainEpoch};
-//use fvm_shared::address::{Address, Payload, Chain};
-use hex;
-//use crate::{
-//f64_to_token_amount, get_ipc_provider, require_fil_addr_from_str, CommandLineHandler,
-//GlobalArguments,
-//};
-use super::gas_estimator_middleware::Eip1559GasEstimatorMiddleware;
-use ethers::prelude::k256::ecdsa::SigningKey;
 pub type SignerWithFeeEstimatorMiddleware =
     Eip1559GasEstimatorMiddleware<SignerMiddleware<Provider<Http>, Wallet<SigningKey>>>;
 
 use url::Url;
 
 use hoku_signer::EthAddress;
-/*use hoku_signer::{
-    key::{random_secretkey, SecretKey},
-    AccountKind, EthAddress, Signer, SubnetID, Void, Wallet,
-};*/
-
 #[derive(Clone, Debug, Args)]
 pub(crate) struct ValidatorArgs {
     #[command(subcommand)]
     command: Commands,
 }
 
-/*impl ValidatorArgs {
-    pub async fn handle(&self, global: &GlobalArguments) -> anyhow::Result<()> {
-        match &self.command {
-            Commands::BatchClaim(args) => BatchClaim::handle(global, args).await,
-            //Commands::ListValidatorActivities(args) => ListActivities::handle(global, args).await,
-        }
-    }
-}*/
-
 #[derive(Clone, Debug, Subcommand)]
 pub(crate) enum Commands {
-    BatchClaim(BatchClaimArgs),
-    //ListValidatorActivities(ListActivitiesArgs),
+    ClaimReward(ClaimRewardArgs),
 }
 
 #[derive(Clone, Debug, Args)]
-pub(crate) struct BatchClaimArgs {
-    #[arg(long, help = "The JSON RPC server url for ipc agent")]
-    pub validator: String,
+pub(crate) struct ClaimRewardArgs {
+    #[arg(long, help = "The address of the validator to claim rewards for")]
+    pub address: String,
     #[arg(long, help = "The checkpoint height to claim from")]
     pub from: ChainEpoch,
     #[arg(long, help = "The checkpoint height to claim to")]
@@ -125,10 +104,10 @@ pub async fn handle_validator(cfg: NetworkConfig, args: &ValidatorArgs) -> anyho
     //let ipc_provider = IpcProvider::new_with_subnet(None, subnet)?;
 
     match &args.command {
-        Commands::BatchClaim(args) => {
-            print!(">>> validator str: {}\n", args.validator);
+        Commands::ClaimReward(args) => {
+            print!(">>> validator str: {}\n", args.address);
 
-            let bytes = hex::decode(&args.validator[2..]).expect("Invalid hex string");
+            let bytes = hex::decode(&args.address[2..]).expect("Invalid hex string");
             let eth_addr = EthAddress(bytes.try_into().expect("Wrong length"));
 
             let validator = Address::from(eth_addr);
@@ -177,10 +156,7 @@ pub async fn handle_validator(cfg: NetworkConfig, args: &ValidatorArgs) -> anyho
             batch_subnet_claim(&validator, &subnet.id, &subnet.id, claims, &subnet).await?;
 
             print_json(&json!("rewards claimed"))
-        } /*Commands::ListValidatorActivities(args) => {
-              let res = ListActivities::handle(global, args).await?;
-              print_json(&json!(res))
-          }*/
+        }
     }
 }
 
