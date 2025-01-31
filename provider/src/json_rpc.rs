@@ -251,14 +251,13 @@ where
             .clone()
             .ok_or_else(|| anyhow!("object provider is required"))?;
 
-        let part = Part::stream_with_length(body, size)
-            .file_name("upload")
-            .mime_str("application/octet-stream")?;
-        let form = Form::new()
-            .text("size", size.to_string())
-            .part("data", part);
-
         let url = format!("{}v1/objects", client.url);
+        let form = Form::new().text("size", size.to_string()).part(
+            "data",
+            reqwest::multipart::Part::stream_with_length(body, size)
+                .mime_str("application/octet-stream")?,
+        );
+
         let response = client.inner.post(url).multipart(form).send().await?;
         if !response.status().is_success() {
             return Err(anyhow!(format!(

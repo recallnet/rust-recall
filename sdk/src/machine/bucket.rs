@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::path::Path;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 use std::{cmp::min, collections::HashMap, str::FromStr};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
+use tokio::time::Instant;
+use tokio_stream::StreamExt;
+use tokio_util::io::ReaderStream;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
@@ -16,12 +22,7 @@ use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use indicatif::HumanDuration;
 use infer::Type;
 use iroh::blobs::Hash as IrohHash;
-use num_traits::Zero;
 use tendermint::abci::response::DeliverTx;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeek, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
-use tokio::time::Instant;
-use tokio_stream::StreamExt;
-use tokio_util::io::ReaderStream;
 
 use hoku_provider::{
     fvm_ipld_encoding,
@@ -41,6 +42,9 @@ use crate::{
     machine::{deploy_machine, Machine},
     progress::new_progress_bar,
 };
+
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Arc;
 
 pub use fendermint_actor_bucket::{Object, ObjectState};
 
@@ -171,54 +175,46 @@ impl Bucket {
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         key: &str,
-        mut reader: R,
+        reader: R,
+        total_size: u64,
+        content_type: Option<Type>,
         options: AddOptions,
     ) -> anyhow::Result<TxResult<Object>>
     where
         C: Client + Send + Sync,
-        R: AsyncRead + AsyncSeek + Unpin + Send + 'static,
+        R: AsyncRead + Unpin + Send + 'static,
     {
-        // Get the size and content type by reading a small chunk (40 bytes)
-        let mut peek_buffer = vec![0u8; 40];
-        let peek_size = reader.read(&mut peek_buffer).await?;
-        peek_buffer.truncate(peek_size);
-
-        let content_type = infer::get(&peek_buffer);
         validate_metadata(&options.metadata)?;
         let options = self.add_content_type_to_metadata(options, content_type);
-
-        let object_size = reader.seek(std::io::SeekFrom::End(0)).await?;
-        reader.seek(std::io::SeekFrom::Start(0)).await?; // Reset to start
 
         let started = Instant::now();
         let bars = new_multi_bar(!options.show_progress);
         let msg_bar = bars.add(new_message_bar());
+        let pro_bar = bars.add(new_progress_bar(total_size));
+        let upload_progress = pro_bar.clone();
 
         msg_bar.set_prefix("[1/2]");
-        msg_bar.set_message("Uploading data...");
+        msg_bar.set_message("Starting upload to server...");
 
-        let pro_bar = bars.add(new_progress_bar(object_size));
-        pro_bar.set_position(0);
+        let stream = ReaderStream::with_capacity(reader, 64 * 1024).map(move |result| {
+            result.map(|chunk| {
+                upload_progress.inc(chunk.len() as u64);
+                chunk
+            })
+        });
 
-        let mut stream = ReaderStream::new(reader);
-        let async_stream = async_stream::stream! {
-            let mut progress: u64 = 0;
-            while let Some(chunk) = stream.next().await {
-                if let Ok(chunk) = &chunk {
-                    progress = min(progress + chunk.len() as u64, object_size);
-                    pro_bar.set_position(progress);
-                }
-                yield chunk;
-            }
-            pro_bar.finish_and_clear();
-        };
-        let body = reqwest::Body::wrap_stream(async_stream);
-        let upload_response = provider.upload(body, object_size).await?;
-        let metadata_hash =
-            IrohHash::from_str(&upload_response.metadata_hash).expect("invalid hash");
-        let object_hash = IrohHash::from_str(&upload_response.hash).expect("invalid hash");
+        let upload_response = provider
+            .upload(reqwest::Body::wrap_stream(stream), total_size)
+            .await?;
 
-        // Broadcast transaction with Object
+        pro_bar.finish_and_clear();
+        msg_bar.set_message("Upload completed, processing response...");
+
+        let metadata_hash = IrohHash::from_str(&upload_response.metadata_hash)
+            .map_err(|_| anyhow!("Invalid metadata hash from server"))?;
+        let object_hash = IrohHash::from_str(&upload_response.hash)
+            .map_err(|_| anyhow!("Invalid object hash from server"))?;
+
         msg_bar.set_prefix("[2/2]");
         msg_bar.set_message("Broadcasting transaction...");
 
@@ -228,34 +224,24 @@ impl Bucket {
             key: key.into(),
             hash: Hash(*object_hash.as_bytes()),
             recovery_hash: Hash(*metadata_hash.as_bytes()),
-            size: object_size,
+            size: total_size,
             ttl: options.ttl,
             metadata: options.metadata,
             overwrite: options.overwrite,
         };
-        let serialized_params = RawBytes::serialize(params)?;
-        let token_amount = options.token_amount.unwrap_or(TokenAmount::zero());
 
         let tx = signer
             .send_transaction(
                 provider,
                 self.address,
-                token_amount,
+                options.token_amount.unwrap_or_default(),
                 AddObject as u64,
-                serialized_params,
+                RawBytes::serialize(params)?,
                 options.gas_params,
                 options.broadcast_mode,
                 decode_as,
             )
             .await?;
-
-        msg_bar.println(format!(
-            "{} Added object in {} (hash={}; size={})",
-            SPARKLE,
-            HumanDuration(started.elapsed()),
-            object_hash,
-            object_size
-        ));
 
         msg_bar.finish_and_clear();
         Ok(tx)
@@ -277,16 +263,46 @@ impl Bucket {
             .as_ref()
             .canonicalize()
             .map_err(|e| anyhow!("failed to resolve path: {}", e))?;
-        let md = tokio::fs::metadata(&path).await?;
-        if !md.is_file() {
-            return Err(anyhow!("input must be a file"));
+
+        // First pass: read first chunk for content type and calculate size
+        let mut first_pass = tokio::fs::File::open(&path).await?;
+        let mut total_size = 0u64;
+        let mut peek_buffer = vec![0u8; 40]; // Only need 40 bytes for content type
+        let n = first_pass.read(&mut peek_buffer).await?;
+        let content_type = if n > 0 {
+            infer::get(&peek_buffer[..n])
+        } else {
+            None
+        };
+        total_size += n as u64;
+
+        // Continue reading in chunks to get total size
+        let mut buffer = vec![0u8; 8192];
+        loop {
+            let n = first_pass.read(&mut buffer).await?;
+            if n == 0 {
+                break;
+            }
+            total_size += n as u64;
         }
-        if md.len() > MAX_OBJECT_LENGTH {
+        drop(first_pass);
+
+        if total_size > MAX_OBJECT_LENGTH {
             return Err(anyhow!("file exceeds maximum allowed size of 5 GB"));
         }
 
+        // Second pass: open file again for upload
         let file = tokio::fs::File::open(&path).await?;
-        self.add_reader(provider, signer, key, file, options).await
+        self.add_reader(
+            provider,
+            signer,
+            key,
+            file,
+            total_size,
+            content_type,
+            options,
+        )
+        .await
     }
 
     /// Delete an object.
