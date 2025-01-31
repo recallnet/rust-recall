@@ -15,6 +15,7 @@ use hoku_provider::{
 };
 use hoku_sdk::{
     account::{Account, SetSponsorOptions},
+    credits::Credits,
     ipc::subnet::EVMSubnet,
     network::{NetworkConfig, ParentNetworkConfig},
     TxParams,
@@ -170,11 +171,14 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             let eth_address = get_eth_address(address)?;
             let sequence =
                 Account::sequence(&provider, &Void::new(address), args.address.height).await?;
-            let balance = Account::balance(
+            let account_balance = Account::balance(
                 &Void::new(address),
                 get_subnet_config(&cfg, args.subnet.clone())?,
             )
             .await?;
+
+            let credit_balance = Credits::balance(&provider, address, args.address.height).await?;
+
             match cfg.parent_network_config {
                 Some(parent) => {
                     let parent_balance = Account::supply_source_balance(
@@ -184,11 +188,11 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                     .await?;
 
                     print_json(
-                        &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": balance.to_string(), "parent_balance": parent_balance.to_string()}),
+                        &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": account_balance.to_string(), "parent_balance": parent_balance.to_string(), "credit": &json!(credit_balance)}),
                     )
                 }
                 None => print_json(
-                    &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": balance.to_string()}),
+                    &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": account_balance.to_string(), "credit": &json!(credit_balance)}),
                 ),
             }
         }
