@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::path::Path;
-use std::pin::Pin;
-use std::task::{Context, Poll};
 use std::{cmp::min, collections::HashMap, str::FromStr};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, ReadBuf};
+use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 use tokio::time::Instant;
 use tokio_stream::StreamExt;
 use tokio_util::io::ReaderStream;
@@ -42,10 +40,6 @@ use crate::{
     machine::{deploy_machine, Machine},
     progress::new_progress_bar,
 };
-
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
-
 pub use fendermint_actor_bucket::{Object, ObjectState};
 
 /// Maximum allowed object size in bytes.
@@ -176,7 +170,7 @@ impl Bucket {
         signer: &mut impl Signer,
         key: &str,
         reader: R,
-        total_size: u64,
+        size: u64,
         content_type: Option<Type>,
         options: AddOptions,
     ) -> anyhow::Result<TxResult<Object>>
@@ -190,7 +184,7 @@ impl Bucket {
         let started = Instant::now();
         let bars = new_multi_bar(!options.show_progress);
         let msg_bar = bars.add(new_message_bar());
-        let pro_bar = bars.add(new_progress_bar(total_size));
+        let pro_bar = bars.add(new_progress_bar(size));
         let upload_progress = pro_bar.clone();
 
         msg_bar.set_prefix("[1/2]");
@@ -204,7 +198,7 @@ impl Bucket {
         });
 
         let upload_response = provider
-            .upload(reqwest::Body::wrap_stream(stream), total_size)
+            .upload(reqwest::Body::wrap_stream(stream), size)
             .await?;
 
         pro_bar.finish_and_clear();
@@ -224,7 +218,7 @@ impl Bucket {
             key: key.into(),
             hash: Hash(*object_hash.as_bytes()),
             recovery_hash: Hash(*metadata_hash.as_bytes()),
-            size: total_size,
+            size,
             ttl: options.ttl,
             metadata: options.metadata,
             overwrite: options.overwrite,
@@ -243,6 +237,13 @@ impl Bucket {
             )
             .await?;
 
+        msg_bar.println(format!(
+            "{} Added object in {} (hash={}; size={})",
+            SPARKLE,
+            HumanDuration(started.elapsed()),
+            object_hash,
+            size
+        ));
         msg_bar.finish_and_clear();
         Ok(tx)
     }
@@ -264,35 +265,26 @@ impl Bucket {
             .canonicalize()
             .map_err(|e| anyhow!("failed to resolve path: {}", e))?;
 
-        // First pass: read first chunk for content type and calculate size
-        let mut first_pass = tokio::fs::File::open(&path).await?;
-        let mut total_size = 0u64;
-        let mut peek_buffer = vec![0u8; 40]; // Only need 40 bytes for content type
-        let n = first_pass.read(&mut peek_buffer).await?;
+        let mut file = tokio::fs::File::open(&path).await?;
+
+        // Read a small chunk for content type detection
+        let mut peek_buffer = vec![0u8; 40];
+        let n = file.read(&mut peek_buffer).await?;
         let content_type = if n > 0 {
             infer::get(&peek_buffer[..n])
         } else {
             None
         };
-        total_size += n as u64;
 
-        // Continue reading in chunks to get total size
-        let mut buffer = vec![0u8; 8192];
-        loop {
-            let n = first_pass.read(&mut buffer).await?;
-            if n == 0 {
-                break;
-            }
-            total_size += n as u64;
-        }
-        drop(first_pass);
-
+        // Get total size using AsyncSeek
+        let total_size = file.seek(std::io::SeekFrom::End(0)).await?;
         if total_size > MAX_OBJECT_LENGTH {
             return Err(anyhow!("file exceeds maximum allowed size of 5 GB"));
         }
 
-        // Second pass: open file again for upload
-        let file = tokio::fs::File::open(&path).await?;
+        // Reset to start for upload
+        file.seek(std::io::SeekFrom::Start(0)).await?;
+
         self.add_reader(
             provider,
             signer,
