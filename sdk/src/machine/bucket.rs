@@ -3,7 +3,7 @@
 
 use std::path::Path;
 use std::{cmp::min, collections::HashMap, str::FromStr};
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
+use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 use tokio::time::Instant;
 use tokio_stream::StreamExt;
 use tokio_util::io::ReaderStream;
@@ -20,6 +20,7 @@ use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use indicatif::HumanDuration;
 use infer::Type;
 use iroh::blobs::Hash as IrohHash;
+use peekable::tokio::AsyncPeekable;
 use tendermint::abci::response::DeliverTx;
 
 use hoku_provider::{
@@ -171,13 +172,17 @@ impl Bucket {
         key: &str,
         reader: R,
         size: u64,
-        content_type: Option<Type>,
         options: AddOptions,
     ) -> anyhow::Result<TxResult<Object>>
     where
         C: Client + Send + Sync,
         R: AsyncRead + Unpin + Send + 'static,
     {
+        let mut reader = AsyncPeekable::from(reader);
+        let mut buffer = [0u8; 40]; // 40 bytes is enough to detect the mime type
+        reader.peek(&mut buffer).await?;
+        let content_type = infer::get(&buffer[..]);
+
         validate_metadata(&options.metadata)?;
         let options = self.add_content_type_to_metadata(options, content_type);
 
@@ -267,15 +272,6 @@ impl Bucket {
 
         let mut file = tokio::fs::File::open(&path).await?;
 
-        // Read a small chunk for content type detection
-        let mut peek_buffer = vec![0u8; 40];
-        let n = file.read(&mut peek_buffer).await?;
-        let content_type = if n > 0 {
-            infer::get(&peek_buffer[..n])
-        } else {
-            None
-        };
-
         // Get total size using AsyncSeek
         let total_size = file.seek(std::io::SeekFrom::End(0)).await?;
         if total_size > MAX_OBJECT_LENGTH {
@@ -285,16 +281,8 @@ impl Bucket {
         // Reset to start for upload
         file.seek(std::io::SeekFrom::Start(0)).await?;
 
-        self.add_reader(
-            provider,
-            signer,
-            key,
-            file,
-            total_size,
-            content_type,
-            options,
-        )
-        .await
+        self.add_reader(provider, signer, key, file, total_size, options)
+            .await
     }
 
     /// Delete an object.

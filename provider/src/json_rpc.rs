@@ -14,9 +14,8 @@ use fendermint_eth_api::conv::from_tm::{
     to_chain_message, to_cumulative, to_eth_receipt, to_eth_transaction_response,
 };
 use fvm_shared::{address::Address, chainid::ChainID};
-use reqwest::multipart::{Form, Part};
+use reqwest::multipart::Form;
 use tendermint::{abci::response::DeliverTx, block::Height, hash::Hash};
-
 use tendermint_rpc::{
     endpoint::abci_query::AbciQuery, endpoint::block_results, Client, Scheme, WebSocketClient,
     WebSocketClientDriver, WebSocketClientUrl,
