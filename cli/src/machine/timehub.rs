@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::{collections::HashMap, io::Cursor, str::FromStr as _};
@@ -12,15 +12,15 @@ use ethers::utils::hex::ToHexExt;
 use serde_json::{json, Value};
 use tokio::io::AsyncReadExt;
 
-use hoku_provider::util::get_eth_address;
-use hoku_provider::{
+use recall_provider::util::get_eth_address;
+use recall_provider::{
     fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
     query::FvmQueryHeight,
     tx::TxStatus,
     util::{parse_address, parse_metadata, parse_query_height},
 };
-use hoku_sdk::{
+use recall_sdk::{
     machine::{
         timehub::{PushOptions, Timehub},
         Machine,
@@ -28,7 +28,7 @@ use hoku_sdk::{
     network::NetworkConfig,
     TxParams,
 };
-use hoku_signer::{
+use recall_signer::{
     key::{parse_secret_key, SecretKey},
     AccountKind, Void, Wallet,
 };
@@ -63,7 +63,7 @@ enum TimehubCommands {
 #[derive(Clone, Debug, Args)]
 struct TimehubCreateArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Timehub owner address.
     /// The owner defaults to the signer if not specified.
@@ -79,7 +79,7 @@ struct TimehubCreateArgs {
 #[derive(Clone, Debug, Args)]
 struct TimehubPushArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Timehub machine address.
     #[arg(short, long, value_parser = parse_address)]
@@ -88,7 +88,7 @@ struct TimehubPushArgs {
     #[clap(default_value = "-")]
     input: FileOrStdin,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,

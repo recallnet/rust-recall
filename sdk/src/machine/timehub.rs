@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_ipld_encoding::{self, BytesSer, RawBytes},
     fvm_shared::address::Address,
     message::{local_message, GasParams},
@@ -20,7 +20,7 @@ use hoku_provider::{
     tx::{BroadcastMode, TxResult},
     Client, Provider,
 };
-use hoku_signer::Signer;
+use recall_signer::Signer;
 
 use crate::machine::{deploy_machine, Machine};
 

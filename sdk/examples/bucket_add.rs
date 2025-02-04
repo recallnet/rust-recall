@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashMap;
@@ -9,15 +9,15 @@ use rand::{thread_rng, Rng};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
-use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_sdk::{
+use recall_provider::json_rpc::JsonRpcProvider;
+use recall_sdk::{
     machine::{
         bucket::{AddOptions, Bucket, GetOptions, QueryOptions},
         Machine,
     },
     network::Network,
 };
-use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
+use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

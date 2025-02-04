@@ -1,9 +1,9 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-//! # Hoku Provider
+//! # Recall Provider
 //!
-//! A chain and object provider for Hoku.
+//! A chain and object provider for Recall.
 
 pub mod json_rpc;
 pub mod message;

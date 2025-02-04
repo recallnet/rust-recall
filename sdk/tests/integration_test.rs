@@ -1,21 +1,22 @@
 use anyhow::anyhow;
-use hoku_signer::Signer;
 use more_asserts::{assert_gt, assert_lt};
 use rand::{thread_rng, Rng};
+use recall_signer::Signer;
 use std::collections::HashMap;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 mod common;
-use hoku_provider::fvm_shared::econ::TokenAmount;
-use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
-use hoku_sdk::{
+use recall_provider::{fvm_shared::econ::TokenAmount, json_rpc::JsonRpcProvider};
+use recall_sdk::{
     account::Account,
     ipc::subnet::EVMSubnet,
-    machine::{bucket::Bucket, Machine},
+    machine::{
+        bucket::{AddOptions, Bucket, GetOptions, QueryOptions},
+        Machine,
+    },
 };
-use hoku_signer::{key::parse_secret_key, AccountKind, Wallet};
+use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
 
 // TODO: remove the ignore once we have CI setup
 #[tokio::test]
@@ -80,7 +81,7 @@ async fn can_deposit() {
         Err(e) => panic!("transaction failed {}", e),
     };
 
-    println!("Deposited 1 HOKU to {}", signer.eth_address().unwrap());
+    println!("Deposited 1 RECALL to {}", signer.eth_address().unwrap());
     println!(
         "Transaction hash: 0x{}",
         hex::encode(tx.transaction_hash.to_fixed_bytes())

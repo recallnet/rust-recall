@@ -1,11 +1,11 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use hoku_provider::json_rpc::JsonRpcProvider;
-use hoku_sdk::{network::NetworkConfig, storage::Storage};
+use recall_provider::json_rpc::JsonRpcProvider;
+use recall_sdk::{network::NetworkConfig, storage::Storage};
 
 use crate::{get_address, print_json, AddressArgs};
 

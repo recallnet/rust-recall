@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::time::Duration;
@@ -8,19 +8,19 @@ use clap::{Args, Subcommand};
 use reqwest::Url;
 use serde_json::json;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_shared::{address::Address, econ::TokenAmount},
     json_rpc::JsonRpcProvider,
     util::{get_eth_address, parse_address, parse_token_amount},
 };
-use hoku_sdk::{
+use recall_sdk::{
     account::{Account, SetSponsorOptions},
     credits::Credits,
     ipc::subnet::EVMSubnet,
     network::{NetworkConfig, ParentNetworkConfig},
     TxParams,
 };
-use hoku_signer::{
+use recall_signer::{
     key::{parse_secret_key, random_secretkey, SecretKey},
     AccountKind, EthAddress, Signer, SubnetID, Void, Wallet,
 };
@@ -95,7 +95,7 @@ struct InfoArgs {
 #[derive(Clone, Debug, Args)]
 struct FundArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
@@ -110,7 +110,7 @@ struct FundArgs {
 #[derive(Clone, Debug, Args)]
 struct TransferArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The recipient account address.
     #[arg(long, value_parser = parse_address)]
@@ -125,13 +125,13 @@ struct TransferArgs {
 #[derive(Clone, Debug, Args)]
 struct SetSponsorArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Credit sponsor address.
     #[arg(value_parser = parse_address)]
     sponsor: Address,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -140,10 +140,10 @@ struct SetSponsorArgs {
 #[derive(Clone, Debug, Args)]
 struct UnsetSponsorArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,

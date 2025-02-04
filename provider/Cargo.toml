@@ -1,6 +1,6 @@
 [package]
-name = "hoku_provider"
-description = "A chain and object provider for Hoku."
+name = "recall_provider"
+description = "A chain and object provider for Recall."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true

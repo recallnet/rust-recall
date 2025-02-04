@@ -1,9 +1,9 @@
-# Hoku SDK
+# Recall SDK
 
-[![License](https://img.shields.io/github/license/hokunet/rust-hoku.svg)](../LICENSE)
+[![License](https://img.shields.io/github/license/recallnet/rust-recall.svg)](../LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
 
-> Hoku SDK
+> Recall SDK
 
 <!-- omit from toc -->
 
@@ -18,7 +18,7 @@
 
 ## Background
 
-Hoku SDK is a library for managing your account and data machines.
+Recall SDK is a library for managing your account and data machines.
 
 - _Machine manager_:
   This singleton machine is responsible for creating new buckets and/or timehubs.
@@ -36,13 +36,13 @@ Read more about data machines [here](../README.md).
 
 The SDK consists of the following crates:
 
-- [`hoku_provider`](../provider): A chain and object provider for Hoku.
-- [`hoku_signer`](../signer): A transaction signer for Hoku.
+- [`recall_provider`](../provider): A chain and object provider for Recall.
+- [`recall_signer`](../signer): A transaction signer for Recall.
   This crate has a built-in [wallet](../signer/src/wallet.rs) signer implementation that relies on a local private key
   to sign messages.
-- [`hoku_sdk`](.): The top-level user interface for managing Hoku object storage and timehubs.
+- [`recall_sdk`](.): The top-level user interface for managing Recall object storage and timehubs.
 
-The `hoku` crates haven't been published yet, but you can read the Cargo docs by building them locally from the repo
+The `recall` crates haven't been published yet, but you can read the Cargo docs by building them locally from the repo
 root.
 
 ```shell
@@ -52,22 +52,22 @@ make doc
 
 ### Prerequisites
 
-All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use Hoku network.
+All data is signed onchain as transactions, so you'll need to set up an account (ECDSA, secp256k1) to use Recall network.
 For example, any EVM-compatible wallet will work, or you can run
 the [`account_deposit.rs`](./examples/account_deposit.rs) example to create a private key for you.
 
-Then, make sure your account is funded with HOKU, so you can pay to execute a transaction (you can use the
+Then, make sure your account is funded with RECALL, so you can pay to execute a transaction (you can use the
 faucet [here](https://faucet.calibnet.chainsafe-fil.io/funds.html)).
 Follow the [examples](./examples) to get up and running.
 
 ## Usage
 
 Checkout the SDK [examples](./examples).
-The `hoku` crates haven't been published yet, but you can use `hoku_sdk` as a git dependencies.
+The `recall` crates haven't been published yet, but you can use `recall_sdk` as a git dependencies.
 
 ```toml
 [dependencies]
-hoku_sdk = { git = "https://github.com/hokunet/rust-hoku.git" }
+recall_sdk = { git = "https://github.com/recallnet/rust-recall.git" }
 ```
 
 > [!NOTE]
@@ -80,7 +80,7 @@ hoku_sdk = { git = "https://github.com/hokunet/rust-hoku.git" }
 > merkle-tree-rs = { git = "https://github.com/consensus-shipyard/merkle-tree-rs.git", branch = "dev" }
 > ```
 
-This issue will be fixed when the `hoku` crates get published soon.
+This issue will be fixed when the `recall` crates get published soon.
 
 ## Contributing
 
@@ -91,4 +91,4 @@ the [standard-readme](https://github.com/RichardLitt/standard-readme) specificat
 
 ## License
 
-MIT OR Apache-2.0, © 2024 Hoku Contributors
+MIT OR Apache-2.0, © 2025 Recall Contributors

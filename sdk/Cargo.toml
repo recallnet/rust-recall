@@ -1,6 +1,6 @@
 [package]
-name = "hoku_sdk"
-description = "The top-level user interface for managing Hoku object storage and timehubs."
+name = "recall_sdk"
+description = "The top-level user interface for managing Recall object storage and timehubs."
 authors.workspace = true
 edition.workspace = true
 homepage.workspace = true
@@ -45,8 +45,8 @@ fendermint_vm_actor_interface = { workspace = true }
 ipc_actors_abis = { workspace = true }
 ipc-api = { workspace = true }
 
-hoku_provider = { path = "../provider" }
-hoku_signer = { path = "../signer" }
+recall_provider = { path = "../provider" }
+recall_signer = { path = "../signer" }
 more-asserts = "0.3.1"
 
 [dev-dependencies]

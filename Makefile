@@ -12,7 +12,7 @@ test:
 	cargo test --locked --workspace
 
 doc:
-	cargo doc --locked --no-deps --workspace --exclude hoku_cli --open
+	cargo doc --locked --no-deps --workspace --exclude recall_cli --open
 
 clean:
 	cargo clean

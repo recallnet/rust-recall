@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::sync::Arc;
@@ -7,7 +7,9 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use tokio::sync::Mutex;
 
-use hoku_provider::{
+use crate::signer::{EthAddress, Signer};
+use crate::SubnetID;
+use recall_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
     message::{ChainMessage, GasParams, Message, OriginKind, SignedMessage},
@@ -15,9 +17,6 @@ use hoku_provider::{
     tx::{BroadcastMode, DeliverTx, TxResult},
     Client, Provider,
 };
-
-use crate::signer::{EthAddress, Signer};
-use crate::SubnetID;
 
 pub use fendermint_crypto::SecretKey;
 
@@ -191,7 +190,7 @@ mod tests {
 
     use super::*;
     use async_trait::async_trait;
-    use hoku_provider::query::{FvmQuery, FvmQueryHeight};
+    use recall_provider::query::{FvmQuery, FvmQueryHeight};
     use tendermint_rpc::endpoint::abci_query::AbciQuery;
 
     struct MockQueryProvider;

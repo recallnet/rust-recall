@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashSet;
@@ -6,17 +6,17 @@ use std::collections::HashSet;
 use clap::{Args, Subcommand};
 use serde_json::json;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
     json_rpc::JsonRpcProvider,
     util::{parse_address, parse_credit_amount, parse_token_amount, parse_token_amount_from_atto},
 };
-use hoku_sdk::{
+use recall_sdk::{
     credits::{ApproveOptions, BuyOptions, Credit, Credits, RevokeOptions},
     network::NetworkConfig,
     TxParams,
 };
-use hoku_signer::{
+use recall_signer::{
     key::{parse_secret_key, SecretKey},
     AccountKind, Signer, Wallet,
 };
@@ -57,16 +57,16 @@ struct BalanceArgs {
 #[derive(Clone, Debug, Args)]
 struct BuyArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The recipient account address. If not present, the signer address is used.
     #[arg(long, value_parser = parse_address)]
     to: Option<Address>,
-    /// The amount of HOKU to spend.
+    /// The amount of RECALL to spend.
     #[arg(value_parser = parse_token_amount)]
     amount: TokenAmount,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -75,7 +75,7 @@ struct BuyArgs {
 #[derive(Clone, Debug, Args)]
 struct ApproveArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
@@ -100,7 +100,7 @@ struct ApproveArgs {
     #[arg(long)]
     ttl: Option<ChainEpoch>,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
@@ -109,7 +109,7 @@ struct ApproveArgs {
 #[derive(Clone, Debug, Args)]
 struct RevokeArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
-    #[arg(short, long, env = "HOKU_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The receiver account address.
     #[arg(long, value_parser = parse_address)]
@@ -119,7 +119,7 @@ struct RevokeArgs {
     #[arg(long, value_parser = parse_address)]
     caller: Option<Address>,
     /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "HOKU_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,

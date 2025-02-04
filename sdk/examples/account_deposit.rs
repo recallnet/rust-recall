@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::env;
@@ -6,9 +6,9 @@ use std::env;
 use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
 
-use hoku_provider::fvm_shared::econ::TokenAmount;
-use hoku_sdk::{account::Account, network::Network};
-use hoku_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
+use recall_provider::fvm_shared::econ::TokenAmount;
+use recall_sdk::{account::Account, network::Network};
+use recall_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -20,9 +20,9 @@ async fn main() -> anyhow::Result<()> {
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
-    // Note: The debit account _must_ hold at least 1 Calibration HOKU for the deposit
+    // Note: The debit account _must_ hold at least 1 Calibration RECALL for the deposit
     // plus enough to cover the transaction fee.
-    // Go to the faucet at https://faucet.calibnet.chainsafe-fil.io/ to get yourself some HOKU.
+    // Go to the faucet at https://faucet.calibnet.chainsafe-fil.io/ to get yourself some RECALL.
     let cfg = Network::Testnet.get_config();
 
     // Setup local wallet using private key from arg
@@ -41,7 +41,7 @@ async fn main() -> anyhow::Result<()> {
     .await?;
 
     println!(
-        "Deposited 1 HOKU to {}",
+        "Deposited 1 RECALL to {}",
         signer.eth_address()?.encode_hex_with_prefix()
     );
     println!(

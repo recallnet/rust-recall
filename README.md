@@ -1,9 +1,9 @@
-# Rust Hoku
+# Rust Recall
 
-[![License](https://img.shields.io/github/license/hokunet/rust-hoku.svg)](./LICENSE)
+[![License](https://img.shields.io/github/license/recallnet/rust-recall.svg)](./LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg)](https://github.com/RichardLitt/standard-readme)
 
-> Rust interfaces & tooling for Hoku
+> Rust interfaces & tooling for Recall
 
 ## Table of Contents
 
@@ -28,27 +28,27 @@
 - [License](#license)
 
 > [!CAUTION]
-> Hoku is currently an alpha testnet, and the network is subject to fortnightly changes with rolling updates.
+> Recall is currently an alpha testnet, and the network is subject to fortnightly changes with rolling updates.
 > Please be aware that the network may be reset at any time, and **data may be deleted every two weeks**.
 > A more stable testnet will be released in the future that won't have this limitation.
 
 ## Background
 
-Hoku is a decentralized data layer, enabled by subnets that are purpose built for onchain data storage.
+Recall is a decentralized data layer, enabled by subnets that are purpose built for onchain data storage.
 It is built on top of the Filecoin Virtual Machine (FVM) and provides a horizontally scalable, verifiable, and
 cost-effective data availability layer for onchain applications, networks (e.g., DePINs), and services.
 The first _data Layer 2 (L2)_.
 A handful of specialized "machines" for bucket storage and data anchoring
-power the Hoku's featured data services.
+power the Recall's featured data services.
 
 ### Architecture
 
-Hoku is developed using the Filecoin [InterPlanetary Consensus (IPC) framework](https://docs.ipc.space/). IPC is a
+Recall is developed using the Filecoin [InterPlanetary Consensus (IPC) framework](https://docs.ipc.space/). IPC is a
 blockchain scaling solution and architectural design that is an alternative to existing L2 scaling solutions and
 based on the design principles of on-demand horizontal scaling.
 
 <p align="center">
-  <img src="./img/architecture.png" alt="Hoku Architecture">
+  <img src="./img/architecture.png" alt="Recall Architecture">
 </p>
 
 #### IPC & subnets
@@ -63,12 +63,12 @@ responsible for the security of the child subnet, and the child subnet is respon
 transitions.
 
 > [!NOTE]
-> Hoku is currently a single child subnet rooted in its parent Filecoin Calibration testnet. Future versions of
-> Hoku will align more closely with IPC's permissionless subnet spawning and configurable consensus mechanisms.
+> Recall is currently a single child subnet rooted in its parent Filecoin Calibration testnet. Future versions of
+> Recall will align more closely with IPC's permissionless subnet spawning and configurable consensus mechanisms.
 
 #### CometBFT & state replication
 
-[CometBFT](https://docs.cometbft.com/v0.38/) (formerly known as _Tendermint_) helps Hoku achieve state machine
+[CometBFT](https://docs.cometbft.com/v0.38/) (formerly known as _Tendermint_) helps Recall achieve state machine
 replication across all nodes in the network. Its consensus algorithm is based on a variant of Practical Byzantine Fault
 Tolerance (PBFT) and relies on a round-robin proposer selection mechanism, while incorporating elements that improve on
 PBFT's performance and communication overhead. It is a fast, battled-tested, and well-designed consensus engine.
@@ -79,7 +79,7 @@ like the Ethereum JSON RPC API.
 
 #### ABCI & Fendermint
 
-Hoku's blockchain functionality is exposed as a unified ABCI++ application controlled by CometBFT.
+Recall's blockchain functionality is exposed as a unified ABCI++ application controlled by CometBFT.
 
 [Application Blockchain Interfaces (ABCI)](https://docs.cometbft.com/v0.38/spec/abci/) programs are an interface between
 CometBFT and the actual state machine being replicated. That is, ABCIs implement deterministic state machines to be
@@ -87,7 +87,7 @@ securely replicated by the CometBFT consensus engine. The "++" in ABCI++ refers 
 CometBFT enables compared to the original ABCI, which helps improve the overall scalability and feature surface area.
 
 Fendermint is a specialized ABCI++ interface to the Filecoin Virtual Machines (FVM) and Ethereum-compatible FEVM. It
-exposes FEVM/FVM-specific functionality within subnets, allowing Hoku subnets to behave like Filecoin but with custom
+exposes FEVM/FVM-specific functionality within subnets, allowing Recall subnets to behave like Filecoin but with custom
 parameters to greatly improve throughput and features. Fendermint is also a standalone process that includes:
 
 - **Interpreters:** Responsible for handling commands from CometBFT.
@@ -98,14 +98,14 @@ parameters to greatly improve throughput and features. Fendermint is also a stan
 #### Consensus
 
 Checkpoints that reference subset state are pushed to the parent subnet in a bottom-up fashion, which is essential for
-the parent to validate the state transitions of the child. Hoku passes checkpointed headers to its parent and uses
-the CometBFT ledger to gather relevant signatures and data. Additionally, Hoku can contact the IPLD resolver & store
+the parent to validate the state transitions of the child. Recall passes checkpointed headers to its parent and uses
+the CometBFT ledger to gather relevant signatures and data. Additionally, Recall can contact the IPLD resolver & store
 to read and write data to its internal state so that it is IPLD addressable. There is also a _top-down_ sync action;
 subnets must have a view of their parent's finality, which includes the latest block hash, power table information,
 and (in the future) cross-subnetmessage passing.
 
-In general, data is represented as CIDs onchain (within a Hoku machine's state), and the actual data is stored offchain
-in a node's local (networked) block store. Hoku uses the concept of a _detached payload_ asynchronous sync mechanism,
+In general, data is represented as CIDs onchain (within a Recall machine's state), and the actual data is stored offchain
+in a node's local (networked) block store. Recall uses the concept of a _detached payload_ asynchronous sync mechanism,
 which is a transaction that includes a CID reference to an object, but does not include the object data itself. When a
 detached payload is added to the chain, validators are required to download the object data from the network and verify
 that it matches the CID reference. This ensures that all validators have a copy of the object data and can verify the
@@ -122,10 +122,10 @@ then finally during execution of this transaction, the object is marked as `reso
 
 ### Machines (smart contracts)
 
-Hoku's core functionality is enabled with a series of data machines, which are synonymous with smart contracts or
+Recall's core functionality is enabled with a series of data machines, which are synonymous with smart contracts or
 "actors" that run on the FVM and are used to manage, query, and update the state of the subnet. The FVM is responsible
-for executing the logic of Hoku protocol, including processing transactions, updating account balances, and managing
-the state of the network. There are three primary machines in Hoku:
+for executing the logic of Recall protocol, including processing transactions, updating account balances, and managing
+the state of the network. There are three primary machines in Recall:
 
 - Machine manager
 - Bucket machines
@@ -167,12 +167,12 @@ CID summary in its on-chain state.
 ### Accounts
 
 Accounts (ECDSA, secp256k1) are used to send data-carrying transactions as you would on any blockchain system. Since
-Hoku is built on top of Filecoin's FVM, the addresses follow a _slightly_ different convention than a purely EVM-based
+Recall is built on top of Filecoin's FVM, the addresses follow a _slightly_ different convention than a purely EVM-based
 account system. Here's a quick primer:
 
 - Addresses are prefixed with a network identifier: `t` for Filecoin testnet, or `f` for Filecoin mainnet, and there are
   five different address types denoted by the second character in the address string: `t0`/`f0` to `t4`/`f4`.
-- If you're coming from the EVM world, you'll mostly see two types in Hoku:
+- If you're coming from the EVM world, you'll mostly see two types in Recall:
   - `t2`/`f2`: Any FVM-native contract that gets deployed, such as the bucket and timehub machines.
   - `t4`/`f4`: A namespaced contract address, and `t410`/`f410` is a specifalized namespace for Ethereum-compatible
     addresses (wallets _and_ smart contracts) on the FVM.
@@ -180,7 +180,7 @@ account system. Here's a quick primer:
   is [encoded in the FVM address string](https://docs.filecoin.io/smart-contracts/filecoin-evm-runtime/address-types#converting-to-a-0x-style-address).
 
 Once your EVM-style account is registered on a subnet, the `0x` and its corresponding `t410...`/`f410...` addresses can
-be used interchangeably on Filecoin and all Hoku subnets.
+be used interchangeably on Filecoin and all Recall subnets.
 
 ### Access control
 
@@ -204,7 +204,7 @@ Here's a quick overview of each:
 
 ## Usage
 
-Hoku comes with both a CLI and Rust SDK that expose the core network interfaces.
+Recall comes with both a CLI and Rust SDK that expose the core network interfaces.
 You can find detailed instructions for each of these in their respective subdirectories:
 
 - CLI: [here](./cli/README.md)
@@ -212,24 +212,24 @@ You can find detailed instructions for each of these in their respective subdire
 
 ### Chain RPCs & funds
 
-Since Hoku is built on top of Filecoin, you must have HOKU in your account to interact with the network. Hoku is
-currently only live on the Filecoin Calibration network, so you can get tHOKU via the
+Since Recall is built on top of Filecoin, you must have RECALL in your account to interact with the network. Recall is
+currently only live on the Filecoin Calibration network, so you can get tRECALL via the
 faucet [here](https://faucet.calibnet.chainsafe-fil.io/funds.html). For reference, Filecoin chain information can be
 found [here](https://chainlist.org/?search=filecoin&testnets=true).
 
 ### Limits
 
-There are a few limitations and behaviors of which to be aware when using the Hoku network:
+There are a few limitations and behaviors of which to be aware when using the Recall network:
 
 - The maximum size for a single object is 5 GB.
-- The current throughput of Hoku is hundreds of transactions per second (TPS) (note: this is an estimate and may
+- The current throughput of Recall is hundreds of transactions per second (TPS) (note: this is an estimate and may
   vary based on network conditions. The node design is still under heavy development, and optimizations are being made).
 
 ## Development
 
 When developing against a local network, be sure to set the `--network` (or `NETWORK`) to `devnet`. This presumes you
-have a local-only setup running, provided by the [`ipc`](https://github.com/hokunet/ipc) repo and custom
-contracts in [`builtin-actors`](https://github.com/hokunet/builtin-actors).
+have a local-only setup running, provided by the [`ipc`](https://github.com/recallnet/ipc) repo and custom
+contracts in [`builtin-actors`](https://github.com/recallnet/builtin-actors).
 
 All the available commands include:
 
@@ -251,4 +251,4 @@ the [standard-readme](https://github.com/RichardLitt/standard-readme) specificat
 
 ## License
 
-MIT OR Apache-2.0, © 2024 Hoku Contributors
+MIT OR Apache-2.0, © 2025 Recall Contributors

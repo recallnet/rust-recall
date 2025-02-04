@@ -59,7 +59,7 @@ jobs:
       - name: Restore git global config
         if: always()
         run: |
-          MATCH=$(grep -o 'git@key-[^"]*\.github\.com:hokunet/rust-hoku' ~/.gitconfig || true)
+          MATCH=$(grep -o 'git@key-[^"]*\.github\.com:recallnet/rust-recall' ~/.gitconfig || true)
           if [ -n "$MATCH" ]; then
             echo "removing key from global gitconfig"
             git config --global --remove-section "url.${MATCH}"

@@ -1,4 +1,4 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
@@ -11,7 +11,7 @@ use anyhow::anyhow;
 use fnv::FnvHasher;
 use ipc_api::{error::Error, subnet_id::MAX_CHAIN_ID};
 
-use hoku_provider::{fvm_shared::chainid::ChainID, util::parse_address};
+use recall_provider::{fvm_shared::chainid::ChainID, util::parse_address};
 
 fn hash(bytes: &[u8]) -> u64 {
     let mut hasher = FnvHasher::default();

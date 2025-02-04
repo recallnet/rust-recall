@@ -1,14 +1,15 @@
-// Copyright 2024 Hoku Contributors
+// Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
 use fendermint_actor_blobs_shared::params::GetAccountParams;
 use fendermint_actor_blobs_shared::Method::{GetAccount, GetStats};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
+
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
-use hoku_provider::{
+use recall_provider::{
     fvm_ipld_encoding,
     fvm_shared::address::Address,
     message::{local_message, RawBytes},
@@ -17,12 +18,12 @@ use hoku_provider::{
 };
 
 // Commands to support:
-//   ✓ hoku storage stats (subnet-wide summary)
-//   ✓ hoku storage usage --address (see usage by account)
-//   hoku storage add (add a blob directly)
-//   hoku storage get [hash] (get a blob info directly)
-//   hoku storage cat [hash] (get a blob directly)
-//   hoku storage ls --address (list blobs by account)
+//   ✓ recall storage stats (subnet-wide summary)
+//   ✓ recall storage usage --address (see usage by account)
+//   recall storage add (add a blob directly)
+//   recall storage get [hash] (get a blob info directly)
+//   recall storage cat [hash] (get a blob directly)
+//   recall storage ls --address (list blobs by account)
 
 /// Storage usage stats for an account.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -83,7 +84,7 @@ impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for StorageStat
     }
 }
 
-/// A static wrapper around Hoku storage methods.
+/// A static wrapper around Recall storage methods.
 pub struct Storage {}
 
 impl Storage {
