@@ -196,9 +196,8 @@ impl Bucket {
         msg_bar.set_message("Starting upload to server...");
 
         let stream = ReaderStream::with_capacity(reader, 64 * 1024).map(move |result| {
-            result.map(|chunk| {
+            result.inspect(|chunk| {
                 upload_progress.inc(chunk.len() as u64);
-                chunk
             })
         });
 
