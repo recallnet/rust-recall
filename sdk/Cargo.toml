@@ -15,7 +15,6 @@ autoexamples = true
 anyhow = { workspace = true }
 async-tempfile = { workspace = true }
 async-trait = { workspace = true }
-base64 = { workspace = true }
 bytes = { workspace = true }
 cid = { workspace = true }
 console = { workspace = true }
@@ -47,7 +46,7 @@ ipc-api = { workspace = true }
 
 recall_provider = { path = "../provider" }
 recall_signer = { path = "../signer" }
-more-asserts = "0.3.1"
 
 [dev-dependencies]
 hex = { workspace = true }
+more-asserts = { workspace = true }

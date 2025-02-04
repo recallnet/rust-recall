@@ -42,6 +42,7 @@ indicatif = "0.17.8"
 infer = "0.16.0"
 iroh = "0.28.1"
 lazy_static = "1.4.0"
+more-asserts = "0.3.1"
 num-traits = "0.2.18"
 peekable = { version = "0.2.3", features = ["tokio"] }
 prost = "0.11.9"

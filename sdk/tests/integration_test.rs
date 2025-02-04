@@ -1,12 +1,15 @@
+// Copyright 2025 Recall Contributors
+// SPDX-License-Identifier: Apache-2.0, MIT
+
+use std::collections::HashMap;
+
 use anyhow::anyhow;
 use more_asserts::{assert_gt, assert_lt};
 use rand::{thread_rng, Rng};
 use recall_signer::Signer;
-use std::collections::HashMap;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
-mod common;
 use recall_provider::{fvm_shared::econ::TokenAmount, json_rpc::JsonRpcProvider};
 use recall_sdk::{
     account::Account,
@@ -17,6 +20,8 @@ use recall_sdk::{
     },
 };
 use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
+
+mod common;
 
 // TODO: remove the ignore once we have CI setup
 #[tokio::test]

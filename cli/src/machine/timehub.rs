@@ -12,12 +12,12 @@ use ethers::utils::hex::ToHexExt;
 use serde_json::{json, Value};
 use tokio::io::AsyncReadExt;
 
-use recall_provider::util::get_eth_address;
 use recall_provider::{
     fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
     query::FvmQueryHeight,
     tx::TxStatus,
+    util::get_eth_address,
     util::{parse_address, parse_metadata, parse_query_height},
 };
 use recall_sdk::{
