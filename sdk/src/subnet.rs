@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use fendermint_actor_blobs_shared::state::TokenCreditRate;
-use fendermint_actor_hoku_config_shared::Method::{GetConfig, SetConfig};
-use fendermint_actor_hoku_config_shared::{HokuConfig, SetConfigParams};
-use fendermint_vm_actor_interface::hoku_config::HOKU_CONFIG_ACTOR_ADDR;
+use fendermint_actor_recall_config_shared::Method::{GetConfig, SetConfig};
+use fendermint_actor_recall_config_shared::{RecallConfig, SetConfigParams};
+use fendermint_vm_actor_interface::recall_config::RECALL_CONFIG_ACTOR_ADDR;
 use tendermint::chain;
 
 use hoku_provider::{
@@ -65,7 +65,7 @@ impl Subnet {
         signer
             .send_transaction(
                 provider,
-                HOKU_CONFIG_ACTOR_ADDR,
+                RECALL_CONFIG_ACTOR_ADDR,
                 Default::default(),
                 SetConfig as u64,
                 params,
@@ -79,8 +79,12 @@ impl Subnet {
     pub async fn get_config(
         provider: &impl QueryProvider,
         height: FvmQueryHeight,
-    ) -> anyhow::Result<HokuConfig> {
-        let message = local_message(HOKU_CONFIG_ACTOR_ADDR, GetConfig as u64, Default::default());
+    ) -> anyhow::Result<RecallConfig> {
+        let message = local_message(
+            RECALL_CONFIG_ACTOR_ADDR,
+            GetConfig as u64,
+            Default::default(),
+        );
         let response = provider.call(message, height, decode_as).await?;
         Ok(response.value)
     }
