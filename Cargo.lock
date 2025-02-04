@@ -3836,6 +3836,7 @@ dependencies = [
  "tendermint",
  "tokio",
  "tokio-stream",
+ "tokio-util",
 ]
 
 [[package]]

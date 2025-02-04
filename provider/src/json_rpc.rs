@@ -24,7 +24,7 @@ use tendermint_rpc::{
 pub use tendermint_rpc::{HttpClient, Url};
 
 use crate::message::{serialize, ChainMessage};
-use crate::object::{Hash as IrohHash, NodeAddr, ObjectProvider};
+use crate::object::{NodeAddr, ObjectProvider, UploadResponse};
 use crate::query::{FvmQuery, FvmQueryHeight, QueryProvider};
 use crate::tx::{BroadcastMode, TxProvider, TxResult};
 use crate::{Provider, TendermintClient};
@@ -244,27 +244,19 @@ where
         Ok(addr)
     }
 
-    async fn upload(
-        &self,
-        hash: IrohHash,
-        source: NodeAddr,
-        size: u64,
-        msg: String,
-        chain_id: u64,
-    ) -> anyhow::Result<reqwest::Response> {
+    async fn upload(&self, body: reqwest::Body, size: u64) -> anyhow::Result<UploadResponse> {
         let client = self
             .objects
             .clone()
             .ok_or_else(|| anyhow!("object provider is required"))?;
 
-        let form = Form::new()
-            .text("chain_id", chain_id.to_string())
-            .text("msg", msg)
-            .text("hash", hash.to_string())
-            .text("size", size.to_string())
-            .text("source", serde_json::to_string(&source)?);
-
         let url = format!("{}v1/objects", client.url);
+        let form = Form::new().text("size", size.to_string()).part(
+            "data",
+            reqwest::multipart::Part::stream_with_length(body, size)
+                .mime_str("application/octet-stream")?,
+        );
+
         let response = client.inner.post(url).multipart(form).send().await?;
         if !response.status().is_success() {
             return Err(anyhow!(format!(
@@ -272,8 +264,8 @@ where
                 response.text().await?
             )));
         }
-
-        Ok(response)
+        let upload_response: UploadResponse = response.json().await?;
+        Ok(upload_response)
     }
 
     async fn download(

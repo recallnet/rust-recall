@@ -78,27 +78,6 @@ pub fn local_message(to: Address, method_num: MethodNum, params: RawBytes) -> Me
     }
 }
 
-/// Convenience method to create a local unsigned read-only object-carrying message.
-pub fn object_upload_message(
-    from: Address,
-    to: Address,
-    method_num: MethodNum,
-    params: RawBytes,
-) -> Message {
-    Message {
-        version: Default::default(),
-        from,
-        to,
-        sequence: 0,
-        value: Default::default(),
-        method_num,
-        params,
-        gas_limit: Default::default(),
-        gas_fee_cap: Default::default(),
-        gas_premium: Default::default(),
-    }
-}
-
 /// Convenience method to serialize a [`ChainMessage`] for inclusion in a Tendermint transaction.
 pub fn serialize(message: &ChainMessage) -> anyhow::Result<Vec<u8>> {
     Ok(fvm_ipld_encoding::to_vec(message)?)
