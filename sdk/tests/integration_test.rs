@@ -80,7 +80,7 @@ async fn can_deposit() {
         Err(e) => panic!("transaction failed {}", e),
     };
 
-    println!("Deposited 1 HOKU to {}", signer.eth_address().unwrap());
+    println!("Deposited 1 RECALL to {}", signer.eth_address().unwrap());
     println!(
         "Transaction hash: 0x{}",
         hex::encode(tx.transaction_hash.to_fixed_bytes())

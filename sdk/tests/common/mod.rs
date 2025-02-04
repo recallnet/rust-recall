@@ -30,12 +30,12 @@ pub fn get_network() -> NetworkConfig {
 }
 
 pub fn get_runner_secret_key() -> String {
-    match env::var("HOKU_PRIVATE_KEY") {
+    match env::var("RECALL_PRIVATE_KEY") {
         Ok(sk) => sk,
         Err(e) => panic!("cannot get secret key for test runner {}", e),
     }
 }
 
 pub fn get_runner_auth_token() -> String {
-    env::var("HOKU_AUTH_TOKEN").unwrap_or_default()
+    env::var("RECALL_AUTH_TOKEN").unwrap_or_default()
 }
