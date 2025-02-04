@@ -7,13 +7,14 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 mod common;
-use recall_provider::fvm_shared::econ::TokenAmount;
-use recall_provider::json_rpc::JsonRpcProvider;
-use recall_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
+use recall_provider::{fvm_shared::econ::TokenAmount, json_rpc::JsonRpcProvider};
 use recall_sdk::{
     account::Account,
     ipc::subnet::EVMSubnet,
-    machine::{bucket::Bucket, Machine},
+    machine::{
+        bucket::{AddOptions, Bucket, GetOptions, QueryOptions},
+        Machine,
+    },
 };
 use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
 

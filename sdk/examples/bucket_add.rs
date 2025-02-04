@@ -10,9 +10,11 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
 use recall_provider::json_rpc::JsonRpcProvider;
-use recall_sdk::machine::bucket::{AddOptions, GetOptions, QueryOptions};
 use recall_sdk::{
-    machine::{bucket::Bucket, Machine},
+    machine::{
+        bucket::{AddOptions, Bucket, GetOptions, QueryOptions},
+        Machine,
+    },
     network::Network,
 };
 use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
