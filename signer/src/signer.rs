@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use async_trait::async_trait;
+
 use recall_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, crypto::signature::Signature, econ::TokenAmount, MethodNum},
@@ -38,7 +39,7 @@ pub trait Signer: Clone + Send + Sync {
     /// This is used to derive a chain ID associated with a message.
     fn subnet_id(&self) -> Option<SubnetID>;
 
-    /// Returns a [`ChainMessage`] that can be submitted to a provider.
+    /// Signs and submits a transaction to a provider, returning a [`TxResult`].
     #[allow(clippy::too_many_arguments)]
     async fn send_transaction<
         C: Client + Send + Sync,

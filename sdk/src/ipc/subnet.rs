@@ -3,9 +3,9 @@
 
 use std::time::Duration;
 
-use recall_provider::fvm_shared::address::Address;
 use reqwest::Url;
 
+use recall_provider::fvm_shared::address::Address;
 use recall_signer::SubnetID;
 
 /// The EVM subnet config parameters.

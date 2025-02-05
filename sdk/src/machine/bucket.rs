@@ -3,10 +3,6 @@
 
 use std::path::Path;
 use std::{cmp::min, collections::HashMap, str::FromStr};
-use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
-use tokio::time::Instant;
-use tokio_stream::StreamExt;
-use tokio_util::io::ReaderStream;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
@@ -22,6 +18,10 @@ use infer::Type;
 use iroh::blobs::Hash as IrohHash;
 use peekable::tokio::AsyncPeekable;
 use tendermint::abci::response::DeliverTx;
+use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
+use tokio::time::Instant;
+use tokio_stream::StreamExt;
+use tokio_util::io::ReaderStream;
 
 use recall_provider::{
     fvm_ipld_encoding,
@@ -342,10 +342,7 @@ impl Bucket {
             object.hash, object.size
         ));
 
-        let object_size = provider
-            .size(self.address, key, options.height.into())
-            .await?;
-        let pro_bar = bars.add(new_progress_bar(object_size));
+        let pro_bar = bars.add(new_progress_bar(object.size));
         let response = provider
             .download(self.address, key, options.range, options.height.into())
             .await?;
@@ -355,7 +352,7 @@ impl Bucket {
             match item {
                 Ok(chunk) => {
                     writer.write_all(&chunk).await?;
-                    progress = min(progress + chunk.len(), object_size as usize);
+                    progress = min(progress + chunk.len(), object.size as usize);
                     pro_bar.set_position(progress as u64);
                 }
                 Err(e) => {

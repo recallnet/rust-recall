@@ -22,15 +22,12 @@ clap = { workspace = true }
 clap-stdin = { workspace = true }
 ethers = { workspace = true }
 hex = { workspace = true }
-iroh = { workspace = true }
 humantime = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true, features = ["preserve_order"] }
 stderrlog = { workspace = true }
 tokio = { workspace = true }
-tokio-util = { workspace = true }
-tracing = { workspace = true }
 
 recall_provider = { path = "../provider" }
 recall_sdk = { path = "../sdk" }

@@ -48,7 +48,7 @@ impl GasParams {
     /// Sets limits on the gas params.
     ///
     /// Note: Currently a user could set gas_fee_cap to zero.
-    /// See https://github.com/consensus-shipyard/ipc/pull/1185#issuecomment-2549333793.
+    /// See <https://github.com/consensus-shipyard/ipc/pull/1185#issuecomment-2549333793>.
     /// In the meantime, we enforce limits in the client.
     pub fn set_limits(&mut self) {
         let min_gas_fee_cap = TokenAmount::from_atto(MIN_GAS_FEE_CAP);
