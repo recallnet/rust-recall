@@ -132,7 +132,14 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
     match &args.command {
         CreditCommands::Stats(args) => {
             let stats = Credits::stats(&provider, args.address.height).await?;
-            print_json(&json!(stats))
+            print_json(&json!({
+                "balance": stats.balance,
+                "credit_sold": stats.credit_sold,
+                "credit_committed": stats.credit_committed,
+                "credit_debited": stats.credit_debited,
+                "token_credit_rate": stats.token_credit_rate.to_string(),
+                "num_accounts": stats.num_accounts,
+            }))
         }
         CreditCommands::Buy(args) => {
             let broadcast_mode = args.broadcast_mode.get();
