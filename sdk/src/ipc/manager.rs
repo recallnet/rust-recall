@@ -172,7 +172,7 @@ impl EvmManager {
     }
 
     /// Approve the gateway to spend funds on behalf of the user.
-    /// This is required to [`deposit`] work.
+    /// This is required for deposits to work.
     pub async fn approve_gateway(
         signer: &impl Signer,
         subnet: EVMSubnet,
