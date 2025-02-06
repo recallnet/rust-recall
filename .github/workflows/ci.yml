@@ -10,6 +10,10 @@ env:
   CARGO_TERM_COLOR: always
   CARGO_NET_GIT_FETCH_WITH_CLI: true
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: self-hosted
@@ -18,6 +22,7 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: |
+            ${{ secrets.RUST_RECALL_DEPLOY_KEY }}
             ${{ secrets.IPC_DEPLOY_KEY }}
             ${{ secrets.BUILTIN_ACTORS_DEPLOY_KEY }}
             ${{ secrets.CONTRACTS_DEPLOY_KEY }}
@@ -55,12 +60,3 @@ jobs:
 
       - name: Generate documentation
         run: make doc
-
-      - name: Restore git global config
-        if: always()
-        run: |
-          MATCH=$(grep -o 'git@key-[^"]*\.github\.com:recallnet/rust-recall' ~/.gitconfig || true)
-          if [ -n "$MATCH" ]; then
-            echo "removing key from global gitconfig"
-            git config --global --remove-section "url.${MATCH}"
-          fi
