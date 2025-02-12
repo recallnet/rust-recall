@@ -4,7 +4,7 @@
 use std::time::Duration;
 
 use anyhow::anyhow;
-use clap::{Args, Subcommand};
+use clap::{Args, Subcommand, ValueEnum};
 use reqwest::Url;
 use serde_json::json;
 
@@ -14,7 +14,8 @@ use recall_provider::{
     util::{get_eth_address, parse_address, parse_token_amount},
 };
 use recall_sdk::{
-    account::{Account, SetSponsorOptions},
+    account::TtlStatus as SdkTtlStatus,
+    account::{Account, SetSponsorOptions, SetTtlStatusOptions},
     credits::{Balance, Credits},
     ipc::subnet::EVMSubnet,
     network::{NetworkConfig, ParentNetworkConfig},
@@ -51,6 +52,8 @@ enum AccountCommands {
     Sponsor(SponsorCommands),
     /// Credit related commands.
     Credit(CreditArgs),
+    /// Set TTL status related commands.
+    SetTtlStatus(SetTtlStatusArgs),
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -147,6 +150,45 @@ struct UnsetSponsorArgs {
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+pub struct SetTtlStatusArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    private_key: SecretKey,
+    /// Account address.
+    #[arg(long, value_parser = parse_address)]
+    account: Address,
+    /// TTL status to set.
+    #[arg(long)]
+    status: TtlStatus,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
+}
+
+/// The TTL status of an account.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum TtlStatus {
+    /// Default TTL.
+    Default,
+    /// Reduced TTL.
+    Reduced,
+    /// Extended TTL.
+    Extended,
+}
+
+impl TtlStatus {
+    pub fn get(&self) -> SdkTtlStatus {
+        match self {
+            TtlStatus::Default => SdkTtlStatus::Default,
+            TtlStatus::Reduced => SdkTtlStatus::Reduced,
+            TtlStatus::Extended => SdkTtlStatus::Extended,
+        }
+    }
 }
 
 /// Account commands handler.
@@ -316,6 +358,34 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             }
         },
         AccountCommands::Credit(args) => handle_credit(cfg, args).await,
+        AccountCommands::SetTtlStatus(args) => {
+            let broadcast_mode = args.broadcast_mode.get();
+            let TxParams {
+                gas_params,
+                sequence,
+            } = args.tx_args.to_tx_params();
+
+            let mut signer = Wallet::new_secp256k1(
+                args.private_key.clone(),
+                AccountKind::Ethereum,
+                cfg.subnet_id,
+            )?;
+
+            signer.set_sequence(sequence, &provider).await?;
+            let tx = Account::set_ttl_status(
+                &provider,
+                &mut signer,
+                args.account,
+                SetTtlStatusOptions {
+                    status: args.status.get(),
+                    broadcast_mode,
+                    gas_params,
+                },
+            )
+            .await?;
+
+            print_tx_json(&tx)
+        }
     }
 }
 
