@@ -183,7 +183,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                     if e.to_string().contains("actor not found") {
                         Balance::default()
                     } else {
-                        Err(e).unwrap()
+                        panic!("{:?}", e)
                     }
                 });
 
