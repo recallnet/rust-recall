@@ -15,7 +15,7 @@ use recall_provider::{
 };
 use recall_sdk::{
     account::{Account, SetSponsorOptions},
-    credits::Credits,
+    credits::{Balance, Credits},
     ipc::subnet::EVMSubnet,
     network::{NetworkConfig, ParentNetworkConfig},
     TxParams,
@@ -177,7 +177,15 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             )
             .await?;
 
-            let credit_balance = Credits::balance(&provider, address, args.address.height).await?;
+            let credit_balance = Credits::balance(&provider, address, args.address.height)
+                .await
+                .unwrap_or_else(|e| {
+                    if e.to_string().contains("actor not found") {
+                        Balance::default()
+                    } else {
+                        panic!("{:?}", e)
+                    }
+                });
 
             match cfg.parent_network_config {
                 Some(parent) => {
