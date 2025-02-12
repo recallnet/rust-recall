@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use fendermint_actor_blobs_shared::state::TokenCreditRate;
-use fendermint_actor_recall_config_shared::Method::{GetConfig, SetConfig};
-use fendermint_actor_recall_config_shared::{RecallConfig, SetConfigParams};
+use fendermint_actor_recall_config_shared::Method::{GetAdmin, GetConfig, SetAdmin, SetConfig};
+use fendermint_actor_recall_config_shared::{RecallConfig, SetAdminParams, SetConfigParams};
 use fendermint_vm_actor_interface::recall_config::RECALL_CONFIG_ACTOR_ADDR;
 use tendermint::chain;
 
 use recall_provider::{
-    fvm_shared::clock::ChainEpoch,
+    fvm_shared::{address::Address, clock::ChainEpoch},
     json_rpc::JsonRpcProvider,
     message::{local_message, GasParams, RawBytes},
     query::{FvmQueryHeight, QueryProvider},
@@ -17,6 +17,15 @@ use recall_provider::{
     {Client, Provider, TendermintClient},
 };
 use recall_signer::Signer;
+
+/// Options for setting config admin.
+#[derive(Clone, Debug)]
+pub struct SetConfigAdminOptions {
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
+}
 
 /// Options for setting config.
 #[derive(Clone, Default, Debug)]
@@ -27,25 +36,67 @@ pub struct SetConfigOptions {
     pub token_credit_rate: TokenCreditRate,
     /// Block interval at which to debit all credit accounts.
     pub blob_credit_debit_interval: ChainEpoch,
-    /// Broadcast mode for the transaction.
-    pub broadcast_mode: BroadcastMode,
-    /// Gas params for the transaction.
-    pub gas_params: GasParams,
     /// The minimum epoch duration a blob can be stored.
     pub blob_min_ttl: ChainEpoch,
     /// The default epoch duration a blob is stored.
     pub blob_default_ttl: ChainEpoch,
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
 }
 
 /// Accessors for fetching subnet-wide information from a node via the CometBFT RPCs.
 pub struct Subnet {}
 
 impl Subnet {
+    /// Returns the chain ID.
     pub async fn chain_id(provider: JsonRpcProvider) -> anyhow::Result<chain::Id> {
         let response = provider.underlying().status().await?;
         Ok(response.node_info.network)
     }
 
+    /// Sets the network config admin.
+    pub async fn set_config_admin<C>(
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        admin: Address,
+        options: SetConfigAdminOptions,
+    ) -> anyhow::Result<TxResult<()>>
+    where
+        C: Client + Send + Sync,
+    {
+        let params = SetAdminParams(admin);
+        let params = RawBytes::serialize(params)?;
+        signer
+            .send_transaction(
+                provider,
+                RECALL_CONFIG_ACTOR_ADDR,
+                Default::default(),
+                SetAdmin as u64,
+                params,
+                options.gas_params,
+                options.broadcast_mode,
+                decode_empty,
+            )
+            .await
+    }
+
+    /// Returns the network config admin.
+    pub async fn get_config_admin(
+        provider: &impl QueryProvider,
+        height: FvmQueryHeight,
+    ) -> anyhow::Result<Option<Address>> {
+        let message = local_message(
+            RECALL_CONFIG_ACTOR_ADDR,
+            GetAdmin as u64,
+            Default::default(),
+        );
+        let response = provider.call(message, height, decode_as).await?;
+        Ok(response.value)
+    }
+
+    /// Sets the network config.
     pub async fn set_config<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
@@ -76,6 +127,7 @@ impl Subnet {
             .await
     }
 
+    /// Returns the network config.
     pub async fn get_config(
         provider: &impl QueryProvider,
         height: FvmQueryHeight,

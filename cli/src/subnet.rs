@@ -2,11 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
+use ethers::utils::hex::ToHexExt;
 use serde_json::json;
 
+use recall_provider::util::get_eth_address;
 use recall_provider::{
-    fvm_shared::clock::ChainEpoch, json_rpc::JsonRpcProvider, util::parse_token_credit_rate,
+    fvm_shared::{address::Address, clock::ChainEpoch},
+    json_rpc::JsonRpcProvider,
+    util::parse_token_credit_rate,
 };
+use recall_sdk::subnet::SetConfigAdminOptions;
 use recall_sdk::{
     credits::TokenCreditRate,
     network::NetworkConfig,
@@ -15,7 +20,9 @@ use recall_sdk::{
 };
 use recall_signer::{key::SecretKey, AccountKind, Wallet};
 
-use crate::{parse_secret_key, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
+use crate::{
+    parse_address, parse_secret_key, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs,
+};
 
 #[derive(Clone, Debug, Args)]
 pub struct SubnetArgs {
@@ -23,6 +30,7 @@ pub struct SubnetArgs {
     command: SubnetCommands,
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Subcommand)]
 enum SubnetCommands {
     /// Get the ChainId.
@@ -35,9 +43,35 @@ enum SubnetCommands {
 #[derive(Clone, Debug, Subcommand)]
 enum ConfigCommands {
     /// Set the subnet configuration.
+    SetAdmin(SetConfigAdminArgs),
+    /// Get the current subnet configuration admin.
+    GetAdmin(GetConfigAdminArgs),
+    /// Set the subnet configuration.
+    /// The signer will be designated as the config admin if one does not already exist.
     Set(SetConfigArgs),
     /// Get the current subnet configuration.
     Get(GetConfigArgs),
+}
+
+#[derive(Clone, Debug, Args)]
+struct SetConfigAdminArgs {
+    /// Wallet private key (ECDSA, secp256k1) for signing transactions.
+    #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
+    private_key: SecretKey,
+    /// The address of the new config admin to set.
+    #[arg(long, value_parser = parse_address)]
+    admin: Address,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
+}
+
+#[derive(Clone, Debug, Args)]
+struct GetConfigAdminArgs {
+    #[command(flatten)]
+    address: AddressArgs,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -83,6 +117,45 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
             print_json(&json!({"chain_id": chain_id}))
         }
         SubnetCommands::Config(cmd) => match &cmd {
+            ConfigCommands::SetAdmin(args) => {
+                let broadcast_mode = args.broadcast_mode.get();
+                let TxParams {
+                    gas_params,
+                    sequence,
+                } = args.tx_args.to_tx_params();
+
+                let mut signer = Wallet::new_secp256k1(
+                    args.private_key.clone(),
+                    AccountKind::Ethereum,
+                    cfg.subnet_id,
+                )?;
+                signer.set_sequence(sequence, &provider).await?;
+
+                let tx = Subnet::set_config_admin(
+                    &provider,
+                    &mut signer,
+                    args.admin,
+                    SetConfigAdminOptions {
+                        broadcast_mode,
+                        gas_params,
+                    },
+                )
+                .await?;
+
+                print_tx_json(&tx)
+            }
+            ConfigCommands::GetAdmin(args) => {
+                let admin = if let Some(admin) =
+                    Subnet::get_config_admin(&provider, args.address.height).await?
+                {
+                    get_eth_address(admin)?.encode_hex_with_prefix()
+                } else {
+                    "not set!".to_string()
+                };
+                print_json(&json!({
+                    "admin": admin,
+                }))
+            }
             ConfigCommands::Set(args) => {
                 let broadcast_mode = args.broadcast_mode.get();
                 let TxParams {
@@ -120,6 +193,8 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                     "blob_capacity": config.blob_capacity,
                     "token_credit_rate": config.token_credit_rate.to_string(),
                     "blob_credit_debit_interval": config.blob_credit_debit_interval,
+                    "blob_min_ttl": config.blob_min_ttl,
+                    "blob_default_ttl": config.blob_default_ttl,
                 }))
             }
         },
