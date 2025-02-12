@@ -15,7 +15,7 @@ use recall_provider::{
 };
 use recall_sdk::{
     account::TtlStatus as SdkTtlStatus,
-    account::{Account, SetSponsorOptions, SetTtlStatusOptions},
+    account::{Account, SetAccountStatusOptions, SetSponsorOptions},
     credits::{Balance, Credits},
     ipc::subnet::EVMSubnet,
     network::{NetworkConfig, ParentNetworkConfig},
@@ -52,8 +52,8 @@ enum AccountCommands {
     Sponsor(SponsorCommands),
     /// Credit related commands.
     Credit(CreditArgs),
-    /// Set TTL status related commands.
-    SetTtlStatus(SetTtlStatusArgs),
+    /// Set account status.
+    SetAccountStatus(SetAccountStatusArgs),
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -153,11 +153,11 @@ struct UnsetSponsorArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-pub struct SetTtlStatusArgs {
+pub struct SetAccountStatusArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
-    /// Account address.
+    /// Account address for which the status is being set.
     #[arg(long, value_parser = parse_address)]
     account: Address,
     /// TTL status to set.
@@ -358,7 +358,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             }
         },
         AccountCommands::Credit(args) => handle_credit(cfg, args).await,
-        AccountCommands::SetTtlStatus(args) => {
+        AccountCommands::SetAccountStatus(args) => {
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
                 gas_params,
@@ -372,11 +372,11 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             )?;
 
             signer.set_sequence(sequence, &provider).await?;
-            let tx = Account::set_ttl_status(
+            let tx = Account::set_account_status(
                 &provider,
                 &mut signer,
                 args.account,
-                SetTtlStatusOptions {
+                SetAccountStatusOptions {
                     status: args.status.get(),
                     broadcast_mode,
                     gas_params,

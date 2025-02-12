@@ -30,10 +30,10 @@ pub struct SetSponsorOptions {
     pub gas_params: GasParams,
 }
 
-/// Options for setting ttl status.
+/// Options for setting account status.
 #[derive(Clone, Default, Debug)]
-pub struct SetTtlStatusOptions {
-    /// TTL status for the account to set.
+pub struct SetAccountStatusOptions {
+    /// Status for the account to set.
     pub status: TtlStatus,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
@@ -135,12 +135,12 @@ impl Account {
             .await
     }
 
-    /// Sets the TTL status for the given account.
-    pub async fn set_ttl_status<C>(
+    /// Sets the account status for the given account.
+    pub async fn set_account_status<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         account: Address,
-        options: SetTtlStatusOptions,
+        options: SetAccountStatusOptions,
     ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
