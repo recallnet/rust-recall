@@ -32,7 +32,7 @@ pub struct SetSponsorOptions {
 
 /// Options for setting account status.
 #[derive(Clone, Default, Debug)]
-pub struct SetAccountStatusOptions {
+pub struct SetStatusOptions {
     /// Status for the account to set.
     pub status: TtlStatus,
     /// Broadcast mode for the transaction.
@@ -136,11 +136,11 @@ impl Account {
     }
 
     /// Sets the account status for the given account.
-    pub async fn set_account_status<C>(
+    pub async fn set_status<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
         account: Address,
-        options: SetAccountStatusOptions,
+        options: SetStatusOptions,
     ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,

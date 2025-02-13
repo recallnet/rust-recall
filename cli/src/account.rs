@@ -15,7 +15,7 @@ use recall_provider::{
 };
 use recall_sdk::{
     account::TtlStatus as SdkTtlStatus,
-    account::{Account, SetAccountStatusOptions, SetSponsorOptions},
+    account::{Account, SetSponsorOptions, SetStatusOptions},
     credits::{Balance, Credits},
     ipc::subnet::EVMSubnet,
     network::{NetworkConfig, ParentNetworkConfig},
@@ -53,7 +53,7 @@ enum AccountCommands {
     /// Credit related commands.
     Credit(CreditArgs),
     /// Set account status.
-    SetAccountStatus(SetAccountStatusArgs),
+    SetStatus(SetStatusArgs),
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -153,7 +153,7 @@ struct UnsetSponsorArgs {
 }
 
 #[derive(Clone, Debug, Args)]
-pub struct SetAccountStatusArgs {
+pub struct SetStatusArgs {
     /// Wallet private key (ECDSA, secp256k1) for signing transactions.
     #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
@@ -161,7 +161,6 @@ pub struct SetAccountStatusArgs {
     #[arg(long, value_parser = parse_address)]
     account: Address,
     /// TTL status to set.
-    #[arg(long)]
     status: TtlStatus,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
@@ -358,7 +357,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             }
         },
         AccountCommands::Credit(args) => handle_credit(cfg, args).await,
-        AccountCommands::SetAccountStatus(args) => {
+        AccountCommands::SetStatus(args) => {
             let broadcast_mode = args.broadcast_mode.get();
             let TxParams {
                 gas_params,
@@ -372,11 +371,11 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             )?;
 
             signer.set_sequence(sequence, &provider).await?;
-            let tx = Account::set_account_status(
+            let tx = Account::set_status(
                 &provider,
                 &mut signer,
                 args.account,
-                SetAccountStatusOptions {
+                SetStatusOptions {
                     status: args.status.get(),
                     broadcast_mode,
                     gas_params,
