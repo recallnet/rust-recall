@@ -81,6 +81,8 @@ pub struct Balance {
     pub approvals_to: HashMap<String, Approval>,
     /// Credit approvals to this account from other accounts, keyed by sender.
     pub approvals_from: HashMap<String, Approval>,
+    /// The maximum allowed TTL for actor's blobs.
+    pub max_ttl: ChainEpoch,
     /// The total token value an account has used to buy credits.
     pub gas_allowance: String,
 }
@@ -94,6 +96,7 @@ impl Default for Balance {
             credit_sponsor: None,
             approvals_to: HashMap::new(),
             approvals_from: HashMap::new(),
+            max_ttl: 0,
             gas_allowance: "0".into(),
         }
     }
@@ -133,6 +136,7 @@ impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
                     (a.encode_hex_with_prefix(), v.into())
                 })
                 .collect(),
+            max_ttl: v.max_ttl,
             gas_allowance: v.gas_allowance.to_string(),
         }
     }

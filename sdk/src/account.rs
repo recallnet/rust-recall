@@ -1,9 +1,11 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use fendermint_actor_blobs_shared::params::SetSponsorParams;
-use fendermint_actor_blobs_shared::Method::SetAccountSponsor;
+use fendermint_actor_blobs_shared::params::{SetAccountStatusParams, SetSponsorParams};
+use fendermint_actor_blobs_shared::Method::{SetAccountSponsor, SetAccountStatus};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
+
+pub use fendermint_actor_blobs_shared::state::TtlStatus;
 
 use recall_provider::{
     fvm_ipld_encoding::RawBytes,
@@ -22,6 +24,17 @@ pub use ethers::prelude::TransactionReceipt;
 /// Options for setting credit sponsor.
 #[derive(Clone, Default, Debug)]
 pub struct SetSponsorOptions {
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
+}
+
+/// Options for setting account status.
+#[derive(Clone, Default, Debug)]
+pub struct SetStatusOptions {
+    /// Status for the account to set.
+    pub status: TtlStatus,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
@@ -114,6 +127,35 @@ impl Account {
                 BLOBS_ACTOR_ADDR,
                 Default::default(),
                 SetAccountSponsor as u64,
+                params,
+                options.gas_params,
+                options.broadcast_mode,
+                decode_empty,
+            )
+            .await
+    }
+
+    /// Sets the account status for the given account.
+    pub async fn set_status<C>(
+        provider: &impl Provider<C>,
+        signer: &mut impl Signer,
+        account: Address,
+        options: SetStatusOptions,
+    ) -> anyhow::Result<TxResult<()>>
+    where
+        C: Client + Send + Sync,
+    {
+        let params = SetAccountStatusParams {
+            subscriber: account,
+            status: options.status,
+        };
+        let params = RawBytes::serialize(params)?;
+        signer
+            .send_transaction(
+                provider,
+                BLOBS_ACTOR_ADDR,
+                Default::default(),
+                SetAccountStatus as u64,
                 params,
                 options.gas_params,
                 options.broadcast_mode,
