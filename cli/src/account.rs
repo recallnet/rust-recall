@@ -159,7 +159,7 @@ pub struct SetStatusArgs {
     private_key: SecretKey,
     /// Account address for which the status is being set.
     #[arg(long, value_parser = parse_address)]
-    account: Address,
+    address: Address,
     /// TTL status to set.
     status: TtlStatus,
     /// Broadcast mode for the transaction.
@@ -374,7 +374,7 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             let tx = Account::set_status(
                 &provider,
                 &mut signer,
-                args.account,
+                args.address,
                 SetStatusOptions {
                     status: args.status.get(),
                     broadcast_mode,
