@@ -60,13 +60,13 @@ impl Subnet {
     pub async fn set_config_admin<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        admin: Address,
+        address: Address,
         options: SetConfigAdminOptions,
     ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {
-        let params = SetAdminParams(admin);
+        let params = SetAdminParams(address);
         let params = RawBytes::serialize(params)?;
         signer
             .send_transaction(

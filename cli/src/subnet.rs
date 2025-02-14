@@ -59,8 +59,8 @@ struct SetConfigAdminArgs {
     #[arg(short, long, env = "RECALL_PRIVATE_KEY", value_parser = parse_secret_key, hide_env_values = true)]
     private_key: SecretKey,
     /// The address of the new config admin to set.
-    #[arg(long, value_parser = parse_address)]
-    admin: Address,
+    #[arg(value_parser = parse_address)]
+    admin_address: Address,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -134,7 +134,7 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                 let tx = Subnet::set_config_admin(
                     &provider,
                     &mut signer,
-                    args.admin,
+                    args.admin_address,
                     SetConfigAdminOptions {
                         broadcast_mode,
                         gas_params,
