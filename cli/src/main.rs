@@ -178,17 +178,19 @@ struct AddressArgs {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
+    let verbosity = cli.verbosity as usize;
+
     stderrlog::new()
         .module(module_path!())
         .quiet(cli.quiet)
-        .verbosity(cli.verbosity as usize)
+        .verbosity(verbosity)
         .timestamp(Timestamp::Millisecond)
         .init()?;
 
     let cfg = cli.network.get().get_config();
 
     match &cli.command.clone() {
-        Commands::Account(args) => handle_account(cfg, args).await,
+        Commands::Account(args) => handle_account(cfg, args, verbosity).await,
         Commands::Subnet(args) => handle_subnet(cfg, args).await,
         Commands::Storage(args) => handle_storage(cfg, args).await,
         Commands::Bucket(args) => handle_bucket(cfg, !cli.quiet, args).await,

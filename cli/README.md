@@ -177,8 +177,7 @@ Create a new private key:
 
 {
   "private_key": "d5020dd0b12d4d8d8793ff0edbaa29bd7197879ddf82d475b7e9a6a34de765b0",
-  "address": "0xc37ab532c1409900520a92e04a6c0482394d3133",
-  "fvm_address": "t410fyn5lkmwbicmqauqkslqeu3aeqi4u2mjturajlui"
+  "address": "0xc37ab532c1409900520a92e04a6c0482394d3133"
 }
 ```
 
@@ -220,7 +219,6 @@ Get account info for a specific address:
 
 {
   "address": "0x4d5286d81317e284cd377cb98b478552bbe641ae",
-  "fvm_address": "0x4d5286d81317e284cd377cb98b478552bbe641ae",
   "sequence": 5,
   "balance": "0.2",
   "parent_balance": "108.263573407968179933"
