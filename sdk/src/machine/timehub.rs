@@ -6,13 +6,16 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use bytes::Bytes;
-use fendermint_actor_timehub::Method::{Count, Get, Peaks, Push, Root};
+use fendermint_actor_timehub::{
+    Method::{Count, Get, Peaks, Push, Root},
+    PushParams,
+};
 use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
 use recall_provider::{
-    fvm_ipld_encoding::{self, BytesSer, RawBytes},
+    fvm_ipld_encoding::{self, RawBytes},
     fvm_shared::address::Address,
     message::{local_message, GasParams},
     query::{FvmQueryHeight, QueryProvider},
@@ -109,6 +112,7 @@ impl Timehub {
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
+        from: Address,
         payload: Bytes,
         options: PushOptions,
     ) -> anyhow::Result<TxResult<PushReturn>>
@@ -121,8 +125,10 @@ impl Timehub {
                 MAX_ACC_PAYLOAD_SIZE
             ));
         }
-
-        let params = RawBytes::serialize(BytesSer(&payload))?;
+        let params = RawBytes::serialize(PushParams {
+            cid_bytes: payload.to_vec(),
+            from,
+        })?;
         signer
             .send_transaction(
                 provider,
