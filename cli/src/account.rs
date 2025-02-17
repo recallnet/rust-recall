@@ -6,7 +6,7 @@ use std::time::Duration;
 use anyhow::anyhow;
 use clap::{Args, Subcommand, ValueEnum};
 use reqwest::Url;
-use serde_json::json;
+use serde_json::{json, Value};
 
 use recall_provider::{
     fvm_shared::{address::Address, econ::TokenAmount},
@@ -191,7 +191,11 @@ impl TtlStatus {
 }
 
 /// Account commands handler.
-pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::Result<()> {
+pub async fn handle_account(
+    cfg: NetworkConfig,
+    args: &AccountArgs,
+    verbosity: usize,
+) -> anyhow::Result<()> {
     let provider =
         JsonRpcProvider::new_http(cfg.rpc_url.clone(), cfg.subnet_id.chain_id(), None, None)?;
 
@@ -203,9 +207,17 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
             let eth_address = get_eth_address(address)?;
             let sk_hex = hex::encode(sk.serialize());
 
-            print_json(
-                &json!({"private_key": sk_hex, "address": eth_address, "fvm_address": address.to_string()}),
-            )
+            let mut json = json!({"private_key": sk_hex, "address": eth_address});
+            if verbosity > 0 {
+                if let Value::Object(ref mut obj) = json {
+                    obj.insert(
+                        "fvm_address".to_string(),
+                        Value::String(address.to_string()),
+                    );
+                }
+            }
+
+            print_json(&json)
         }
         AccountCommands::Info(args) => {
             let address = get_address(args.address.clone(), &cfg.subnet_id)?;
@@ -228,6 +240,16 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                     }
                 });
 
+            let mut json = json!({"address": eth_address, "sequence": sequence, "balance": account_balance.to_string(), "credit": &json!(credit_balance)});
+            if verbosity > 0 {
+                if let Value::Object(ref mut obj) = json {
+                    obj.insert(
+                        "fvm_address".to_string(),
+                        Value::String(address.to_string()),
+                    );
+                }
+            }
+
             match cfg.parent_network_config {
                 Some(parent) => {
                     let parent_balance = Account::supply_source_balance(
@@ -236,13 +258,16 @@ pub async fn handle_account(cfg: NetworkConfig, args: &AccountArgs) -> anyhow::R
                     )
                     .await?;
 
-                    print_json(
-                        &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": account_balance.to_string(), "parent_balance": parent_balance.to_string(), "credit": &json!(credit_balance)}),
-                    )
+                    if let Value::Object(ref mut obj) = json {
+                        obj.insert(
+                            "parent_balance".to_string(),
+                            Value::String(parent_balance.to_string()),
+                        );
+                    }
+
+                    print_json(&json)
                 }
-                None => print_json(
-                    &json!({"address": eth_address, "fvm_address": address.to_string(), "sequence": sequence, "balance": account_balance.to_string(), "credit": &json!(credit_balance)}),
-                ),
+                None => print_json(&json),
             }
         }
         AccountCommands::Deposit(args) => {
