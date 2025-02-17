@@ -165,6 +165,7 @@ impl Bucket {
     /// Add an object into the bucket with a reader.
     ///
     /// Use [`Bucket::add_from_path`] for files.
+    #[allow(clippy::too_many_arguments)]
     pub async fn add_reader<C, R>(
         &self,
         provider: &impl Provider<C>,
