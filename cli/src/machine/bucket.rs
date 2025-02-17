@@ -32,7 +32,7 @@ use recall_sdk::{
 };
 use recall_signer::{
     key::{parse_secret_key, SecretKey},
-    AccountKind, Void, Wallet,
+    AccountKind, Signer, Void, Wallet,
 };
 
 use crate::{get_address, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
@@ -295,10 +295,12 @@ pub async fn handle_bucket(
 
             let machine = Bucket::attach(args.address).await?;
             let token_amount = args.token_amount.clone();
+            let from = signer.address();
             let tx = machine
                 .add_from_path(
                     &provider,
                     &mut signer,
+                    from,
                     &args.key,
                     &args.input,
                     AddOptions {
@@ -333,10 +335,12 @@ pub async fn handle_bucket(
             signer.set_sequence(sequence, &provider).await?;
 
             let machine = Bucket::attach(args.address).await?;
+            let from = signer.address();
             let tx = machine
                 .delete(
                     &provider,
                     &mut signer,
+                    from,
                     &args.key,
                     DeleteOptions {
                         broadcast_mode,
@@ -436,10 +440,12 @@ pub async fn handle_bucket(
                 args.metadata.clone().into_iter().collect();
 
             let machine = Bucket::attach(args.address).await?;
+            let from = signer.address();
             let tx = machine
                 .update_object_metadata(
                     &provider,
                     &mut signer,
+                    from,
                     &args.key,
                     metadata,
                     UpdateObjectMetadataOptions {
