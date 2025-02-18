@@ -19,6 +19,7 @@ use recall_provider::{
         parse_query_height, parse_token_amount,
     },
 };
+use recall_sdk::machine::bucket::validate_metadata;
 use recall_sdk::{
     machine::{
         bucket::{
@@ -71,6 +72,9 @@ struct BucketCreateArgs {
     /// The owner defaults to the signer if not specified.
     #[arg(short, long, value_parser = parse_address)]
     owner: Option<Address>,
+    /// Shorthand for --metadata "alias=value"
+    #[arg(long)]
+    alias: Option<String>,
     /// User-defined metadata.
     #[arg(short, long, value_parser = parse_metadata)]
     metadata: Vec<(String, String)>,
@@ -240,7 +244,12 @@ pub async fn handle_bucket(
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
+            let mut metadata: HashMap<String, String> = args.metadata.clone().into_iter().collect();
+            if let Some(alias) = &args.alias {
+                metadata.insert("alias".to_string(), alias.clone());
+            }
+
+            validate_metadata(&metadata)?;
 
             let (store, tx) =
                 Bucket::new(&provider, &mut signer, args.owner, metadata, gas_params).await?;

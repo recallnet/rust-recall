@@ -468,7 +468,7 @@ fn decode_list(deliver_tx: &DeliverTx) -> anyhow::Result<ListObjectsReturn> {
         .map_err(|e| anyhow!("error parsing as ListObjectsReturn: {e}"))
 }
 
-fn validate_metadata(metadata: &HashMap<String, String>) -> anyhow::Result<()> {
+pub fn validate_metadata(metadata: &HashMap<String, String>) -> anyhow::Result<()> {
     for (key, value) in metadata {
         if key.len() as u32 > MAX_METADATA_KEY_SIZE {
             return Err(anyhow!(
