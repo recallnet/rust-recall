@@ -6,7 +6,6 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use more_asserts::{assert_gt, assert_lt};
 use rand::{thread_rng, Rng};
-use recall_signer::Signer;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
@@ -19,7 +18,7 @@ use recall_sdk::{
         Machine,
     },
 };
-use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
+use recall_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
 
 mod common;
 
@@ -143,8 +142,9 @@ async fn can_add_bucket() {
         metadata,
         ..Default::default()
     };
+    let from = signer.address();
     machine
-        .add_from_path(&provider, &mut signer, key, file.file_path(), options)
+        .add_from_path(&provider, &mut signer, from, key, file.file_path(), options)
         .await
         .unwrap();
 
@@ -192,7 +192,7 @@ async fn can_add_bucket() {
 
     // Now, delete the object
     machine
-        .delete(&provider, &mut signer, key, Default::default())
+        .delete(&provider, &mut signer, from, key, Default::default())
         .await
         .unwrap();
 

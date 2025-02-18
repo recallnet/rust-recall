@@ -30,7 +30,7 @@ use recall_sdk::{
 };
 use recall_signer::{
     key::{parse_secret_key, SecretKey},
-    AccountKind, Void, Wallet,
+    AccountKind, Signer, Void, Wallet,
 };
 
 use crate::{get_address, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
@@ -196,10 +196,12 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
             let payload = Bytes::from(cid.to_bytes());
 
             let machine = Timehub::attach(args.address).await?;
+            let from = signer.address();
             let tx = machine
                 .push(
                     &provider,
                     &mut signer,
+                    from,
                     payload,
                     PushOptions {
                         broadcast_mode,
