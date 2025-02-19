@@ -44,6 +44,10 @@ pub struct SetConfigOptions {
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
     pub gas_params: GasParams,
+    /// The batch size for debiting account credit.
+    pub account_debit_batch_size: u64,
+    /// The batch size for deleting blobs.
+    pub blob_delete_batch_size: u64,
 }
 
 /// Accessors for fetching subnet-wide information from a node via the CometBFT RPCs.
@@ -111,6 +115,8 @@ impl Subnet {
             blob_credit_debit_interval: options.blob_credit_debit_interval,
             blob_min_ttl: options.blob_min_ttl,
             blob_default_ttl: options.blob_default_ttl,
+            account_debit_batch_size: options.account_debit_batch_size,
+            blob_delete_batch_size: options.blob_delete_batch_size,
         };
         let params = RawBytes::serialize(params)?;
         signer

@@ -99,6 +99,12 @@ struct SetConfigArgs {
     broadcast_mode: BroadcastMode,
     #[command(flatten)]
     tx_args: TxArgs,
+    /// The batch size for debiting account credit.
+    #[arg(long)]
+    account_debit_batch_size: u64,
+    /// The batch size for deleting blobs.
+    #[arg(long)]
+    blob_delete_batch_size: u64,
 }
 
 #[derive(Clone, Debug, Args)]
@@ -179,6 +185,8 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                         blob_credit_debit_interval: args.blob_credit_debit_interval,
                         blob_min_ttl: args.blob_min_ttl,
                         blob_default_ttl: args.blob_default_ttl,
+                        account_debit_batch_size: args.account_debit_batch_size,
+                        blob_delete_batch_size: args.blob_delete_batch_size,
                         broadcast_mode,
                         gas_params,
                     },
