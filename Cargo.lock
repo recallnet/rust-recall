@@ -20,7 +20,7 @@ checksum = "31c372578ce4215ccf94ec3f3585fbb6a902e47d07b064ff8a55d850ffb5025e"
 dependencies = [
  "parking_lot",
  "pin-project-lite",
- "rustc_version",
+ "rustc_version 0.4.1",
  "smol_str",
  "tokio",
  "tracing",
@@ -102,6 +102,128 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
+name = "alloy-json-abi"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4012581681b186ba0882007ed873987cc37f86b1b488fe6b91d5efd0b585dc41"
+dependencies = [
+ "alloy-primitives",
+ "alloy-sol-type-parser",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "alloy-primitives"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "478bedf4d24e71ea48428d1bc278553bd7c6ae07c30ca063beb0b09fe58a9e74"
+dependencies = [
+ "alloy-rlp",
+ "bytes",
+ "cfg-if",
+ "const-hex",
+ "derive_more",
+ "foldhash",
+ "hashbrown 0.15.2",
+ "indexmap 2.7.1",
+ "itoa",
+ "k256",
+ "keccak-asm",
+ "paste",
+ "proptest",
+ "rand",
+ "ruint",
+ "rustc-hash",
+ "serde",
+ "sha3",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "alloy-rlp"
+version = "0.3.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d6c1d995bff8d011f7cd6c81820d51825e6e06d6db73914c1630ecf544d83d6"
+dependencies = [
+ "arrayvec 0.7.6",
+ "bytes",
+]
+
+[[package]]
+name = "alloy-sol-macro"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a2708e27f58d747423ae21d31b7a6625159bd8d867470ddd0256f396a68efa11"
+dependencies = [
+ "alloy-sol-macro-expander",
+ "alloy-sol-macro-input",
+ "proc-macro-error2",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
+]
+
+[[package]]
+name = "alloy-sol-macro-expander"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6b7984d7e085dec382d2c5ef022b533fcdb1fe6129200af30ebf5afddb6a361"
+dependencies = [
+ "alloy-json-abi",
+ "alloy-sol-macro-input",
+ "const-hex",
+ "heck 0.5.0",
+ "indexmap 2.7.1",
+ "proc-macro-error2",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
+ "syn-solidity",
+ "tiny-keccak",
+]
+
+[[package]]
+name = "alloy-sol-macro-input"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33d6a9fc4ed1a3c70bdb2357bec3924551c1a59f24e5a04a74472c755b37f87d"
+dependencies = [
+ "alloy-json-abi",
+ "const-hex",
+ "dunce",
+ "heck 0.5.0",
+ "proc-macro2",
+ "quote",
+ "serde_json",
+ "syn 2.0.98",
+ "syn-solidity",
+]
+
+[[package]]
+name = "alloy-sol-type-parser"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b1b3e9a48a6dd7bb052a111c8d93b5afc7956ed5e2cb4177793dc63bb1d2a36"
+dependencies = [
+ "serde",
+ "winnow",
+]
+
+[[package]]
+name = "alloy-sol-types"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6044800da35c38118fd4b98e18306bd3b91af5dedeb54c1b768cf1b4fb68f549"
+dependencies = [
+ "alloy-json-abi",
+ "alloy-primitives",
+ "alloy-sol-macro",
+ "const-hex",
+ "serde",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -171,6 +293,130 @@ name = "anyhow"
 version = "1.0.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
+
+[[package]]
+name = "ark-ff"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b3235cc41ee7a12aaaf2c575a2ad7b46713a8a50bda2fc3b003a04845c05dd6"
+dependencies = [
+ "ark-ff-asm 0.3.0",
+ "ark-ff-macros 0.3.0",
+ "ark-serialize 0.3.0",
+ "ark-std 0.3.0",
+ "derivative",
+ "num-bigint",
+ "num-traits",
+ "paste",
+ "rustc_version 0.3.3",
+ "zeroize",
+]
+
+[[package]]
+name = "ark-ff"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec847af850f44ad29048935519032c33da8aa03340876d351dfab5660d2966ba"
+dependencies = [
+ "ark-ff-asm 0.4.2",
+ "ark-ff-macros 0.4.2",
+ "ark-serialize 0.4.2",
+ "ark-std 0.4.0",
+ "derivative",
+ "digest 0.10.7",
+ "itertools 0.10.5",
+ "num-bigint",
+ "num-traits",
+ "paste",
+ "rustc_version 0.4.1",
+ "zeroize",
+]
+
+[[package]]
+name = "ark-ff-asm"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db02d390bf6643fb404d3d22d31aee1c4bc4459600aef9113833d17e786c6e44"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ark-ff-asm"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ed4aa4fe255d0bc6d79373f7e31d2ea147bcf486cba1be5ba7ea85abdb92348"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ark-ff-macros"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db2fd794a08ccb318058009eefdf15bcaaaaf6f8161eb3345f907222bac38b20"
+dependencies = [
+ "num-bigint",
+ "num-traits",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ark-ff-macros"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7abe79b0e4288889c4574159ab790824d0033b9fdcb2a112a3182fac2e514565"
+dependencies = [
+ "num-bigint",
+ "num-traits",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "ark-serialize"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d6c2b318ee6e10f8c2853e73a83adc0ccb88995aa978d8a3408d492ab2ee671"
+dependencies = [
+ "ark-std 0.3.0",
+ "digest 0.9.0",
+]
+
+[[package]]
+name = "ark-serialize"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "adb7b85a02b83d2f22f89bd5cac66c9c89474240cb6207cb1efc16d098e822a5"
+dependencies = [
+ "ark-std 0.4.0",
+ "digest 0.10.7",
+ "num-bigint",
+]
+
+[[package]]
+name = "ark-std"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1df2c09229cbc5a028b1d70e00fdb2acee28b1055dfb5ca73eea49c5a25c4e7c"
+dependencies = [
+ "num-traits",
+ "rand",
+]
+
+[[package]]
+name = "ark-std"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94893f1e0c6eeab764ade8dc4c0db24caf4fe7cbbaafc0eba0a9030f447b5185"
+dependencies = [
+ "num-traits",
+ "rand",
+]
 
 [[package]]
 name = "arrayref"
@@ -305,7 +551,7 @@ checksum = "b6d7b9decdf35d8908a7e3ef02f64c5e9b1695e230154c0e8de3969142d9b94c"
 dependencies = [
  "futures",
  "pharos",
- "rustc_version",
+ "rustc_version 0.4.1",
 ]
 
 [[package]]
@@ -556,7 +802,16 @@ version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0700ddab506f33b20a03b13996eccd309a48e5ff77d0d95926aa0210fb4e95f1"
 dependencies = [
- "bit-vec",
+ "bit-vec 0.6.3",
+]
+
+[[package]]
+name = "bit-set"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08807e080ed7f9d5433fa9b275196cfc35414f66a0c79d864dc51a0d825231a3"
+dependencies = [
+ "bit-vec 0.8.0",
 ]
 
 [[package]]
@@ -564,6 +819,12 @@ name = "bit-vec"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
+
+[[package]]
+name = "bit-vec"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
 name = "bitflags"
@@ -846,7 +1107,7 @@ checksum = "2d886547e41f740c616ae73108f6eb70afe6d940c7bc697cb30f13daec073037"
 dependencies = [
  "camino",
  "cargo-platform",
- "semver",
+ "semver 1.0.25",
  "serde",
  "serde_json",
  "thiserror 1.0.69",
@@ -1416,7 +1677,7 @@ dependencies = [
  "curve25519-dalek-derive",
  "digest 0.10.7",
  "fiat-crypto",
- "rustc_version",
+ "rustc_version 0.4.1",
  "subtle",
  "zeroize",
 ]
@@ -1563,6 +1824,17 @@ checksum = "b42b6fa04a440b495c8b04d0e71b707c585f83cb9cb28cf8cd0d976c315e31b4"
 dependencies = [
  "powerfmt",
  "serde",
+]
+
+[[package]]
+name = "derivative"
+version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fcc3dd5e9e9c0b295d6e1e4d811fb6f157d5ffd784b8d202fc62eac8035a770b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -2166,7 +2438,7 @@ dependencies = [
  "chrono",
  "ethers-core",
  "reqwest 0.11.27",
- "semver",
+ "semver 1.0.25",
  "serde",
  "serde_json",
  "thiserror 1.0.69",
@@ -2276,7 +2548,7 @@ dependencies = [
  "path-slash",
  "rayon",
  "regex",
- "semver",
+ "semver 1.0.25",
  "serde",
  "serde_json",
  "solang-parser",
@@ -2396,6 +2668,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
+name = "fastrlp"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "139834ddba373bbdd213dffe02c8d110508dcf1726c2be27e8d1f7d7e1856418"
+dependencies = [
+ "arrayvec 0.7.6",
+ "auto_impl",
+ "bytes",
+]
+
+[[package]]
+name = "fastrlp"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce8dba4714ef14b8274c371879b175aa55b16b30f269663f19d576f380018dc4"
+dependencies = [
+ "arrayvec 0.7.6",
+ "auto_impl",
+ "bytes",
+]
+
+[[package]]
 name = "fdlimit"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2407,7 +2701,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_blobs_shared"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "data-encoding",
@@ -2424,14 +2718,13 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_bucket"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "blake3",
  "cid",
  "fendermint_actor_blobs_shared",
  "fendermint_actor_machine",
- "fil_actors_evm_shared",
  "fil_actors_runtime",
  "frc42_dispatch",
  "fvm_ipld_blockstore",
@@ -2440,13 +2733,14 @@ dependencies = [
  "fvm_shared",
  "num-derive 0.3.3",
  "num-traits",
+ "recall_sol_facade",
  "serde",
 ]
 
 [[package]]
 name = "fendermint_actor_eam"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -2467,24 +2761,23 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_machine"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
+ "anyhow",
  "fil_actor_adm",
- "fil_actors_evm_shared",
  "fil_actors_runtime",
  "frc42_dispatch",
  "fvm_ipld_blockstore",
  "fvm_ipld_encoding",
  "fvm_shared",
- "multihash",
- "num-traits",
+ "recall_sol_facade",
  "serde",
 ]
 
 [[package]]
 name = "fendermint_actor_recall_config_shared"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "fendermint_actor_blobs_shared",
  "fil_actors_runtime",
@@ -2499,7 +2792,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_timehub"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -2513,6 +2806,7 @@ dependencies = [
  "fvm_shared",
  "num-derive 0.3.3",
  "num-traits",
+ "recall_sol_facade",
  "serde",
  "tracing",
 ]
@@ -2520,7 +2814,7 @@ dependencies = [
 [[package]]
 name = "fendermint_crypto"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -2532,7 +2826,7 @@ dependencies = [
 [[package]]
 name = "fendermint_eth_api"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2569,7 +2863,7 @@ dependencies = [
 [[package]]
 name = "fendermint_rpc"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2596,7 +2890,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_actor_interface"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -2624,7 +2918,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_core"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "cid",
  "fnv",
@@ -2638,7 +2932,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_encoding"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "cid",
  "fvm_shared",
@@ -2651,7 +2945,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_genesis"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "fendermint_actor_eam",
@@ -2669,7 +2963,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_message"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "blake2b_simd",
@@ -2711,7 +3005,7 @@ checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 [[package]]
 name = "fil_actor_adm"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -2731,7 +3025,7 @@ dependencies = [
 [[package]]
 name = "fil_actor_eam"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -2752,7 +3046,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_evm_shared"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "fil_actors_runtime",
  "fvm_ipld_encoding",
@@ -2765,7 +3059,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_runtime"
 version = "15.0.0-rc1"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -3530,6 +3824,7 @@ dependencies = [
  "allocator-api2",
  "equivalent",
  "foldhash",
+ "serde",
 ]
 
 [[package]]
@@ -3621,9 +3916,9 @@ checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
 
 [[package]]
 name = "hickory-proto"
-version = "0.24.3"
+version = "0.24.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ad3d6d98c648ed628df039541a5577bee1a7c83e9e16fe3dbedeea4cdfeb971"
+checksum = "92652067c9ce6f66ce53cc38d1169daa36e6e7eb7dd3b63b5103bd9d97117248"
 dependencies = [
  "async-trait",
  "cfg-if",
@@ -4250,6 +4545,7 @@ checksum = "8c9c992b02b5b4c94ea26e32fe5bccb7aa7d9f390ab5c1221ff895bc7ea8b652"
 dependencies = [
  "equivalent",
  "hashbrown 0.15.2",
+ "serde",
 ]
 
 [[package]]
@@ -4320,7 +4616,7 @@ dependencies = [
 [[package]]
 name = "ipc-api"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -4349,7 +4645,7 @@ dependencies = [
 [[package]]
 name = "ipc-types"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -4373,7 +4669,7 @@ dependencies = [
 [[package]]
 name = "ipc_actors_abis"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "ethers",
@@ -4936,13 +5232,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "keccak-asm"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "505d1856a39b200489082f90d897c3f07c455563880bc5952e38eabf731c83b6"
+dependencies = [
+ "digest 0.10.7",
+ "sha3-asm",
+]
+
+[[package]]
 name = "lalrpop"
 version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55cb077ad656299f160924eb2912aa147d7339ea7d69e1b5517326fdcec3c1ca"
 dependencies = [
  "ascii-canvas",
- "bit-set",
+ "bit-set 0.5.3",
  "ena",
  "itertools 0.11.0",
  "lalrpop-util",
@@ -5226,7 +5532,7 @@ dependencies = [
 [[package]]
 name = "merkle-tree-rs"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "ethers",
@@ -6160,7 +6466,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e9567389417feee6ce15dd6527a8a1ecac205ef62c2932bcf3d9f6fc5b78b414"
 dependencies = [
  "futures",
- "rustc_version",
+ "rustc_version 0.4.1",
 ]
 
 [[package]]
@@ -6581,6 +6887,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "proc-macro-error-attr2"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96de42df36bb9bba5542fe9f1a054b8cc87e172759a1868aa05c1f3acc89dfc5"
+dependencies = [
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
+name = "proc-macro-error2"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11ec05c52be0a07b08061f7dd003e7d7092e0472bc731b4af7bb1ef876109802"
+dependencies = [
+ "proc-macro-error-attr2",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
+]
+
+[[package]]
 name = "proc-macro-hack"
 version = "0.5.20+deprecated"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6664,6 +6992,8 @@ version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14cae93065090804185d3b75f0bf93b8eeda30c7a9b4a33d3bdb3988d6229e50"
 dependencies = [
+ "bit-set 0.8.0",
+ "bit-vec 0.8.0",
  "bitflags 2.8.0",
  "lazy_static",
  "num-traits",
@@ -6671,6 +7001,8 @@ dependencies = [
  "rand_chacha",
  "rand_xorshift",
  "regex-syntax 0.8.5",
+ "rusty-fork",
+ "tempfile",
  "unarray",
 ]
 
@@ -6876,6 +7208,7 @@ dependencies = [
  "libc",
  "rand_chacha",
  "rand_core",
+ "serde",
 ]
 
 [[package]]
@@ -6984,7 +7317,7 @@ dependencies = [
 [[package]]
 name = "recall_ipld"
 version = "0.1.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -7084,6 +7417,31 @@ dependencies = [
  "serde_json",
  "tendermint-rpc",
  "tokio",
+]
+
+[[package]]
+name = "recall_sol_facade"
+version = "0.1.0"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
+dependencies = [
+ "alloy-primitives",
+ "alloy-sol-macro-expander",
+ "alloy-sol-macro-input",
+ "alloy-sol-types",
+ "anyhow",
+ "dunce",
+ "eyre",
+ "fvm_ipld_encoding",
+ "fvm_shared",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "serde",
+ "serde_json",
+ "syn 2.0.98",
+ "thiserror 2.0.11",
+ "walkdir",
 ]
 
 [[package]]
@@ -7465,6 +7823,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "ruint"
+version = "1.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "825df406ec217a8116bd7b06897c6cc8f65ffefc15d030ae2c9540acc9ed50b6"
+dependencies = [
+ "alloy-rlp",
+ "ark-ff 0.3.0",
+ "ark-ff 0.4.2",
+ "bytes",
+ "fastrlp 0.3.1",
+ "fastrlp 0.4.0",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "parity-scale-codec",
+ "primitive-types",
+ "proptest",
+ "rand",
+ "rlp",
+ "ruint-macro",
+ "serde",
+ "valuable",
+ "zeroize",
+]
+
+[[package]]
+name = "ruint-macro"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "48fd7bd8a6377e15ad9d42a8ec25371b94ddc67abe7c8b9127bec79bebaaae18"
+
+[[package]]
 name = "rust_decimal"
 version = "1.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7500,11 +7890,20 @@ checksum = "3e75f6a532d0fd9f7f13144f392b6ad56a32696bfcd9c78f797f16bbb6f072d6"
 
 [[package]]
 name = "rustc_version"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0dfe2087c51c460008730de8b57e6a320782fbfb312e1f4d520e6c6fae155ee"
+dependencies = [
+ "semver 0.11.0",
+]
+
+[[package]]
+name = "rustc_version"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
 dependencies = [
- "semver",
+ "semver 1.0.25",
 ]
 
 [[package]]
@@ -7700,6 +8099,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7c45b9784283f1b2e7fb61b42047c2fd678ef0960d4f6f1eba131594cc369d4"
 
 [[package]]
+name = "rusty-fork"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb3dcc6e454c328bb824492db107ab7c0ae8fcffe4ad210136ef014458c1bc4f"
+dependencies = [
+ "fnv",
+ "quick-error",
+ "tempfile",
+ "wait-timeout",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7852,11 +8263,29 @@ checksum = "c2fdfc24bc566f839a2da4c4295b82db7d25a24253867d5c64355abb5799bdbe"
 
 [[package]]
 name = "semver"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f301af10236f6df4160f7c3f04eec6dbc70ace82d23326abad5edee88801c6b6"
+dependencies = [
+ "semver-parser",
+]
+
+[[package]]
+name = "semver"
 version = "1.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f79dfe2d285b0488816f30e700a7438c5a73d816b5b7d3ac72fbc48b0d185e03"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "semver-parser"
+version = "0.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9900206b54a3527fdc7b8a938bffd94a568bac4f4aa8113b209df75a09c0dec2"
+dependencies = [
+ "pest",
 ]
 
 [[package]]
@@ -8131,6 +8560,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha3-asm"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c28efc5e327c837aa837c59eae585fc250715ef939ac32881bcc11677cd02d46"
+dependencies = [
+ "cc",
+ "cfg-if",
+]
+
+[[package]]
 name = "sharded-slab"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8384,7 +8823,7 @@ dependencies = [
  "rand",
  "rand_chacha",
  "rayon",
- "semver",
+ "semver 1.0.25",
  "serde",
  "serde_json",
  "sha2 0.10.8",
@@ -8640,7 +9079,7 @@ dependencies = [
  "hex",
  "once_cell",
  "reqwest 0.11.27",
- "semver",
+ "semver 1.0.25",
  "serde",
  "serde_json",
  "sha2 0.10.8",
@@ -8657,7 +9096,7 @@ checksum = "39769914108ae68e261d85ceac7bce7095947130f79c29d4535e9b31fc702a40"
 dependencies = [
  "acto",
  "anyhow",
- "hickory-proto 0.24.3",
+ "hickory-proto 0.24.4",
  "rand",
  "socket2",
  "tokio",
@@ -8695,6 +9134,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "syn-solidity"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c2de690018098e367beeb793991c7d4dc7270f42c9d2ac4ccc876c1368ca430"
+dependencies = [
+ "paste",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
 ]
 
 [[package]]
@@ -8878,7 +9329,7 @@ dependencies = [
  "hyper-rustls 0.22.1",
  "peg",
  "pin-project",
- "semver",
+ "semver 1.0.25",
  "serde",
  "serde_bytes",
  "serde_json",
@@ -9522,9 +9973,9 @@ checksum = "5c1cb5db39152898a79168971543b1cb5020dff7fe43c8dc468b0885f5e29df5"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.16"
+version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a210d160f08b701c8721ba1c726c11662f877ea6b7094007e1ca9a1041945034"
+checksum = "00e2473a93778eb0bad35909dff6a10d28e63f792f16ed15e404fca9d5eeedbe"
 
 [[package]]
 name = "unicode-normalization"
@@ -9669,7 +10120,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vm_api"
 version = "1.0.0"
-source = "git+ssh://git@github.com/recallnet/ipc.git?rev=0318b3b8657d84d572cce805060aff3bc736ff2c#0318b3b8657d84d572cce805060aff3bc736ff2c"
+source = "git+ssh://git@github.com/recallnet/ipc.git?rev=571bca5e928e9bd00f27517517b40aea2b8df31c#571bca5e928e9bd00f27517517b40aea2b8df31c"
 dependencies = [
  "anyhow",
  "cid",
@@ -9682,6 +10133,15 @@ dependencies = [
  "rand",
  "rand_chacha",
  "serde",
+]
+
+[[package]]
+name = "wait-timeout"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09ac3b126d3914f9849036f826e054cbabdc8519970b8998ddaf3b5bd3c65f11"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
@@ -10368,7 +10828,7 @@ dependencies = [
  "js-sys",
  "log",
  "pharos",
- "rustc_version",
+ "rustc_version 0.4.1",
  "send_wrapper 0.6.0",
  "thiserror 1.0.69",
  "wasm-bindgen",
