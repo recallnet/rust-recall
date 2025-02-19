@@ -39,17 +39,17 @@ const LOCALNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x9A676e781A523b5d0C0e4373131
 const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
 
 // Ignition
-const TESTNET_RPC_URL: &str = "https://api.node-0.testnet.recall.network";
-const TESTNET_SUBNET_ID: &str = "/r314159/t410fl5qbhrkyp6jpi2sdh2tryqtssvoe2yrxyl5arzy";
+const TESTNET_RPC_URL: &str = "https://api.v013.node-0.testnet.recall.network";
+const TESTNET_OBJECT_API_URL: &str = "https://objects.v013.node-0.testnet.recall.network";
+const TESTNET_EVM_RPC_URL: &str = "https://evm.v013.node-0.testnet.recall.network";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410f6mgygsxksvrptmf43vaopcwmni4tbw7jx3mo4gi";
 const TESTNET_CHAIN_ID: u64 = 2481632;
-const TESTNET_OBJECT_API_URL: &str = "https://objects.node-0.testnet.recall.network";
-const TESTNET_EVM_RPC_URL: &str = "https://evm.node-0.testnet.recall.network";
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
-const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x45da97E918183cA1f2891E277F600fC0B2dDD9dC";
-const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0xd7719695eE7042cDCFF4065ef93346bF33222d78";
+const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x83BaA1161529413e1c61D7b66BD252Bc5c10A6Cd";
+const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x7e974301C8a8aB3502AaB1ed36f155354c84505f";
+const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0xF084d7543d3B1c3beb2a1D26b5Ae554051D797F9";
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
-const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x2e6453107b4417eC2fB58ABDcc2968955Bd005Df";
 
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
