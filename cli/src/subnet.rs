@@ -94,17 +94,17 @@ struct SetConfigArgs {
     /// The default epoch duration a blob is stored.
     #[arg(long)]
     blob_default_ttl: ChainEpoch,
-    /// Broadcast mode for the transaction.
-    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
-    broadcast_mode: BroadcastMode,
-    #[command(flatten)]
-    tx_args: TxArgs,
     /// The batch size for debiting account credit.
     #[arg(long)]
     account_debit_batch_size: u64,
     /// The batch size for deleting blobs.
     #[arg(long)]
     blob_delete_batch_size: u64,
+    /// Broadcast mode for the transaction.
+    #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
+    broadcast_mode: BroadcastMode,
+    #[command(flatten)]
+    tx_args: TxArgs,
 }
 
 #[derive(Clone, Debug, Args)]

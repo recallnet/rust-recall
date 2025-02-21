@@ -40,14 +40,14 @@ pub struct SetConfigOptions {
     pub blob_min_ttl: ChainEpoch,
     /// The default epoch duration a blob is stored.
     pub blob_default_ttl: ChainEpoch,
-    /// Broadcast mode for the transaction.
-    pub broadcast_mode: BroadcastMode,
-    /// Gas params for the transaction.
-    pub gas_params: GasParams,
     /// The batch size for debiting account credit.
     pub account_debit_batch_size: u64,
     /// The batch size for deleting blobs.
     pub blob_delete_batch_size: u64,
+    /// Broadcast mode for the transaction.
+    pub broadcast_mode: BroadcastMode,
+    /// Gas params for the transaction.
+    pub gas_params: GasParams,
 }
 
 /// Accessors for fetching subnet-wide information from a node via the CometBFT RPCs.
