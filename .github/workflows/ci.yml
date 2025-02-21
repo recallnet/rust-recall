@@ -22,11 +22,7 @@ jobs:
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: |
-            ${{ secrets.RUST_RECALL_DEPLOY_KEY }}
-            ${{ secrets.IPC_DEPLOY_KEY }}
-            ${{ secrets.BUILTIN_ACTORS_DEPLOY_KEY }}
-            ${{ secrets.CONTRACTS_DEPLOY_KEY }}
-            ${{ secrets.ENTANGLEMENT_DEPLOY_KEY }}
+            ${{ secrets.TODO }}
 
       - uses: actions/checkout@v4
         with:
