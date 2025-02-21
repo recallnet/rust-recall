@@ -40,6 +40,10 @@ pub struct SetConfigOptions {
     pub blob_min_ttl: ChainEpoch,
     /// The default epoch duration a blob is stored.
     pub blob_default_ttl: ChainEpoch,
+    /// The batch size for debiting account credit.
+    pub account_debit_batch_size: u64,
+    /// The batch size for deleting blobs.
+    pub blob_delete_batch_size: u64,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.
@@ -111,6 +115,8 @@ impl Subnet {
             blob_credit_debit_interval: options.blob_credit_debit_interval,
             blob_min_ttl: options.blob_min_ttl,
             blob_default_ttl: options.blob_default_ttl,
+            account_debit_batch_size: options.account_debit_batch_size,
+            blob_delete_batch_size: options.blob_delete_batch_size,
         };
         let params = RawBytes::serialize(params)?;
         signer
