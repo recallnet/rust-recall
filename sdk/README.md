@@ -27,7 +27,7 @@ Recall SDK is a library for managing your account and data machines.
   Buckets support byte range requests and advanced queries based on key prefix, delimiter, start key, and
   limit.
 - _Timehub machines_:
-  An timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
+  A timehub is a [Merkle Mountain Range (MMR)](https://docs.grin.mw/wiki/chain-state/merkle-mountain-range/)-based
   verifiable anchoring system for state updates.
   You can push values up to 500KiB and retrieve them by index, along with the block timestamp of
   the block in which the value was included.

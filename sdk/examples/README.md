@@ -2,7 +2,7 @@
 
 Explore Recall's functionalities through these practical examples.
 
-All the examples target an `recall` testnet subnet anchored to the Filecoin Calibration network.
+All the examples target a `recall` testnet subnet anchored to the Filecoin Calibration network.
 You can run them with `cargo run --example [example name] - [ARG]`.
 
 ## Accounts
@@ -89,7 +89,7 @@ Read the docs (run `make doc` from the repo root) for more bucket methods.
 ### Timehubs
 
 [`timehub_push.rs`](timehub_push.rs) creates a new timehub for state updates, pushes a new value,
-gets it back, and then qeuries for the timehub's count and state root.
+gets it back, and then queries for the timehub's count and state root.
 To run this example, you must deposit some funds into the `recall` testnet subnet.
 
 ```shell

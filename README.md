@@ -102,7 +102,7 @@ the parent to validate the state transitions of the child. Recall passes checkpo
 the CometBFT ledger to gather relevant signatures and data. Additionally, Recall can contact the IPLD resolver & store
 to read and write data to its internal state so that it is IPLD addressable. There is also a _top-down_ sync action;
 subnets must have a view of their parent's finality, which includes the latest block hash, power table information,
-and (in the future) cross-subnetmessage passing.
+and (in the future) cross-subnet message passing.
 
 In general, data is represented as CIDs onchain (within a Recall machine's state), and the actual data is stored offchain
 in a node's local (networked) block store. Recall uses the concept of a _detached payload_ asynchronous sync mechanism,
