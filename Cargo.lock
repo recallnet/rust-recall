@@ -290,9 +290,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.95"
+version = "1.0.96"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34ac096ce696dc2fcabef30516bb13c0a68a11d30131d3df6f04711467681b04"
+checksum = "6b964d184e89d9b6b67dd2715bc8e74cf3107fb2b529990c90cf517326150bf4"
 
 [[package]]
 name = "ark-ff"
@@ -1142,9 +1142,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.14"
+version = "1.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c3d1b2e905a3a7b00a6141adb0e4c0bb941d11caf55349d863942a1cc44e3c9"
+checksum = "c736e259eea577f443d5c86c304f9f4ae0295c43f3ba05c21f1d66b5f06001af"
 dependencies = [
  "jobserver",
  "libc",
@@ -1165,7 +1165,7 @@ checksum = "d38f2da7a0a2c4ccf0065be06397cc26a81f4e528be095826eee9d4adbb8c60f"
 dependencies = [
  "byteorder",
  "fnv",
- "uuid 1.13.2",
+ "uuid 1.14.0",
 ]
 
 [[package]]
@@ -1233,9 +1233,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.30"
+version = "4.5.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92b7b18d71fad5313a1e320fa9897994228ce274b60faa4d694fe0ea89cd9e6d"
+checksum = "027bb0d98429ae334a8698531da7077bdf906419543a35a55c2cb1b66437d767"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1253,9 +1253,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.30"
+version = "4.5.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a35db2071778a7344791a4fb4f95308b5673d219dee3ae348b86642574ecc90c"
+checksum = "5589e0cba072e0f3d23791efac0fd8627b49c829c196a492e88168e6a669d863"
 dependencies = [
  "anstream",
  "anstyle",
@@ -2089,9 +2089,9 @@ dependencies = [
 
 [[package]]
 name = "either"
-version = "1.13.0"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
+checksum = "b7914353092ddf589ad78f25c5c1c21b7f80b0ff8621e7c814c3485b5306da9d"
 
 [[package]]
 name = "elliptic-curve"
@@ -2239,7 +2239,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33d852cb9b869c2a9b3df2f71a3074817f01e1844f839a144f5fcef059a4eb5d"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2701,12 +2701,14 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_blobs_shared"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "data-encoding",
+ "fendermint_actor_machine",
  "fil_actors_runtime",
  "frc42_dispatch",
+ "fvm_ipld_blockstore",
  "fvm_ipld_encoding",
  "fvm_shared",
  "num-derive 0.3.3",
@@ -2718,7 +2720,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_bucket"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "blake3",
@@ -2733,6 +2735,7 @@ dependencies = [
  "fvm_shared",
  "num-derive 0.3.3",
  "num-traits",
+ "recall_ipld",
  "recall_sol_facade",
  "serde",
 ]
@@ -2740,7 +2743,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_eam"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -2761,7 +2764,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_machine"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "fil_actor_adm",
@@ -2777,7 +2780,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_recall_config_shared"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "fendermint_actor_blobs_shared",
  "fil_actors_runtime",
@@ -2792,7 +2795,7 @@ dependencies = [
 [[package]]
 name = "fendermint_actor_timehub"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -2814,7 +2817,7 @@ dependencies = [
 [[package]]
 name = "fendermint_crypto"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -2826,7 +2829,7 @@ dependencies = [
 [[package]]
 name = "fendermint_eth_api"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2863,7 +2866,7 @@ dependencies = [
 [[package]]
 name = "fendermint_rpc"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2890,7 +2893,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_actor_interface"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -2918,7 +2921,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_core"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "cid",
  "fnv",
@@ -2932,7 +2935,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_encoding"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "cid",
  "fvm_shared",
@@ -2945,7 +2948,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_genesis"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "fendermint_actor_eam",
@@ -2963,7 +2966,7 @@ dependencies = [
 [[package]]
 name = "fendermint_vm_message"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "blake2b_simd",
@@ -3005,7 +3008,7 @@ checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 [[package]]
 name = "fil_actor_adm"
 version = "15.0.0-rc1"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -3025,7 +3028,7 @@ dependencies = [
 [[package]]
 name = "fil_actor_eam"
 version = "15.0.0-rc1"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -3046,7 +3049,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_evm_shared"
 version = "15.0.0-rc1"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "fil_actors_runtime",
  "fvm_ipld_encoding",
@@ -3059,7 +3062,7 @@ dependencies = [
 [[package]]
 name = "fil_actors_runtime"
 version = "15.0.0-rc1"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -3186,9 +3189,9 @@ checksum = "1d674e81391d1e1ab681a28d99df07927c6d4aa5b027d7da16ba32d1d21ecd99"
 
 [[package]]
 name = "flate2"
-version = "1.0.35"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c936bfdafb507ebbf50b8074c54fa31c5be9a1e7e5f467dd659697041407d07c"
+checksum = "11faaf5a5236997af9848be0bef4db95824b1d534ebc64d0f0c6cf3e67bd38dc"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -3288,7 +3291,7 @@ dependencies = [
 [[package]]
 name = "frc42_dispatch"
 version = "8.0.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "frc42_hasher",
  "frc42_macros",
@@ -3301,7 +3304,7 @@ dependencies = [
 [[package]]
 name = "frc42_hasher"
 version = "6.0.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "fvm_sdk",
  "fvm_shared",
@@ -3311,7 +3314,7 @@ dependencies = [
 [[package]]
 name = "frc42_macros"
 version = "6.0.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "blake2b_simd",
  "frc42_hasher",
@@ -3563,9 +3566,9 @@ dependencies = [
 
 [[package]]
 name = "fvm_sdk"
-version = "4.4.4"
+version = "4.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b2df521d41de41c34ac712720abdd6e29e68e3ed922554db70dbf8bc49a82b7"
+checksum = "d8ba6f409bef51c1c7554b8c159a649397df35b278647f2a5119a08e7e5f938e"
 dependencies = [
  "cid",
  "fvm_ipld_encoding",
@@ -4572,9 +4575,9 @@ dependencies = [
 
 [[package]]
 name = "inout"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
+checksum = "879f10e63c20629ecabbb64a8010319738c66a5cd0c29b02d63d272b03751d01"
 dependencies = [
  "block-padding",
  "generic-array 0.14.7",
@@ -4616,7 +4619,7 @@ dependencies = [
 [[package]]
 name = "ipc-api"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -4645,7 +4648,7 @@ dependencies = [
 [[package]]
 name = "ipc-types"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -4669,7 +4672,7 @@ dependencies = [
 [[package]]
 name = "ipc_actors_abis"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "ethers",
@@ -4985,7 +4988,7 @@ dependencies = [
  "rand",
  "rcgen",
  "reqwest 0.12.12",
- "ring 0.17.9",
+ "ring 0.17.11",
  "rtnetlink",
  "rustls 0.23.23",
  "rustls-webpki 0.102.8",
@@ -5041,7 +5044,7 @@ checksum = "e2c869ba52683d3d067c83ab4c00a2fda18eaf13b1434d4c1352f428674d4a5d"
 dependencies = [
  "bytes",
  "rand",
- "ring 0.17.9",
+ "ring 0.17.11",
  "rustc-hash",
  "rustls 0.23.23",
  "rustls-platform-verifier",
@@ -5062,7 +5065,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5089,7 +5092,7 @@ checksum = "e19b23d53f35ce9f56aebc7d1bb4e6ac1e9c0db7ac85c8d1760c04379edced37"
 dependencies = [
  "hermit-abi 0.4.0",
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5282,9 +5285,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.169"
+version = "0.2.170"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
+checksum = "875b3680cb2f8f71bdcf9a30f38d48282f5d3c95cbf9b3fa57269bb5d5c06828"
 
 [[package]]
 name = "libipld-core"
@@ -5401,9 +5404,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.25"
+version = "0.4.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04cbf5b083de1c7e0222a7a51dbfdba1cbe1c6ab0b15e29fff3f6c077fd9cd9f"
+checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
 
 [[package]]
 name = "loom"
@@ -5532,7 +5535,7 @@ dependencies = [
 [[package]]
 name = "merkle-tree-rs"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "ethers",
@@ -5583,9 +5586,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.4"
+version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3b1c9bd4fe1f0f8b387f6eb9eb3b4a1aa26185e5750efb9140301703f62cd1b"
+checksum = "8e3e04debbb59698c15bacbb6d93584a8c0ca9cc3213cb423d31f760d8843ce5"
 dependencies = [
  "adler2",
 ]
@@ -5661,9 +5664,9 @@ dependencies = [
 
 [[package]]
 name = "native-tls"
-version = "0.2.13"
+version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dab59f8e050d5df8e4dd87d9206fb6f65a483e20ac9fda365ade4fab353196c"
+checksum = "87de3442987e9dbec73158d5c715e7ad9072fda936bb03d19d7fa10e00520f0e"
 dependencies = [
  "libc",
  "log",
@@ -6058,9 +6061,9 @@ checksum = "945462a4b81e43c4e3ba96bd7b49d834c6f61198356aa858733bc4acf3cbe62e"
 
 [[package]]
 name = "oneshot"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79d72a7c0f743d2ebb0a2ad1d219db75fdc799092ed3a884c9144c42a31225bd"
+checksum = "b4ce411919553d3f9fa53a0880544cda985a112117a0444d5ff1e870a893d6ea"
 
 [[package]]
 name = "opaque-debug"
@@ -6381,9 +6384,9 @@ dependencies = [
 
 [[package]]
 name = "pem"
-version = "3.0.4"
+version = "3.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e459365e590736a54c3fa561947c84837534b8e9af6fc5bf781307e82658fae"
+checksum = "38af38e8470ac9dee3ce1bae1af9c1671fffc44ddfd8bd1d0a3445bf349a8ef3"
 dependencies = [
  "base64 0.22.1",
  "serde",
@@ -6651,9 +6654,9 @@ dependencies = [
 
 [[package]]
 name = "portable-atomic"
-version = "1.10.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "280dc24453071f1b63954171985a0b0d30058d287960968b9b2aca264c8d4ee6"
+checksum = "350e9b48cbc6b0e028b0473b114454c6316e57336ee184ceab6e53f72c178b3e"
 
 [[package]]
 name = "portmapper"
@@ -7149,7 +7152,7 @@ dependencies = [
  "bytes",
  "getrandom 0.2.15",
  "rand",
- "ring 0.17.9",
+ "ring 0.17.11",
  "rustc-hash",
  "rustls 0.23.23",
  "rustls-pki-types",
@@ -7171,7 +7174,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -7286,8 +7289,8 @@ version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48406db8ac1f3cbc7dcdb56ec355343817958a356ff430259bb07baf7607e1e1"
 dependencies = [
- "pem 3.0.4",
- "ring 0.17.9",
+ "pem 3.0.5",
+ "ring 0.17.11",
  "time",
  "yasna",
 ]
@@ -7317,7 +7320,7 @@ dependencies = [
 [[package]]
 name = "recall_ipld"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -7422,7 +7425,7 @@ dependencies = [
 [[package]]
 name = "recall_sol_facade"
 version = "0.1.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-macro-expander",
@@ -7464,9 +7467,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.5.8"
+version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03a862b389f93e68874fbf580b9de08dd02facb9a788ebadaf4a3fd33cf58834"
+checksum = "82b568323e98e49e2a0899dcee453dd679fae22d69adf9b11dd508d1549b7e2f"
 dependencies = [
  "bitflags 2.8.0",
 ]
@@ -7711,9 +7714,9 @@ dependencies = [
 
 [[package]]
 name = "ring"
-version = "0.17.9"
+version = "0.17.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e75ec5e92c4d8aede845126adc388046234541629e76029599ed35a003c7ed24"
+checksum = "da5349ae27d3887ca812fb375b45a4fbb36d8d12d2df394968cd86e35683fe73"
 dependencies = [
  "cc",
  "cfg-if",
@@ -7747,7 +7750,7 @@ dependencies = [
  "rkyv_derive",
  "seahash",
  "tinyvec",
- "uuid 1.13.2",
+ "uuid 1.14.0",
 ]
 
 [[package]]
@@ -7925,7 +7928,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -7960,7 +7963,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f56a14d1f48b391359b22f731fd4bd7e43c97f3c50eee276f3aa09c94784d3e"
 dependencies = [
  "log",
- "ring 0.17.9",
+ "ring 0.17.11",
  "rustls-webpki 0.101.7",
  "sct 0.7.1",
 ]
@@ -7973,7 +7976,7 @@ checksum = "47796c98c480fce5406ef69d1c76378375492c3b0a0de587be0c1d9feb12f395"
 dependencies = [
  "log",
  "once_cell",
- "ring 0.17.9",
+ "ring 0.17.11",
  "rustls-pki-types",
  "rustls-webpki 0.102.8",
  "subtle",
@@ -8077,7 +8080,7 @@ version = "0.101.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b6275d1ee7a1cd780b64aca7726599a1dbc893b1e64144529e55c3c2f745765"
 dependencies = [
- "ring 0.17.9",
+ "ring 0.17.11",
  "untrusted 0.9.0",
 ]
 
@@ -8087,7 +8090,7 @@ version = "0.102.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "64ca1bc8749bd4cf37b5ce386cc146580777b4e8572c7b97baf22c83f444bee9"
 dependencies = [
- "ring 0.17.9",
+ "ring 0.17.11",
  "rustls-pki-types",
  "untrusted 0.9.0",
 ]
@@ -8207,7 +8210,7 @@ version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da046153aa2352493d6cb7da4b6e5c0c057d8a1d0a9aa8560baffdd945acd414"
 dependencies = [
- "ring 0.17.9",
+ "ring 0.17.11",
  "untrusted 0.9.0",
 ]
 
@@ -8302,9 +8305,9 @@ checksum = "cd0b0ec5f1c1ca621c432a25813d8d60c88abe6d3e08a3eb9cf37d97a0fe3d73"
 
 [[package]]
 name = "serde"
-version = "1.0.217"
+version = "1.0.218"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02fc4265df13d6fa1d00ecff087228cc0a2b5f3c0e87e258d8b94a156e984c70"
+checksum = "e8dfc9d19bdbf6d17e22319da49161d5d0108e4188e8b680aef6299eed22df60"
 dependencies = [
  "serde_derive",
 ]
@@ -8348,9 +8351,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.217"
+version = "1.0.218"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a9bf7cf98d04a2b28aead066b7496853d4779c9cc183c440dbac457641e19a0"
+checksum = "f09503e191f4e797cb8aac08e9a4a4695c5edf6a2e70e376d961ddd5c969f82b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8371,9 +8374,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.138"
+version = "1.0.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d434192e7da787e94a6ea7e9670b26a036d0ca41e0b7efb2676dd32bae872949"
+checksum = "44f86c3acccc9c65b153fe1b85a3be07fe5515274ec9f0653b4a0875731c72a6"
 dependencies = [
  "indexmap 2.7.1",
  "itoa",
@@ -9245,7 +9248,7 @@ dependencies = [
  "getrandom 0.3.1",
  "once_cell",
  "rustix",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -10095,9 +10098,9 @@ dependencies = [
 
 [[package]]
 name = "uuid"
-version = "1.13.2"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c1f41ffb7cf259f1ecc2876861a17e7142e63ead296f671f81f6ae85903e0d6"
+checksum = "93d59ca99a559661b96bf898d8fce28ed87935fd2bea9f05983c1464dd6c71b1"
 
 [[package]]
 name = "valuable"
@@ -10120,7 +10123,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vm_api"
 version = "1.0.0"
-source = "git+https://github.com/recallnet/ipc.git?rev=2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2#2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2"
+source = "git+https://github.com/recallnet/ipc.git?rev=ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc#ec02304bd74e5f1f37c7e8becc0f4eb3c07042dc"
 dependencies = [
  "anyhow",
  "cid",
@@ -10310,7 +10313,7 @@ version = "0.22.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed63aea5ce73d0ff405984102c42de94fc55a6b75765d621c65262469b3c9b53"
 dependencies = [
- "ring 0.17.9",
+ "ring 0.17.11",
  "untrusted 0.9.0",
 ]
 
@@ -10366,7 +10369,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -10453,8 +10456,8 @@ checksum = "810ce18ed2112484b0d4e15d022e5f598113e220c53e373fb31e67e21670c1ce"
 dependencies = [
  "windows-implement 0.59.0",
  "windows-interface 0.59.0",
- "windows-result 0.3.0",
- "windows-strings 0.3.0",
+ "windows-result 0.3.1",
+ "windows-strings 0.3.1",
  "windows-targets 0.53.0",
 ]
 
@@ -10503,6 +10506,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "windows-link"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6dccfd733ce2b1753b03b6d3c65edf020262ea35e20ccdf3e288043e6dd620e3"
+
+[[package]]
 name = "windows-registry"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10524,11 +10533,11 @@ dependencies = [
 
 [[package]]
 name = "windows-result"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d08106ce80268c4067c0571ca55a9b4e9516518eaa1a1fe9b37ca403ae1d1a34"
+checksum = "06374efe858fab7e4f881500e6e86ec8bc28f9462c47e5a9941a0142ad86b189"
 dependencies = [
- "windows-targets 0.53.0",
+ "windows-link",
 ]
 
 [[package]]
@@ -10543,11 +10552,11 @@ dependencies = [
 
 [[package]]
 name = "windows-strings"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b888f919960b42ea4e11c2f408fadb55f78a9f236d5eef084103c8ce52893491"
+checksum = "87fa48cc5d406560701792be122a10132491cff9d0aeb23583cc2dcafc847319"
 dependencies = [
- "windows-targets 0.53.0",
+ "windows-link",
 ]
 
 [[package]]
@@ -10764,9 +10773,9 @@ checksum = "271414315aff87387382ec3d271b52d7ae78726f5d44ac98b4f4030c91880486"
 
 [[package]]
 name = "winnow"
-version = "0.7.2"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59690dea168f2198d1a3b0cac23b8063efcd11012f10ae4698f284808c8ef603"
+checksum = "0e7f4ea97f6f78012141bcdb6a216b2609f0979ada50b20ca5b52dde2eac2bb1"
 dependencies = [
  "memchr",
 ]
@@ -11063,9 +11072,9 @@ dependencies = [
 
 [[package]]
 name = "zstd-sys"
-version = "2.0.13+zstd.1.5.6"
+version = "2.0.14+zstd.1.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38ff0f21cfee8f97d94cef41359e0c89aa6113028ab0291aa8ca0038995a95aa"
+checksum = "8fb060d4926e4ac3a3ad15d864e99ceb5f343c6b34f5bd6d81ae6ed417311be5"
 dependencies = [
  "cc",
  "pkg-config",
