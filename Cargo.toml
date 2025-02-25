@@ -6,11 +6,11 @@ resolver = "2"
 authors = ["Recall Contributors"]
 description = "Rust interfaces & tooling for Recall."
 edition = "2021"
-homepage = "https://github.com/recallnet/rust-/"
+homepage = "https://github.com/recallnet/rust-recall/"
 license = "MIT OR Apache-2.0"
 readme = "./README.md"
 repository = "https://github.com/recallnet/rust-recall/"
-keywords = ["TODO"]
+keywords = ["recall", "verifiable", "agents", "ai"]
 version = "0.1.0"
 
 [workspace.dependencies]
@@ -69,22 +69,22 @@ tendermint-rpc = { version = "0.31.1", features = [
 fvm_shared = "4.4.0"
 fvm_ipld_encoding = "0.4.0"
 
-fendermint_actor_blobs_shared = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_actor_bucket = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_actor_recall_config_shared = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_actor_machine = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_actor_timehub = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_crypto = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_eth_api = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_vm_actor_interface = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-fendermint_vm_message = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
+fendermint_actor_blobs_shared = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_actor_bucket = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_actor_recall_config_shared = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_actor_machine = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_actor_timehub = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_crypto = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_eth_api = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_vm_actor_interface = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+fendermint_vm_message = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
 
-ipc_actors_abis = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
-ipc-api = { git = "ssh://git@github.com/recallnet/ipc.git", rev = "571bca5e928e9bd00f27517517b40aea2b8df31c" }
+ipc_actors_abis = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
+ipc-api = { git = "https://github.com/recallnet/ipc.git", rev = "2f2f4926bf2db5a96ba2eb5cd34e7bb3689f9ab2" }
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.
-#[patch."ssh://git@github.com/recallnet/ipc.git"]
+#[patch."https://github.com/recallnet/ipc.git"]
 #fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
 #fendermint_actor_bucket = { path = "../ipc/fendermint/actors/bucket" }
 #fendermint_actor_recall_config_shared = { path = "../ipc/fendermint/actors/recall_config/shared" }
