@@ -39,9 +39,9 @@ const LOCALNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x9A676e781A523b5d0C0e4373131
 const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
 
 // Ignition
-const TESTNET_RPC_URL: &str = "https://api.recall.chain.love";
-const TESTNET_OBJECT_API_URL: &str = "https://objects.recall.chain.love";
-const TESTNET_EVM_RPC_URL: &str = "https://evm.recall.chain.love";
+const TESTNET_RPC_URL: &str = "https://api.testnet.recall.chain.love";
+const TESTNET_OBJECT_API_URL: &str = "https://objects.testnet.recall.chain.love";
+const TESTNET_EVM_RPC_URL: &str = "https://evm.testnet.recall.chain.love";
 const TESTNET_SUBNET_ID: &str = "/r314159/t410f6mgygsxksvrptmf43vaopcwmni4tbw7jx3mo4gi";
 const TESTNET_CHAIN_ID: u64 = 2481632;
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
