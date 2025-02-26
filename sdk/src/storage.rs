@@ -40,8 +40,8 @@ impl Default for Usage {
     }
 }
 
-impl From<fendermint_actor_blobs_shared::state::Account> for Usage {
-    fn from(v: fendermint_actor_blobs_shared::state::Account) -> Self {
+impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Usage {
+    fn from(v: fendermint_actor_blobs_shared::state::AccountInfo) -> Self {
         Self {
             capacity_used: v.capacity_used.to_string(),
         }
@@ -123,7 +123,9 @@ fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<StorageStats> {
 
 fn decode_usage(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Usage>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::Account>>(&data)
-        .map(|v| v.map(|v| v.into()))
-        .map_err(|e| anyhow!("error parsing as Option<Usage>: {e}"))
+    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::AccountInfo>>(
+        &data,
+    )
+    .map(|v| v.map(|v| v.into()))
+    .map_err(|e| anyhow!("error parsing as Option<Usage>: {e}"))
 }
