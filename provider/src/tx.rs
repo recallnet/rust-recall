@@ -39,7 +39,7 @@ impl FromStr for BroadcastMode {
 }
 
 /// The current status of a transaction.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum TxStatus {
     /// The transaction is in the memory pool waiting to be included in a block.
