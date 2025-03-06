@@ -102,8 +102,8 @@ impl Default for Balance {
     }
 }
 
-impl From<fendermint_actor_blobs_shared::state::Account> for Balance {
-    fn from(v: fendermint_actor_blobs_shared::state::Account) -> Self {
+impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
+    fn from(v: fendermint_actor_blobs_shared::state::AccountInfo) -> Self {
         let last_debit_epoch = if v.last_debit_epoch != 0 {
             Some(v.last_debit_epoch)
         } else {
@@ -345,14 +345,16 @@ fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<CreditStats> {
 
 fn decode_balance(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Balance>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::Account>>(&data)
-        .map(|v| v.map(|v| v.into()))
-        .map_err(|e| anyhow!("error parsing as Option<Balance>: {e}"))
+    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::AccountInfo>>(
+        &data,
+    )
+    .map(|v| v.map(|v| v.into()))
+    .map_err(|e| anyhow!("error parsing as Option<Balance>: {e}"))
 }
 
 fn decode_buy(deliver_tx: &DeliverTx) -> anyhow::Result<Balance> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::Account>(&data)
+    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::AccountInfo>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as Balance: {e}"))
 }

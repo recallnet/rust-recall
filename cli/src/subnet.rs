@@ -94,6 +94,12 @@ struct SetConfigArgs {
     /// The default epoch duration a blob is stored.
     #[arg(long)]
     blob_default_ttl: ChainEpoch,
+    /// Maximum number of blobs to delete in a single batch during debit.
+    /// #[arg(long)]
+    pub blob_delete_batch_size: u64,
+    /// Maximum number of accounts to process in a single batch during debit.
+    /// #[arg(long)]
+    pub account_debit_batch_size: u64,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -179,6 +185,8 @@ pub async fn handle_subnet(cfg: NetworkConfig, args: &SubnetArgs) -> anyhow::Res
                         blob_credit_debit_interval: args.blob_credit_debit_interval,
                         blob_min_ttl: args.blob_min_ttl,
                         blob_default_ttl: args.blob_default_ttl,
+                        blob_delete_batch_size: args.blob_delete_batch_size,
+                        account_debit_batch_size: args.account_debit_batch_size,
                         broadcast_mode,
                         gas_params,
                     },
