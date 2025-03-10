@@ -10,7 +10,7 @@ use fendermint_vm_actor_interface::eam::EthAddress;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::{
     address::{Address, Error, Network, Payload},
-    bigint::BigInt,
+    bigint::{BigInt, BigUint},
     econ::TokenAmount,
 };
 use rust_decimal::Decimal;
@@ -70,7 +70,7 @@ pub fn parse_credit_amount(s: &str) -> anyhow::Result<Credit> {
 
 /// Parse the token to credit rate.
 pub fn parse_token_credit_rate(s: &str) -> anyhow::Result<TokenCreditRate> {
-    Ok(TokenCreditRate::from(BigInt::from_str(s)?))
+    Ok(TokenCreditRate::from(BigUint::from_str(s)?))
 }
 
 /// Parse query height from string.
