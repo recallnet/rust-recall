@@ -4,12 +4,13 @@
 use std::collections::HashMap;
 
 use anyhow::anyhow;
+use ethers::types::{U64, U256};
 use more_asserts::{assert_gt, assert_lt};
 use rand::{thread_rng, Rng};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::time::{sleep, Duration};
 
-use recall_provider::{fvm_shared::econ::TokenAmount, json_rpc::JsonRpcProvider};
+use recall_provider::{fvm_shared::econ::TokenAmount, json_rpc::JsonRpcProvider, tx::TxStatus};
 use recall_sdk::{
     account::Account,
     ipc::subnet::EVMSubnet,
@@ -50,9 +51,12 @@ async fn runner_has_token() {
     // TODO: These values are arbitrary, the localnet value is just under 5000, and the testnet and mainnet will depend on the runner wallet
     assert_gt!(balance, TokenAmount::from_whole(1));
     assert_lt!(balance, TokenAmount::from_whole(10000));
+
+    // Wait some time for the network to resolve so other tests are not affected
+    sleep(Duration::from_secs(2)).await;
+
 }
 
-// TODO: this test fails, but it seems like it's because account deplosit is broken...
 #[tokio::test]
 #[ignore]
 async fn can_deposit() {
@@ -90,6 +94,8 @@ async fn can_deposit() {
         "Transaction hash: 0x{}",
         hex::encode(tx.transaction_hash.to_fixed_bytes())
     );
+    // Wait some time for the network to resolve the object so other tests are not affected
+    sleep(Duration::from_secs(2)).await;
 
     // TODO: some failures will throw, but we should assert that deposit worked too
 }
@@ -97,6 +103,7 @@ async fn can_deposit() {
 #[tokio::test]
 #[ignore]
 async fn can_add_bucket() {
+    // TODO: this setup should be in a helper function since we will use it repeatedly
     let network_config = common::get_network();
     let sk_env = common::get_runner_secret_key();
     let sk = parse_secret_key(&sk_env).unwrap();
@@ -115,7 +122,7 @@ async fn can_add_bucket() {
     signer.init_sequence(&provider).await.unwrap();
 
     // Create a new bucket
-    let (machine, _) = Bucket::new(
+    let (buck, _) = Bucket::new(
         &provider,
         &mut signer,
         None,
@@ -143,10 +150,21 @@ async fn can_add_bucket() {
         ..Default::default()
     };
     let from = signer.address();
-    machine
+    let tx = buck
         .add_from_path(&provider, &mut signer, from, key, file.file_path(), options)
-        .await
-        .unwrap();
+        .await.unwrap();
+
+    let obj_data = tx.data.unwrap();
+    assert_eq!(obj_data.metadata.get("content-type").unwrap(), "application/octet-stream");
+    assert_eq!(obj_data.metadata.get("foo").unwrap(), "bar");
+
+    if let TxStatus::Committed(receipt) = tx.status {
+        assert_eq!(receipt.status.unwrap(), U64::from(1));
+        assert_eq!(receipt.transaction_type.unwrap(), U64::from(2));
+        assert_gt!(receipt.gas_used.unwrap(), U256::from(1));
+    } else {
+        panic!("could not add object {}", key);
+    }
 
     // Wait some time for the network to resolve the object
     sleep(Duration::from_secs(2)).await;
@@ -156,45 +174,41 @@ async fn can_add_bucket() {
         prefix: "foo/".into(),
         ..Default::default()
     };
-    sleep(Duration::from_secs(2)).await;
-    let list = machine.query(&provider, options).await.unwrap();
+    tokio::time::sleep(Duration::from_secs(2)).await;
+    let list = buck.query(&provider, options).await.unwrap();
     for (key_bytes, object) in list.objects {
-        let query_key = core::str::from_utf8(&key_bytes).unwrap_or_default();
-
-        assert_eq!(key, query_key);
-        assert_eq!(object.metadata.get("foo").unwrap(), "bar");
-        assert_eq!(
-            object.metadata.get("content-type").unwrap(),
-            "application/octet-stream"
-        );
+        // TODO: assert here
+        let key = core::str::from_utf8(&key_bytes).unwrap_or_default();
     }
 
     // Download the actual object at `foo/my_file`
     let obj_file = async_tempfile::TempFile::new().await.unwrap();
     let obj_path = obj_file.file_path().to_owned();
-
     let options = GetOptions {
-        range: Some("0-99".to_string()), // Get the first 100 bytes
         ..Default::default()
     };
-    let open_file = obj_file.open_rw().await.unwrap();
-    machine
-        .get(&provider, key, open_file, options)
-        .await
-        .unwrap();
 
-    // Read the first 10 bytes of your downloaded 100 bytes
+    let open_file = obj_file.open_rw().await.unwrap();
+    buck.get(&provider, key, open_file, options).await.unwrap();
+
+    // Read the contents of the temp file
     let mut read_file = tokio::fs::File::open(&obj_path).await.unwrap();
-    let mut contents = vec![0; 10];
+    let mut contents = vec![0; 1024 * 1024];
     read_file.read_exact(&mut contents).await.unwrap();
 
-    assert_eq!(contents, &random_data[0..10]);
+    assert_eq!(contents, random_data);
 
     // Now, delete the object
-    machine
+    let tx = buck
         .delete(&provider, &mut signer, from, key, Default::default())
-        .await
-        .unwrap();
+        .await.unwrap();
 
-    // TODO: failure might throw, but need to add assertion for deleting
+    assert_eq!(tx.data.unwrap(), ());
+    if let TxStatus::Committed(receipt) = tx.status {
+        assert_eq!(receipt.status.unwrap(), U64::from(1));
+        assert_eq!(receipt.transaction_type.unwrap(), U64::from(2));
+        assert_gt!(receipt.gas_used.unwrap(), U256::from(1));
+    } else {
+        panic!("could not delete object {}", key);
+    }
 }
