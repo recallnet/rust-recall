@@ -40,7 +40,7 @@ pub struct SetConfigOptions {
     pub blob_min_ttl: ChainEpoch,
     /// The default epoch duration a blob is stored.
     pub blob_default_ttl: ChainEpoch,
-    /// Maximum number of blobs to delete in a single batch during debit.
+    /// Maximum number of expired blobs to delete in a single batch during debit.
     pub blob_delete_batch_size: u64,
     /// Maximum number of accounts to process in a single batch during debit.
     pub account_debit_batch_size: u64,

@@ -42,12 +42,12 @@ enum SubnetCommands {
 
 #[derive(Clone, Debug, Subcommand)]
 enum ConfigCommands {
-    /// Set the subnet configuration.
+    /// Set the subnet configuration admin.
     SetAdmin(SetConfigAdminArgs),
     /// Get the current subnet configuration admin.
     GetAdmin(GetConfigAdminArgs),
     /// Set the subnet configuration.
-    /// The signer will be designated as the config admin if one does not already exist.
+    /// The signer will be designated as the admin if one does not already exist.
     Set(SetConfigArgs),
     /// Get the current subnet configuration.
     Get(GetConfigArgs),
@@ -94,12 +94,12 @@ struct SetConfigArgs {
     /// The default epoch duration a blob is stored.
     #[arg(long)]
     blob_default_ttl: ChainEpoch,
-    /// Maximum number of blobs to delete in a single batch during debit.
-    /// #[arg(long)]
-    pub blob_delete_batch_size: u64,
+    /// Maximum number of expired blobs to delete in a single batch during debit.
+    #[arg(long)]
+    blob_delete_batch_size: u64,
     /// Maximum number of accounts to process in a single batch during debit.
-    /// #[arg(long)]
-    pub account_debit_batch_size: u64,
+    #[arg(long)]
+    account_debit_batch_size: u64,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
