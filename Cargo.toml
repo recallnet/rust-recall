@@ -53,6 +53,7 @@ stderrlog = "0.6.0"
 tokio = { version = "1.37.0", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-util = "0.7.1"
 tokio-stream = "0.1.0"
+toml = "0.8"
 tracing = "0.1.40"
 rand = "0.8.4"
 rust_decimal = "1.36"

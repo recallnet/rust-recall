@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use std::collections::HashSet;
+use std::fs;
 
 use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use serde::Serialize;
@@ -15,7 +16,10 @@ use recall_provider::{
     tx::{BroadcastMode as SDKBroadcastMode, TxResult, TxStatus},
     util::{parse_address, parse_query_height, parse_token_amount_from_atto},
 };
-use recall_sdk::{network::Network as SdkNetwork, TxParams};
+use recall_sdk::{
+    network::{Network as SdkNetwork, NetworkConfig, NetworkSpec},
+    TxParams,
+};
 use recall_signer::{
     key::{parse_secret_key, SecretKey},
     AccountKind, Signer, SubnetID, Wallet,
@@ -45,6 +49,11 @@ struct Cli {
     /// Network presets for subnet and RPC URLs.
     #[arg(short, long, env = "RECALL_NETWORK", value_enum, default_value_t = Network::Testnet)]
     network: Network,
+
+    /// Path to network config TOML file.
+    #[arg(short = 'c', long, env = "RECALL_NETWORK_CONFIG_FILE")]
+    network_config_file: Option<String>,
+
     /// The ID of the target subnet.
     #[arg(short, long, env = "RECALL_SUBNET")]
     subnet: Option<SubnetID>,
@@ -87,6 +96,7 @@ enum Network {
     /// Network presets for Calibration (default pre-mainnet).
     Testnet,
     /// Network presets for a local three-node network.
+    #[deprecated]
     Localnet,
     /// Network presets for local development.
     Devnet,
@@ -187,7 +197,7 @@ async fn main() -> anyhow::Result<()> {
         .timestamp(Timestamp::Millisecond)
         .init()?;
 
-    let cfg = cli.network.get().get_config();
+    let cfg = get_network_config(&cli)?;
 
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cfg, args, verbosity).await,
@@ -196,6 +206,17 @@ async fn main() -> anyhow::Result<()> {
         Commands::Bucket(args) => handle_bucket(cfg, !cli.quiet, args).await,
         Commands::Timehub(args) => handle_timehub(cfg, args).await,
         Commands::Machine(args) => handle_machine(cfg, args).await,
+    }
+}
+
+fn get_network_config(cli: &Cli) -> anyhow::Result<NetworkConfig> {
+    match &cli.network_config_file {
+        Some(path) => {
+            let file_content = fs::read_to_string(path)?;
+            let spec: NetworkSpec = toml::from_str(&file_content)?;
+            spec.into_network_config()
+        }
+        None => Ok(cli.network.get().get_config()),
     }
 }
 

@@ -7314,6 +7314,7 @@ dependencies = [
  "serde_json",
  "stderrlog",
  "tokio",
+ "toml 0.8.20",
 ]
 
 [[package]]

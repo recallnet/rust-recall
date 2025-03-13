@@ -51,6 +51,54 @@ const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x09f2A3ed21BA70E532F96b57a8733
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
+#[derive(Deserialize)]
+pub struct NetworkSpec {
+    pub chain_id: u64,
+
+    pub subnet_id: String,
+    pub rpc_url: Url,
+    pub object_api_url: Url,
+    pub evm_rpc_url: reqwest::Url,
+
+    #[serde(deserialize_with = "deserialize_address")]
+    pub evm_gateway_address: Address,
+
+    #[serde(deserialize_with = "deserialize_address")]
+    pub evm_registry_address: Address,
+
+    pub parent_network_config: ParentNetworkConfig,
+}
+
+fn deserialize_address<'de, D>(deserializer: D) -> Result<Address, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let buf = String::deserialize(deserializer)?;
+    parse_address(&buf).map_err(serde::de::Error::custom)
+}
+
+impl NetworkSpec {
+    pub fn into_network_config(self) -> anyhow::Result<NetworkConfig> {
+        let network = if FvmNetwork::Mainnet.parse_address(&self.subnet_id).is_ok() {
+            FvmNetwork::Mainnet
+        } else {
+            FvmNetwork::Testnet
+        };
+        address::set_current_network(network);
+        let subnet_id =
+            SubnetID::from_str(&self.subnet_id)?.with_chain_id(ChainID::from(self.chain_id));
+        Ok(NetworkConfig {
+            subnet_id,
+            rpc_url: self.rpc_url,
+            object_api_url: self.object_api_url,
+            evm_rpc_url: self.evm_rpc_url,
+            evm_gateway_address: self.evm_gateway_address,
+            evm_registry_address: self.evm_registry_address,
+            parent_network_config: Some(self.parent_network_config),
+        })
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct NetworkConfig {
     pub subnet_id: SubnetID,
@@ -62,11 +110,17 @@ pub struct NetworkConfig {
     pub parent_network_config: Option<ParentNetworkConfig>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct ParentNetworkConfig {
     pub evm_rpc_url: reqwest::Url,
+
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_gateway_address: Address,
+
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_registry_address: Address,
+
+    #[serde(deserialize_with = "deserialize_address")]
     pub evm_supply_source_address: Address,
 }
 
@@ -107,6 +161,7 @@ pub enum Network {
     /// Network presets for Calibration (default pre-mainnet).
     Testnet,
     /// Network presets for a local three-node network.
+    #[deprecated]
     Localnet,
     /// Network presets for local development.
     Devnet,
