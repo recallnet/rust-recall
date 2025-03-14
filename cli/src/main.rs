@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::{collections::HashSet, path::Path};
 
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 use stderrlog::Timestamp;
@@ -43,6 +43,8 @@ mod machine;
 mod storage;
 mod subnet;
 
+const DEFAULT_NETWORK_CONFIG_PATH: &str = "~/.config/recall/networks.toml";
+
 #[derive(Clone, Debug, Parser)]
 #[command(name = "recall", author, version, about, long_about = None)]
 struct Cli {
@@ -57,7 +59,7 @@ struct Cli {
         short = 'c',
         long,
         env = "RECALL_NETWORK_CONFIG_FILE",
-        default_value = "~/.config/recall/networks.toml"
+        default_value = DEFAULT_NETWORK_CONFIG_PATH,
     )]
     network_config_file: String,
 
@@ -169,6 +171,7 @@ struct AddressArgs {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    ensure_default_network_config()?;
     let cli = Cli::parse();
 
     let verbosity = cli.verbosity as usize;
@@ -192,8 +195,8 @@ async fn main() -> anyhow::Result<()> {
     }
 }
 
-fn get_network_config(cli: &Cli) -> anyhow::Result<NetworkConfig> {
-    let network_config_path = shellexpand::full(&cli.network_config_file)?;
+fn ensure_default_network_config() -> anyhow::Result<()> {
+    let network_config_path = shellexpand::full(DEFAULT_NETWORK_CONFIG_PATH)?;
     let config_path = Path::new(network_config_path.as_ref());
     if !config_path.exists() {
         fs::create_dir_all(config_path.parent().expect("config file path has parent"))?;
@@ -201,8 +204,15 @@ fn get_network_config(cli: &Cli) -> anyhow::Result<NetworkConfig> {
         let cfg_file_content = toml::to_string(&default_networks)?;
         fs::write(&config_path, &cfg_file_content)?;
     }
-    let file_content = fs::read_to_string(&config_path)?;
-    let mut specs: HashMap<String, NetworkSpec> = toml::from_str(&file_content)?;
+    Ok(())
+}
+
+fn get_network_config(cli: &Cli) -> anyhow::Result<NetworkConfig> {
+    let network_config_path = shellexpand::full(&cli.network_config_file)?;
+    let file_content = fs::read_to_string(network_config_path.as_ref())
+        .map_err(|err| anyhow!("cannot read '{:}': {err}", &network_config_path))?;
+    let mut specs: HashMap<String, NetworkSpec> = toml::from_str(&file_content)
+        .map_err(|err| anyhow!("cannot parse TOML file '{}': {err}", &network_config_path))?;
     match specs.remove(&cli.network) {
         Some(spec) => spec.into_network_config(),
         None => bail!(
