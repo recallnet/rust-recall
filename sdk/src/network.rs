@@ -5,6 +5,7 @@ use std::str::FromStr;
 use std::time::Duration;
 use std::{collections::HashMap, fmt::Display};
 
+use anyhow::anyhow;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use recall_provider::{
@@ -172,7 +173,12 @@ impl NetworkSpec {
             FvmNetwork::Testnet
         };
         address::set_current_network(network);
-        let mut subnet_id = SubnetID::from_str(&self.subnet_config.subnet_id)?;
+        let mut subnet_id = SubnetID::from_str(&self.subnet_config.subnet_id).map_err(|err| {
+            anyhow!(
+                "invalid subnet ID '{}': {err}",
+                &self.subnet_config.subnet_id
+            )
+        })?;
         if let Some(chain_id) = self.subnet_config.chain_id {
             subnet_id = subnet_id.with_chain_id(ChainID::from(chain_id));
         }
