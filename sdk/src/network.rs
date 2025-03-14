@@ -1,11 +1,11 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::fmt::Display;
 use std::str::FromStr;
 use std::time::Duration;
+use std::{collections::HashMap, fmt::Display};
 
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use recall_provider::{
     fvm_shared::{
@@ -21,11 +21,13 @@ use crate::ipc::subnet::EVMSubnet;
 
 const DEFAULT_RPC_TIMEOUT: Duration = Duration::from_secs(60);
 
+const DEVNET_NETWORK_NAME: &str = "devnet";
 const DEVNET_SUBNET_ID: &str = "test";
 const DEVNET_EVM_RPC_URL: &str = "http://127.0.0.1:8545";
 const DEVNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const DEVNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
+const LOCALNET_NETWORK_NAME: &str = "localnet";
 const LOCALNET_RPC_URL: &str = "http://127.0.0.1:26657";
 const LOCALNET_SUBNET_ID: &str = "/r31337/t410f6gbdxrbehnaeeo4mrq7wc5hgq6smnefys4qanwi";
 const LOCALNET_CHAIN_ID: u64 = 248163216;
@@ -39,6 +41,7 @@ const LOCALNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x9A676e781A523b5d0C0e4373131
 const LOCALNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44";
 
 // Ignition
+pub const TESTNET_NETWORK_NAME: &str = "testnet";
 const TESTNET_RPC_URL: &str = "https://api.testnet.recall.chain.love";
 const TESTNET_OBJECT_API_URL: &str = "https://objects.testnet.recall.chain.love";
 const TESTNET_EVM_RPC_URL: &str = "https://evm.testnet.recall.chain.love";
@@ -51,22 +54,103 @@ const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x09f2A3ed21BA70E532F96b57a8733
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
-#[derive(Deserialize)]
+pub fn default_networks() -> HashMap<String, NetworkSpec> {
+    let mut hm = HashMap::new();
+
+    hm.insert(
+        TESTNET_NETWORK_NAME.to_owned(),
+        NetworkSpec {
+            subnet_config: SubnetConfig {
+                chain_id: Some(TESTNET_CHAIN_ID),
+                subnet_id: TESTNET_SUBNET_ID.to_owned(),
+                rpc_url: Url::from_str(TESTNET_RPC_URL).unwrap(),
+                object_api_url: Url::from_str(TESTNET_OBJECT_API_URL).unwrap(),
+                evm_rpc_url: reqwest::Url::from_str(TESTNET_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(TESTNET_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(TESTNET_EVM_REGISTRY_ADDRESS).unwrap(),
+            },
+            parent_config: Some(ParentNetworkConfig {
+                evm_rpc_url: reqwest::Url::from_str(TESTNET_PARENT_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(TESTNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(TESTNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
+                evm_supply_source_address: parse_address(TESTNET_EVM_SUPPLY_SOURCE_ADDRESS)
+                    .unwrap(),
+            }),
+        },
+    );
+    // DEPRECATED
+    hm.insert(
+        LOCALNET_NETWORK_NAME.to_owned(),
+        NetworkSpec {
+            subnet_config: SubnetConfig {
+                chain_id: Some(LOCALNET_CHAIN_ID),
+                subnet_id: LOCALNET_SUBNET_ID.to_owned(),
+                rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
+                object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
+                evm_rpc_url: reqwest::Url::from_str(LOCALNET_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(LOCALNET_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(LOCALNET_EVM_REGISTRY_ADDRESS).unwrap(),
+            },
+            parent_config: Some(ParentNetworkConfig {
+                evm_rpc_url: reqwest::Url::from_str(LOCALNET_PARENT_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(LOCALNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(LOCALNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
+                evm_supply_source_address: parse_address(LOCALNET_EVM_SUPPLY_SOURCE_ADDRESS)
+                    .unwrap(),
+            }),
+        },
+    );
+    hm.insert(
+        DEVNET_NETWORK_NAME.to_owned(),
+        NetworkSpec {
+            subnet_config: SubnetConfig {
+                chain_id: None,
+                subnet_id: DEVNET_SUBNET_ID.to_owned(),
+                rpc_url: Url::from_str(LOCALNET_RPC_URL).unwrap(),
+                object_api_url: Url::from_str(LOCALNET_OBJECT_API_URL).unwrap(),
+                evm_rpc_url: reqwest::Url::from_str(DEVNET_EVM_RPC_URL).unwrap(),
+                evm_gateway_address: parse_address(DEVNET_EVM_GATEWAY_ADDRESS).unwrap(),
+                evm_registry_address: parse_address(DEVNET_EVM_REGISTRY_ADDRESS).unwrap(),
+            },
+            parent_config: None,
+        },
+    );
+    hm
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct NetworkSpec {
-    pub chain_id: u64,
+    pub subnet_config: SubnetConfig,
+    pub parent_config: Option<ParentNetworkConfig>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SubnetConfig {
+    pub chain_id: Option<u64>,
 
     pub subnet_id: String,
     pub rpc_url: Url,
     pub object_api_url: Url,
     pub evm_rpc_url: reqwest::Url,
 
-    #[serde(deserialize_with = "deserialize_address")]
+    #[serde(
+        deserialize_with = "deserialize_address",
+        serialize_with = "serialize_address"
+    )]
     pub evm_gateway_address: Address,
 
-    #[serde(deserialize_with = "deserialize_address")]
+    #[serde(
+        deserialize_with = "deserialize_address",
+        serialize_with = "serialize_address"
+    )]
     pub evm_registry_address: Address,
+}
 
-    pub parent_network_config: ParentNetworkConfig,
+fn serialize_address<S>(x: &Address, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&x.to_string())
 }
 
 fn deserialize_address<'de, D>(deserializer: D) -> Result<Address, D::Error>
@@ -79,22 +163,28 @@ where
 
 impl NetworkSpec {
     pub fn into_network_config(self) -> anyhow::Result<NetworkConfig> {
-        let network = if FvmNetwork::Mainnet.parse_address(&self.subnet_id).is_ok() {
+        let network = if FvmNetwork::Mainnet
+            .parse_address(&self.subnet_config.subnet_id)
+            .is_ok()
+        {
             FvmNetwork::Mainnet
         } else {
             FvmNetwork::Testnet
         };
         address::set_current_network(network);
-        let subnet_id =
-            SubnetID::from_str(&self.subnet_id)?.with_chain_id(ChainID::from(self.chain_id));
+        let mut subnet_id = SubnetID::from_str(&self.subnet_config.subnet_id)?;
+        if let Some(chain_id) = self.subnet_config.chain_id {
+            subnet_id = subnet_id.with_chain_id(ChainID::from(chain_id));
+        }
+
         Ok(NetworkConfig {
             subnet_id,
-            rpc_url: self.rpc_url,
-            object_api_url: self.object_api_url,
-            evm_rpc_url: self.evm_rpc_url,
-            evm_gateway_address: self.evm_gateway_address,
-            evm_registry_address: self.evm_registry_address,
-            parent_network_config: Some(self.parent_network_config),
+            rpc_url: self.subnet_config.rpc_url,
+            object_api_url: self.subnet_config.object_api_url,
+            evm_rpc_url: self.subnet_config.evm_rpc_url,
+            evm_gateway_address: self.subnet_config.evm_gateway_address,
+            evm_registry_address: self.subnet_config.evm_registry_address,
+            parent_network_config: self.parent_config,
         })
     }
 }
@@ -110,17 +200,26 @@ pub struct NetworkConfig {
     pub parent_network_config: Option<ParentNetworkConfig>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParentNetworkConfig {
     pub evm_rpc_url: reqwest::Url,
 
-    #[serde(deserialize_with = "deserialize_address")]
+    #[serde(
+        deserialize_with = "deserialize_address",
+        serialize_with = "serialize_address"
+    )]
     pub evm_gateway_address: Address,
 
-    #[serde(deserialize_with = "deserialize_address")]
+    #[serde(
+        deserialize_with = "deserialize_address",
+        serialize_with = "serialize_address"
+    )]
     pub evm_registry_address: Address,
 
-    #[serde(deserialize_with = "deserialize_address")]
+    #[serde(
+        deserialize_with = "deserialize_address",
+        serialize_with = "serialize_address"
+    )]
     pub evm_supply_source_address: Address,
 }
 

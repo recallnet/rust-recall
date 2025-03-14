@@ -1,9 +1,11 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fs;
+use std::{collections::HashSet, path::Path};
 
+use anyhow::bail;
 use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 use stderrlog::Timestamp;
@@ -17,7 +19,7 @@ use recall_provider::{
     util::{parse_address, parse_query_height, parse_token_amount_from_atto},
 };
 use recall_sdk::{
-    network::{Network as SdkNetwork, NetworkConfig, NetworkSpec},
+    network::{self, NetworkConfig, NetworkSpec},
     TxParams,
 };
 use recall_signer::{
@@ -46,13 +48,18 @@ mod subnet;
 struct Cli {
     #[command(subcommand)]
     command: Commands,
-    /// Network presets for subnet and RPC URLs.
-    #[arg(short, long, env = "RECALL_NETWORK", value_enum, default_value_t = Network::Testnet)]
-    network: Network,
+    /// Network name for subnet and RPC URLs as configured in ~/.config/recall/networks.toml
+    #[arg(short, long, env = "RECALL_NETWORK", default_value_t = network::TESTNET_NETWORK_NAME.to_owned())]
+    network: String,
 
     /// Path to network config TOML file.
-    #[arg(short = 'c', long, env = "RECALL_NETWORK_CONFIG_FILE")]
-    network_config_file: Option<String>,
+    #[arg(
+        short = 'c',
+        long,
+        env = "RECALL_NETWORK_CONFIG_FILE",
+        default_value = "~/.config/recall/networks.toml"
+    )]
+    network_config_file: String,
 
     /// The ID of the target subnet.
     #[arg(short, long, env = "RECALL_SUBNET")]
@@ -87,30 +94,6 @@ enum Commands {
     /// Timehub related commands (alias: th).
     #[clap(alias = "th")]
     Timehub(TimehubArgs),
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum Network {
-    /// Network presets for mainnet.
-    Mainnet,
-    /// Network presets for Calibration (default pre-mainnet).
-    Testnet,
-    /// Network presets for a local three-node network.
-    #[deprecated]
-    Localnet,
-    /// Network presets for local development.
-    Devnet,
-}
-
-impl Network {
-    pub fn get(&self) -> SdkNetwork {
-        match self {
-            Network::Mainnet => SdkNetwork::Mainnet,
-            Network::Testnet => SdkNetwork::Testnet,
-            Network::Localnet => SdkNetwork::Localnet,
-            Network::Devnet => SdkNetwork::Devnet,
-        }
-    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -210,13 +193,23 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn get_network_config(cli: &Cli) -> anyhow::Result<NetworkConfig> {
-    match &cli.network_config_file {
-        Some(path) => {
-            let file_content = fs::read_to_string(path)?;
-            let spec: NetworkSpec = toml::from_str(&file_content)?;
-            spec.into_network_config()
-        }
-        None => Ok(cli.network.get().get_config()),
+    let network_config_path = shellexpand::full(&cli.network_config_file)?;
+    let config_path = Path::new(network_config_path.as_ref());
+    if !config_path.exists() {
+        fs::create_dir_all(config_path.parent().expect("config file path has parent"))?;
+        let default_networks = network::default_networks();
+        let cfg_file_content = toml::to_string(&default_networks)?;
+        fs::write(&config_path, &cfg_file_content)?;
+    }
+    let file_content = fs::read_to_string(&config_path)?;
+    let mut specs: HashMap<String, NetworkSpec> = toml::from_str(&file_content)?;
+    match specs.remove(&cli.network) {
+        Some(spec) => spec.into_network_config(),
+        None => bail!(
+            "No such network '{}' in {}",
+            &cli.network,
+            &cli.network_config_file
+        ),
     }
 }
 

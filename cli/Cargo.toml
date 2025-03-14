@@ -26,6 +26,7 @@ humantime = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true, features = ["preserve_order"] }
+shellexpand = { workspace = true }
 stderrlog = { workspace = true }
 tokio = { workspace = true }
 toml = { workspace = true }
