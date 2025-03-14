@@ -240,7 +240,7 @@ fn ensure_default_network_config() -> anyhow::Result<()> {
         fs::create_dir_all(config_path.parent().expect("config file path has parent"))?;
         let default_networks = network::default_networks();
         let cfg_file_content = toml::to_string(&default_networks)?;
-        fs::write(&config_path, &cfg_file_content)?;
+        fs::write(config_path, &cfg_file_content)?;
     }
     Ok(())
 }
@@ -283,20 +283,20 @@ fn apply_flags_on_network_spec(mut spec: NetworkSpec, cli: &Cli) -> NetworkSpec 
         spec.subnet_config.evm_registry_address = x;
     }
 
-    spec.parent_config.as_mut().map(|parent| {
+    if let Some(parent) = spec.parent_config.as_mut() {
         if let Some(ref x) = cli.parent_evm_rpc_url {
             parent.evm_rpc_url = x.clone();
         }
         if let Some(ref x) = cli.parent_evm_gateway_address {
-            parent.evm_gateway_address = x.clone();
+            parent.evm_gateway_address = *x;
         }
         if let Some(ref x) = cli.parent_evm_registry_address {
-            parent.evm_registry_address = x.clone();
+            parent.evm_registry_address = *x;
         }
         if let Some(ref x) = cli.parent_evm_supply_source_address {
-            parent.evm_supply_source_address = x.clone();
+            parent.evm_supply_source_address = *x;
         }
-    });
+    }
     spec
 }
 
