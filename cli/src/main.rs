@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::{collections::HashSet, path::Path};
 
-use anyhow::{anyhow, bail};
+use anyhow::anyhow;
 use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 use stderrlog::Timestamp;
@@ -63,18 +63,56 @@ struct Cli {
     )]
     network_config_file: String,
 
-    /// The ID of the target subnet.
-    #[arg(short, long, env = "RECALL_SUBNET")]
-    subnet: Option<SubnetID>,
-    /// Node CometBFT RPC URL.
-    #[arg(long, env = "RECALL_RPC_URL")]
-    rpc_url: Option<Url>,
     /// Logging verbosity (repeat for more verbose logging).
     #[arg(short, long, env = "RECALL_LOG_VERBOSITY", action = clap::ArgAction::Count)]
     verbosity: u8,
     /// Silence logging.
     #[arg(short, long, env = "RECALL_LOG_QUIET", default_value_t = false)]
     quiet: bool,
+
+    /// Chain ID of the target subnet.
+    #[arg(long)]
+    chain_id: Option<u64>,
+
+    /// The ID of the target subnet.
+    #[arg(short, long, env = "RECALL_SUBNET")]
+    subnet_id: Option<String>,
+
+    /// Node CometBFT RPC URL.
+    #[arg(long, env = "RECALL_RPC_URL")]
+    rpc_url: Option<Url>,
+
+    /// Node objects RPC URL.
+    #[arg(long)]
+    object_api_url: Option<Url>,
+
+    /// Node EVM RPC URL.
+    #[arg(long)]
+    evm_rpc_url: Option<reqwest::Url>,
+
+    /// Gateway address.
+    #[arg(long)]
+    evm_gateway_address: Option<Address>,
+
+    /// Registry address.
+    #[arg(long)]
+    evm_registry_address: Option<Address>,
+
+    /// Parent EVM RPC URL.
+    #[arg(long)]
+    parent_evm_rpc_url: Option<reqwest::Url>,
+
+    /// Gateway address on parent chain.
+    #[arg(long)]
+    parent_evm_gateway_address: Option<Address>,
+
+    /// Registry address on parent chain.
+    #[arg(long)]
+    parent_evm_registry_address: Option<Address>,
+
+    /// Supply source address on parent chain.
+    #[arg(long)]
+    parent_evm_supply_source_address: Option<Address>,
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -213,14 +251,53 @@ fn get_network_config(cli: &Cli) -> anyhow::Result<NetworkConfig> {
         .map_err(|err| anyhow!("cannot read '{:}': {err}", &network_config_path))?;
     let mut specs: HashMap<String, NetworkSpec> = toml::from_str(&file_content)
         .map_err(|err| anyhow!("cannot parse TOML file '{}': {err}", &network_config_path))?;
-    match specs.remove(&cli.network) {
-        Some(spec) => spec.into_network_config(),
-        None => bail!(
-            "No such network '{}' in {}",
-            &cli.network,
-            &cli.network_config_file
-        ),
+    let spec = specs.remove(&cli.network).ok_or(anyhow!(
+        "No such network '{}' in {}",
+        &cli.network,
+        &cli.network_config_file
+    ))?;
+
+    apply_flags_on_network_spec(spec, cli).into_network_config()
+}
+
+fn apply_flags_on_network_spec(mut spec: NetworkSpec, cli: &Cli) -> NetworkSpec {
+    if let Some(x) = cli.chain_id {
+        spec.subnet_config.chain_id = Some(x);
     }
+    if let Some(ref x) = cli.subnet_id {
+        spec.subnet_config.subnet_id = x.clone();
+    }
+    if let Some(ref x) = cli.rpc_url {
+        spec.subnet_config.rpc_url = x.clone();
+    }
+    if let Some(ref x) = cli.object_api_url {
+        spec.subnet_config.object_api_url = x.clone();
+    }
+    if let Some(ref x) = cli.evm_rpc_url {
+        spec.subnet_config.evm_rpc_url = x.clone();
+    }
+    if let Some(x) = cli.evm_gateway_address {
+        spec.subnet_config.evm_gateway_address = x;
+    }
+    if let Some(x) = cli.evm_registry_address {
+        spec.subnet_config.evm_registry_address = x;
+    }
+
+    spec.parent_config.as_mut().map(|parent| {
+        if let Some(ref x) = cli.parent_evm_rpc_url {
+            parent.evm_rpc_url = x.clone();
+        }
+        if let Some(ref x) = cli.parent_evm_gateway_address {
+            parent.evm_gateway_address = x.clone();
+        }
+        if let Some(ref x) = cli.parent_evm_registry_address {
+            parent.evm_registry_address = x.clone();
+        }
+        if let Some(ref x) = cli.parent_evm_supply_source_address {
+            parent.evm_supply_source_address = x.clone();
+        }
+    });
+    spec
 }
 
 /// Returns address from private key or address arg.
