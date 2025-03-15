@@ -6,6 +6,8 @@ use std::time::Duration;
 use std::{collections::HashMap, fmt::Display};
 
 use anyhow::anyhow;
+use ethers::utils::hex::ToHexExt;
+use recall_provider::util::get_eth_address;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use recall_provider::{
@@ -151,7 +153,10 @@ fn serialize_address<S>(x: &Address, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    serializer.serialize_str(&x.to_string())
+    let eth_address = get_eth_address(*x)
+        .map_err(serde::ser::Error::custom)?
+        .encode_hex_with_prefix();
+    serializer.serialize_str(&eth_address)
 }
 
 fn deserialize_address<'de, D>(deserializer: D) -> Result<Address, D::Error>
