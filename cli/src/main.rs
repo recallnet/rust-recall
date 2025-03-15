@@ -1,8 +1,11 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use std::collections::HashSet;
+use std::collections::HashMap;
+use std::fs;
+use std::{collections::HashSet, path::Path};
 
+use anyhow::anyhow;
 use clap::{error::ErrorKind, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 use stderrlog::Timestamp;
@@ -15,7 +18,10 @@ use recall_provider::{
     tx::{BroadcastMode as SDKBroadcastMode, TxResult, TxStatus},
     util::{parse_address, parse_query_height, parse_token_amount_from_atto},
 };
-use recall_sdk::{network::Network as SdkNetwork, TxParams};
+use recall_sdk::{
+    network::{self, NetworkConfig, NetworkSpec},
+    TxParams,
+};
 use recall_signer::{
     key::{parse_secret_key, SecretKey},
     AccountKind, Signer, SubnetID, Wallet,
@@ -37,26 +43,76 @@ mod machine;
 mod storage;
 mod subnet;
 
+const DEFAULT_NETWORK_CONFIG_PATH: &str = "~/.config/recall/networks.toml";
+
 #[derive(Clone, Debug, Parser)]
 #[command(name = "recall", author, version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
-    /// Network presets for subnet and RPC URLs.
-    #[arg(short, long, env = "RECALL_NETWORK", value_enum, default_value_t = Network::Testnet)]
-    network: Network,
-    /// The ID of the target subnet.
-    #[arg(short, long, env = "RECALL_SUBNET")]
-    subnet: Option<SubnetID>,
-    /// Node CometBFT RPC URL.
-    #[arg(long, env = "RECALL_RPC_URL")]
-    rpc_url: Option<Url>,
+    /// Network name for subnet and RPC URLs as configured in ~/.config/recall/networks.toml
+    #[arg(short, long, env = "RECALL_NETWORK", default_value_t = network::TESTNET_NETWORK_NAME.to_owned())]
+    network: String,
+
+    /// Path to network config TOML file.
+    #[arg(
+        short = 'c',
+        long,
+        env = "RECALL_NETWORK_CONFIG_FILE",
+        default_value = DEFAULT_NETWORK_CONFIG_PATH,
+    )]
+    network_config_file: String,
+
     /// Logging verbosity (repeat for more verbose logging).
     #[arg(short, long, env = "RECALL_LOG_VERBOSITY", action = clap::ArgAction::Count)]
     verbosity: u8,
     /// Silence logging.
     #[arg(short, long, env = "RECALL_LOG_QUIET", default_value_t = false)]
     quiet: bool,
+
+    /// Chain ID of the target subnet.
+    #[arg(long)]
+    chain_id: Option<u64>,
+
+    /// The ID of the target subnet.
+    #[arg(short, long, env = "RECALL_SUBNET")]
+    subnet_id: Option<String>,
+
+    /// Node CometBFT RPC URL.
+    #[arg(long, env = "RECALL_RPC_URL")]
+    rpc_url: Option<Url>,
+
+    /// Node objects RPC URL.
+    #[arg(long)]
+    object_api_url: Option<Url>,
+
+    /// Node EVM RPC URL.
+    #[arg(long)]
+    evm_rpc_url: Option<reqwest::Url>,
+
+    /// Gateway address.
+    #[arg(long)]
+    evm_gateway_address: Option<Address>,
+
+    /// Registry address.
+    #[arg(long)]
+    evm_registry_address: Option<Address>,
+
+    /// Parent EVM RPC URL.
+    #[arg(long)]
+    parent_evm_rpc_url: Option<reqwest::Url>,
+
+    /// Gateway address on parent chain.
+    #[arg(long)]
+    parent_evm_gateway_address: Option<Address>,
+
+    /// Registry address on parent chain.
+    #[arg(long)]
+    parent_evm_registry_address: Option<Address>,
+
+    /// Supply source address on parent chain.
+    #[arg(long)]
+    parent_evm_supply_source_address: Option<Address>,
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -78,29 +134,6 @@ enum Commands {
     /// Timehub related commands (alias: th).
     #[clap(alias = "th")]
     Timehub(TimehubArgs),
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum Network {
-    /// Network presets for mainnet.
-    Mainnet,
-    /// Network presets for Calibration (default pre-mainnet).
-    Testnet,
-    /// Network presets for a local three-node network.
-    Localnet,
-    /// Network presets for local development.
-    Devnet,
-}
-
-impl Network {
-    pub fn get(&self) -> SdkNetwork {
-        match self {
-            Network::Mainnet => SdkNetwork::Mainnet,
-            Network::Testnet => SdkNetwork::Testnet,
-            Network::Localnet => SdkNetwork::Localnet,
-            Network::Devnet => SdkNetwork::Devnet,
-        }
-    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -176,6 +209,7 @@ struct AddressArgs {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    ensure_default_network_config()?;
     let cli = Cli::parse();
 
     let verbosity = cli.verbosity as usize;
@@ -187,7 +221,7 @@ async fn main() -> anyhow::Result<()> {
         .timestamp(Timestamp::Millisecond)
         .init()?;
 
-    let cfg = cli.network.get().get_config();
+    let cfg = get_network_config(&cli)?;
 
     match &cli.command.clone() {
         Commands::Account(args) => handle_account(cfg, args, verbosity).await,
@@ -197,6 +231,73 @@ async fn main() -> anyhow::Result<()> {
         Commands::Timehub(args) => handle_timehub(cfg, args).await,
         Commands::Machine(args) => handle_machine(cfg, args).await,
     }
+}
+
+fn ensure_default_network_config() -> anyhow::Result<()> {
+    let network_config_path = shellexpand::full(DEFAULT_NETWORK_CONFIG_PATH)?;
+    let config_path = Path::new(network_config_path.as_ref());
+    if !config_path.exists() {
+        fs::create_dir_all(config_path.parent().expect("config file path has parent"))?;
+        let default_networks = network::default_networks();
+        let cfg_file_content = toml::to_string(&default_networks)?;
+        fs::write(config_path, &cfg_file_content)?;
+    }
+    Ok(())
+}
+
+fn get_network_config(cli: &Cli) -> anyhow::Result<NetworkConfig> {
+    let network_config_path = shellexpand::full(&cli.network_config_file)?;
+    let file_content = fs::read_to_string(network_config_path.as_ref())
+        .map_err(|err| anyhow!("cannot read '{:}': {err}", &network_config_path))?;
+    let mut specs: HashMap<String, NetworkSpec> = toml::from_str(&file_content)
+        .map_err(|err| anyhow!("cannot parse TOML file '{}': {err}", &network_config_path))?;
+    let spec = specs.remove(&cli.network).ok_or(anyhow!(
+        "No such network '{}' in {}",
+        &cli.network,
+        &cli.network_config_file
+    ))?;
+
+    apply_flags_on_network_spec(spec, cli).into_network_config()
+}
+
+fn apply_flags_on_network_spec(mut spec: NetworkSpec, cli: &Cli) -> NetworkSpec {
+    if let Some(x) = cli.chain_id {
+        spec.subnet_config.chain_id = Some(x);
+    }
+    if let Some(ref x) = cli.subnet_id {
+        spec.subnet_config.subnet_id = x.clone();
+    }
+    if let Some(ref x) = cli.rpc_url {
+        spec.subnet_config.rpc_url = x.clone();
+    }
+    if let Some(ref x) = cli.object_api_url {
+        spec.subnet_config.object_api_url = x.clone();
+    }
+    if let Some(ref x) = cli.evm_rpc_url {
+        spec.subnet_config.evm_rpc_url = x.clone();
+    }
+    if let Some(x) = cli.evm_gateway_address {
+        spec.subnet_config.evm_gateway_address = x;
+    }
+    if let Some(x) = cli.evm_registry_address {
+        spec.subnet_config.evm_registry_address = x;
+    }
+
+    if let Some(parent) = spec.parent_config.as_mut() {
+        if let Some(ref x) = cli.parent_evm_rpc_url {
+            parent.evm_rpc_url = x.clone();
+        }
+        if let Some(ref x) = cli.parent_evm_gateway_address {
+            parent.evm_gateway_address = *x;
+        }
+        if let Some(ref x) = cli.parent_evm_registry_address {
+            parent.evm_registry_address = *x;
+        }
+        if let Some(ref x) = cli.parent_evm_supply_source_address {
+            parent.evm_supply_source_address = *x;
+        }
+    }
+    spec
 }
 
 /// Returns address from private key or address arg.
