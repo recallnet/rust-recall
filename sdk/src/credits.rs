@@ -21,7 +21,7 @@ use recall_provider::{
     query::{FvmQueryHeight, QueryProvider},
     response::{decode_bytes, decode_empty},
     tx::{BroadcastMode, DeliverTx, TxResult},
-    util::{get_eth_address, parse_address},
+    util::get_eth_address,
     {Client, Provider},
 };
 use recall_signer::Signer;
@@ -122,8 +122,7 @@ impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
                 .approvals_to
                 .into_iter()
                 .map(|(k, v)| {
-                    let a = parse_address(&k).expect("failed to parse address from string");
-                    let a = get_eth_address(a).expect("failed to get ethereum address");
+                    let a = get_eth_address(k).expect("failed to get ethereum address");
                     (a.encode_hex_with_prefix(), v.into())
                 })
                 .collect(),
@@ -131,8 +130,7 @@ impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
                 .approvals_from
                 .into_iter()
                 .map(|(k, v)| {
-                    let a = parse_address(&k).expect("failed to parse address from string");
-                    let a = get_eth_address(a).expect("failed to get ethereum address");
+                    let a = get_eth_address(k).expect("failed to get ethereum address");
                     (a.encode_hex_with_prefix(), v.into())
                 })
                 .collect(),
