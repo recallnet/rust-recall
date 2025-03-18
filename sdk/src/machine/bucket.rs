@@ -183,7 +183,7 @@ impl Bucket {
         let mut reader = AsyncPeekable::from(reader);
         let mut buffer = [0u8; 40]; // 40 bytes is enough to detect the mime type
         reader.peek(&mut buffer).await?;
-        let content_type = infer::get(&buffer[..]);
+        let content_type = infer::get(&buffer[..]).map(|t| t.to_string());
 
         validate_metadata(&options.metadata)?;
         let options = self.add_content_type_to_metadata(options, content_type);
@@ -283,6 +283,11 @@ impl Bucket {
 
         // Reset to start for upload
         file.seek(std::io::SeekFrom::Start(0)).await?;
+
+        let content_type = mime_guess::from_path(&path)
+            .first()
+            .map(|mime| mime.to_string());
+        let options = self.add_content_type_to_metadata(options, content_type);
 
         self.add_reader(provider, signer, from, key, file, total_size, options)
             .await
@@ -441,12 +446,19 @@ impl Bucket {
     fn add_content_type_to_metadata(
         &self,
         options: AddOptions,
-        content_type: Option<Type>,
+        content_type: Option<String>,
     ) -> AddOptions {
         let mut metadata = options.metadata;
+        if metadata.contains_key("content-type") {
+            return AddOptions {
+                metadata,
+                ..options
+            };
+        }
+
         metadata.insert(
             "content-type".into(),
-            content_type.map_or("application/octet-stream".into(), |t| t.mime_type().into()),
+            content_type.unwrap_or("application/octet-stream".into()),
         );
 
         AddOptions {
