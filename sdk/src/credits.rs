@@ -122,7 +122,8 @@ impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
                 .approvals_to
                 .into_iter()
                 .map(|(k, v)| {
-                    let a = parse_address(&k).expect("failed to parse address from string");
+                    let a =
+                        parse_address(&k.to_string()).expect("failed to parse address from string");
                     let a = get_eth_address(a).expect("failed to get ethereum address");
                     (a.encode_hex_with_prefix(), v.into())
                 })
@@ -131,7 +132,8 @@ impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
                 .approvals_from
                 .into_iter()
                 .map(|(k, v)| {
-                    let a = parse_address(&k).expect("failed to parse address from string");
+                    let a =
+                        parse_address(&k.to_string()).expect("failed to parse address from string");
                     let a = get_eth_address(a).expect("failed to get ethereum address");
                     (a.encode_hex_with_prefix(), v.into())
                 })
