@@ -26,3 +26,6 @@ check-fmt:
 
 check-clippy:
 	cargo clippy --no-deps --tests -- -D clippy::all
+
+start-localnet:
+	./ci/start-localnet.sh
