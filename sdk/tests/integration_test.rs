@@ -115,7 +115,7 @@ async fn can_add_bucket() {
     signer.init_sequence(&provider).await.unwrap();
 
     // Create a new bucket
-    let (machine, _) = Bucket::new(
+    let (buck, _) = Bucket::new(
         &provider,
         &mut signer,
         None,
@@ -143,7 +143,7 @@ async fn can_add_bucket() {
         ..Default::default()
     };
     let from = signer.address();
-    machine
+    buck
         .add_from_path(&provider, &mut signer, from, key, file.file_path(), options)
         .await
         .unwrap();
@@ -157,7 +157,7 @@ async fn can_add_bucket() {
         ..Default::default()
     };
     sleep(Duration::from_secs(2)).await;
-    let list = machine.query(&provider, options).await.unwrap();
+    let list = buck.query(&provider, options).await.unwrap();
     for (key_bytes, object) in list.objects {
         let query_key = core::str::from_utf8(&key_bytes).unwrap_or_default();
 
@@ -178,7 +178,7 @@ async fn can_add_bucket() {
         ..Default::default()
     };
     let open_file = obj_file.open_rw().await.unwrap();
-    machine
+    buck
         .get(&provider, key, open_file, options)
         .await
         .unwrap();
@@ -191,7 +191,7 @@ async fn can_add_bucket() {
     assert_eq!(contents, &random_data[0..10]);
 
     // Now, delete the object
-    machine
+    buck
         .delete(&provider, &mut signer, from, key, Default::default())
         .await
         .unwrap();
