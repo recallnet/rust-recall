@@ -378,7 +378,7 @@ pub async fn handle_bucket(
                     GetOptions {
                         range: args.range.clone(),
                         height: args.height,
-                        show_progress: true,
+                        show_progress,
                     },
                 )
                 .await
