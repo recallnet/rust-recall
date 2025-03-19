@@ -473,6 +473,7 @@ fn object_state_to_json(object: &ObjectState) -> Value {
     let mut val = json!({
         "hash": object.hash.to_string(),
         "size": object.size,
+        "expiry": object.expiry,
     });
     let obj = val.as_object_mut().unwrap();
     if !object.metadata.is_empty() {
