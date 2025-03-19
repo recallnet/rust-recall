@@ -57,6 +57,7 @@ func (m *Ci) codeContainer(
 			"pkg-config",
 			"libssl-dev",
 			"git",
+			"curl",
 		}).
 		// Rust caches and env vars
 		WithMountedCache("/root/.cargo/registry", cargoRegistry).
@@ -103,18 +104,12 @@ EOL`,
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"cat /root/.config/recall/networks.toml",
-		}).
-		WithExec([]string{
-			"sh", "-c",
 			"recall --network localnet account deposit --private-key \"$RECALL_PRIVATE_KEY\" 1",
 		})
 }
 
 func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secret) *dagger.Service {
-	log.Println("username", dockerUsername)
-
-	container := dag.Container().
+	return dag.Container().
 		WithRegistryAuth("docker.io", dockerUsername, dockerPassword).
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
@@ -124,18 +119,8 @@ func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secre
 		WithExec([]string{
 			"sh", "-c",
 			"echo $DOCKER_PASSWORD | docker login -u " + dockerUsername + " --password-stdin",
-		})
-
-	for _, port := range []int{8545, 8645, 26657} {
-		container = container.WithExposedPort(
-			port,
-			dagger.ContainerWithExposedPortOpts{
-				ExperimentalSkipHealthcheck: true,
-			},
-		)
-	}
-
-	return container.
+		}).
+		WithExposedPort(8545).
 		AsService(
 			dagger.ContainerAsServiceOpts{
 				InsecureRootCapabilities: true,
