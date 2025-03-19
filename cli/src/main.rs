@@ -54,7 +54,7 @@ struct Cli {
     #[arg(short, long, env = "RECALL_NETWORK", default_value_t = network::TESTNET_NETWORK_NAME.to_owned())]
     network: String,
 
-    /// Path to network config TOML file.
+    /// Path to the network config TOML file.
     #[arg(
         short = 'c',
         long,
@@ -66,6 +66,7 @@ struct Cli {
     /// Logging verbosity (repeat for more verbose logging).
     #[arg(short, long, env = "RECALL_LOG_VERBOSITY", action = clap::ArgAction::Count)]
     verbosity: u8,
+
     /// Silence logging.
     #[arg(short, long, env = "RECALL_LOG_QUIET", default_value_t = false)]
     quiet: bool,
@@ -102,15 +103,15 @@ struct Cli {
     #[arg(long)]
     parent_evm_rpc_url: Option<reqwest::Url>,
 
-    /// Gateway address on parent chain.
+    /// Gateway address on the parent chain.
     #[arg(long)]
     parent_evm_gateway_address: Option<Address>,
 
-    /// Registry address on parent chain.
+    /// Registry address on the parent chain.
     #[arg(long)]
     parent_evm_registry_address: Option<Address>,
 
-    /// Supply source address on parent chain.
+    /// Supply source address on the parent chain.
     #[arg(long)]
     parent_evm_supply_source_address: Option<Address>,
 }
