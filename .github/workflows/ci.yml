@@ -35,12 +35,6 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.23.6'
-          cache: true
-        
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
@@ -49,15 +43,24 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+    
+      # Cache Dagger volumes
+      - name: Cache Dagger volumes
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/dagger
+          key: ${{ runner.os }}-dagger-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build
         run: make build
-        
-      - name: Start localnet
-        run: make start-localnet
 
       - name: Run tests
-        run: make test
+        uses: dagger/dagger-for-github@8.0.0
+        with:
+          verb: call
+          module: ci
+          args: test --source ../ --docker-username $DOCKER_USERNAME --docker-password env://DOCKER_PASSWORD
 
       - name: Run linter
         run: make lint
