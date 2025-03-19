@@ -77,11 +77,17 @@ func (m *Ci) codeContainer(
 		WithExec([]string{
 			"sh", "-c",
 			`cat > /root/.config/recall/networks.toml << 'EOL'
+[localnet.subnet_config]
+chain_id = 248163216
+subnet_id = "/r31337/t410f6gbdxrbehnaeeo4mrq7wc5hgq6smnefys4qanwi"
+rpc_url = "http://localnet:26657/"
+object_api_url = "http://localnet:8001/"
+evm_rpc_url = "http://localnet:8645/"
+evm_gateway_address = "0x77aa40b105843728088c0132e43fc44348881da8"
+evm_registry_address = "0x74539671a1d2f1c8f200826baba665179f53a1b7"
+
 [localnet.parent_config]
-rpc_url = "http://localnet:26657"
-evm_rpc_url = "http://localnet:8645"
-object_api_url = "http://localnet:8001"
-parent_evm_rpc_url = "http://localnet:8545"
+evm_rpc_url = "http://localnet:8545/"
 evm_gateway_address = "0x9a676e781a523b5d0c0e43731313a708cb607508"
 evm_registry_address = "0x322813fd9a801c5507c9de605d63cea4f2ce6c44"
 evm_supply_source_address = "0x4a679253410272dd5232b3ff7cf5dbb88f295319"
@@ -97,7 +103,11 @@ EOL`,
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"recall --network localnet account deposit --private-key \"$RECALL_PRIVATE_KEY\" 1 ",
+			"cat /root/.config/recall/networks.toml",
+		}).
+		WithExec([]string{
+			"sh", "-c",
+			"recall --network localnet account deposit --private-key \"$RECALL_PRIVATE_KEY\" 1",
 		})
 }
 
