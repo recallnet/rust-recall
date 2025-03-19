@@ -40,8 +40,8 @@ humantime = "2.1.0"
 hex = "0.4.3"
 indicatif = "0.17.8"
 infer = "0.16.0"
-iroh-base = "0.33"
-iroh-blobs = { version = "0.33", features = ["rpc"] }
+iroh-base = "0.34"
+iroh-blobs = { version = "0.34", features = ["rpc"] }
 lazy_static = "1.4.0"
 more-asserts = "0.3.1"
 num-traits = "0.2.18"
