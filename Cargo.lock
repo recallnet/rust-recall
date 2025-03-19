@@ -7392,6 +7392,7 @@ dependencies = [
  "ipc_actors_abis",
  "iroh",
  "lazy_static",
+ "mime_guess",
  "more-asserts",
  "num-traits",
  "peekable",
