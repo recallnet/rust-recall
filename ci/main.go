@@ -58,14 +58,18 @@ func (m *Ci) codeContainer(
 			"libssl-dev",
 			"git",
 		}).
-		// Cargo caches and env vars
-		WithMountedCache("/usr/local/cargo/registry", cargoRegistry).
-		WithMountedCache("/usr/local/cargo/git", cargoGit).
+		// Rust caches and env vars
+		WithMountedCache("/root/.cargo/registry", cargoRegistry).
+		WithMountedCache("/root/.cargo/git", cargoGit).
 		WithMountedCache("/src/target", cargoTarget).
 		WithMountedCache("/root/.rustup", rustupCache).
 		WithEnvVariable("CARGO_INCREMENTAL", "1").
 		WithEnvVariable("CARGO_NET_RETRY", "10").
+		WithEnvVariable("CARGO_NET_GIT_FETCH_WITH_CLI", "true").
 		WithEnvVariable("RUSTFLAGS", "-C target-cpu=native").
+		WithExec([]string{"bash", "-c",
+			"curl -o- https://sh.rustup.rs | sh -s -- -y --default-toolchain stable",
+		}).
 		// Create the config directory and file
 		WithExec([]string{
 			"mkdir", "-p", "/root/.config/recall",
@@ -73,11 +77,14 @@ func (m *Ci) codeContainer(
 		WithExec([]string{
 			"sh", "-c",
 			`cat > /root/.config/recall/networks.toml << 'EOL'
-network = "localnet"
+[localnet.parent_config]
 rpc_url = "http://localnet:26657"
 evm_rpc_url = "http://localnet:8645"
 object_api_url = "http://localnet:8001"
 parent_evm_rpc_url = "http://localnet:8545"
+evm_gateway_address = "0x9a676e781a523b5d0c0e43731313a708cb607508"
+evm_registry_address = "0x322813fd9a801c5507c9de605d63cea4f2ce6c44"
+evm_supply_source_address = "0x4a679253410272dd5232b3ff7cf5dbb88f295319"
 EOL`,
 		}).
 		WithDirectory("/src", source).
@@ -86,7 +93,11 @@ EOL`,
 		WithSecretVariable("RECALL_PRIVATE_KEY", recallPrivateKey).
 		WithExec([]string{
 			"sh", "-c",
-			"make test",
+			"make build install",
+		}).
+		WithExec([]string{
+			"sh", "-c",
+			"recall --network localnet account deposit --private-key \"$RECALL_PRIVATE_KEY\" 1 ",
 		})
 }
 
@@ -114,11 +125,13 @@ func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secre
 		)
 	}
 
-	return container.AsService(
-		dagger.ContainerAsServiceOpts{
-			InsecureRootCapabilities: true,
-			NoInit:                   true,
-			UseEntrypoint:            true,
-		},
-	)
+	return container.
+		AsService(
+			dagger.ContainerAsServiceOpts{
+				InsecureRootCapabilities: true,
+				NoInit:                   true,
+				UseEntrypoint:            true,
+			},
+		).
+		WithHostname("localnet")
 }
