@@ -114,7 +114,7 @@ func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secre
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache).
-		From("textile/recall-localnet").
+		From("textile/recall-localnet:sha-1cfd68d-a0e6c06").
 		WithSecretVariable("DOCKER_PASSWORD", dockerPassword).
 		WithExec([]string{
 			"sh", "-c",
