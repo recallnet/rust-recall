@@ -60,7 +60,8 @@ jobs:
         with:
           verb: call
           module: ci
-          args: test --source ../ --docker-username $DOCKER_USERNAME --docker-password env://DOCKER_PASSWORD
+          args: test --source ../ --docker-username $DOCKER_USERNAME --docker-password env://DOCKER_PASSWORD --recall-private-key env://RECALL_PRIVATE_KEY --test-target-network localnet
+
 
       - name: Run linter
         run: make lint
