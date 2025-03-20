@@ -63,7 +63,7 @@ jobs:
           workdir: 'dagger'
           verb: call
           module: ci
-          args: test --source . --docker-username $DOCKER_USERNAME --docker-password env://DOCKER_PASSWORD --recall-private-key env://RECALL_PRIVATE_KEY --test-target-network localnet
+          args: test --source ../ --docker-username $DOCKER_USERNAME --docker-password env://DOCKER_PASSWORD --recall-private-key env://RECALL_PRIVATE_KEY --test-target-network localnet
           dagger-flags: '--progress plain'
 
       - name: Run linter
