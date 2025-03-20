@@ -24,7 +24,6 @@ func (m *Ci) Test(
 ) (string, error) {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.Ltime | log.Lmsgprefix)
-	os.Setenv("DOCKER_HOST", "unix:///var/run/docker.sock")
 
 	return m.codeContainer(source, testTargetNetwork, recallPrivateKey).
 		WithServiceBinding("localnet", m.localnetService(dockerUsername, dockerPassword)).
@@ -104,7 +103,7 @@ EOL`,
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"recall --network localnet account deposit --private-key \"$RECALL_PRIVATE_KEY\" 1",
+			"recall --network localnet account deposit 1",
 		})
 }
 
@@ -114,7 +113,7 @@ func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secre
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache).
-		From("textile/recall-localnet:sha-1cfd68d-a0e6c06").
+		From("textile/recall-localnet").
 		WithSecretVariable("DOCKER_PASSWORD", dockerPassword).
 		WithExec([]string{
 			"sh", "-c",
