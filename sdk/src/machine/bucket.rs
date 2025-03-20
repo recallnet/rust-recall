@@ -14,9 +14,9 @@ use fendermint_actor_bucket::{
 };
 use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use indicatif::HumanDuration;
-use infer::Type;
 use iroh::blobs::Hash as IrohHash;
 use peekable::tokio::AsyncPeekable;
+use serde::Serialize;
 use tendermint::abci::response::DeliverTx;
 use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 use tokio::time::Instant;
@@ -127,6 +127,17 @@ impl Default for QueryOptions {
     }
 }
 
+#[derive(Debug, Clone, Serialize)]
+/// Object info
+pub struct ObjectInfo {
+    /// Object hash
+    pub hash: Hash,
+    /// Object metadata hash
+    pub metadata_hash: Hash,
+    /// Object size
+    pub size: u64,
+}
+
 /// A machine for S3-like object storage.
 pub struct Bucket {
     address: Address,
@@ -175,7 +186,7 @@ impl Bucket {
         reader: R,
         size: u64,
         options: AddOptions,
-    ) -> anyhow::Result<TxResult<Object>>
+    ) -> anyhow::Result<(ObjectInfo, TxResult<Object>)>
     where
         C: Client + Send + Sync,
         R: AsyncRead + Unpin + Send + 'static,
@@ -245,14 +256,20 @@ impl Bucket {
             .await?;
 
         msg_bar.println(format!(
-            "{} Added object in {} (hash={}; size={})",
+            "{} Added object in {} (hash={}; metadata_hash={}; size={})",
             SPARKLE,
             HumanDuration(started.elapsed()),
             object_hash,
+            metadata_hash,
             size
         ));
         msg_bar.finish_and_clear();
-        Ok(tx)
+        let object = ObjectInfo {
+            hash: Hash(*object_hash.as_bytes()),
+            metadata_hash: Hash(*metadata_hash.as_bytes()),
+            size,
+        };
+        Ok((object, tx))
     }
 
     /// Add an object into the bucket from a path.
@@ -264,7 +281,7 @@ impl Bucket {
         key: &str,
         path: impl AsRef<Path>,
         options: AddOptions,
-    ) -> anyhow::Result<TxResult<Object>>
+    ) -> anyhow::Result<(ObjectInfo, TxResult<Object>)>
     where
         C: Client + Send + Sync,
     {

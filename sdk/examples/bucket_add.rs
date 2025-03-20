@@ -82,7 +82,7 @@ async fn main() -> anyhow::Result<()> {
         machine.address(),
         key,
     );
-    println!("Transaction hash: 0x{}", tx.hash());
+    println!("Transaction hash: 0x{}", tx.1.hash());
 
     // Wait some time for the network to resolve the object
     sleep(Duration::from_secs(2)).await;

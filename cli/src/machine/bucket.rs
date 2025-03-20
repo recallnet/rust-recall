@@ -23,7 +23,7 @@ use recall_sdk::machine::bucket::validate_metadata;
 use recall_sdk::{
     machine::{
         bucket::{
-            AddOptions, Bucket, DeleteOptions, GetOptions, ObjectState, QueryOptions,
+            AddOptions, Bucket, DeleteOptions, GetOptions, ObjectInfo, ObjectState, QueryOptions,
             UpdateObjectMetadataOptions,
         },
         Machine,
@@ -305,7 +305,7 @@ pub async fn handle_bucket(
             let machine = Bucket::attach(args.address).await?;
             let token_amount = args.token_amount.clone();
             let from = signer.address();
-            let tx = machine
+            let (object, tx) = machine
                 .add_from_path(
                     &provider,
                     &mut signer,
@@ -324,7 +324,11 @@ pub async fn handle_bucket(
                 )
                 .await?;
 
-            print_tx_json(&tx)
+            let tx_json = match &tx.status {
+                TxStatus::Pending(tx) => serde_json::to_value(tx)?,
+                TxStatus::Committed(receipt) => serde_json::to_value(receipt)?,
+            };
+            print_json(&json!({"object": object_info_to_json(&object), "tx": &tx_json}))
         }
         BucketCommands::Delete(args) => {
             let provider =
@@ -482,4 +486,8 @@ fn object_state_to_json(object: &ObjectState) -> Value {
         obj.append(meta);
     }
     json!(obj)
+}
+
+fn object_info_to_json(object: &ObjectInfo) -> Value {
+    json!({"hash": object.hash.to_string(), "metadata_hash": object.metadata_hash.to_string(), "size": object.size})
 }
