@@ -115,6 +115,7 @@ func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secre
 		WithMountedCache("/var/lib/docker", dockerCache).
 		From("textile/recall-localnet").
 		WithSecretVariable("DOCKER_PASSWORD", dockerPassword).
+		// Login to Docker so that we don't run into rate limits while pulling images from inside the localnet image
 		WithExec([]string{
 			"sh", "-c",
 			"echo $DOCKER_PASSWORD | docker login -u " + dockerUsername + " --password-stdin",
