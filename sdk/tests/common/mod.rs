@@ -1,35 +1,30 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use recall_sdk::network::{Network, NetworkConfig};
-use std::env;
+use recall_sdk::network::{self, NetworkConfig};
+use std::{env, fs, path::Path};
 
-#[allow(dead_code)]
-pub fn setup() {
-    // TODO
-}
+const DEFAULT_TEST_TARGET_NETWORK_CONFIG_PATH: &str = "~/.config/recall/networks.toml";
+const DEFAULT_TEST_TARGET_NETWORK: &str = "localnet";
 
-pub fn get_network() -> NetworkConfig {
-    let net_name = match env::var("TEST_TARGET_NETWORK") {
-        Ok(network) => network,
-        Err(e) => panic!("cannot get test target network {}", e),
+pub fn get_network_config() -> NetworkConfig {
+    let network_config_path = env::var("TEST_TARGET_NETWORK_CONFIG")
+        .unwrap_or_else(|_| DEFAULT_TEST_TARGET_NETWORK_CONFIG_PATH.to_string());
+    let network_config_path = shellexpand::full(network_config_path.as_str()).unwrap();
+    let network_config_path = Path::new(network_config_path.as_ref());
+    let mut specs = if !network_config_path.exists() {
+        network::default_networks()
+    } else {
+        let file_content = fs::read_to_string(network_config_path).unwrap();
+        toml::from_str(&file_content).unwrap()
     };
-
-    match net_name.as_str() {
-        "localnet" => {
-            Network::Localnet.init();
-            Network::Localnet.get_config()
-        }
-        "testnet" => {
-            Network::Testnet.init();
-            Network::Testnet.get_config()
-        }
-        "mainnet" => {
-            Network::Mainnet.init();
-            Network::Mainnet.get_config()
-        }
-        _ => panic!("cannot get test target network config"),
-    }
+    let network =
+        env::var("TEST_TARGET_NETWORK").unwrap_or_else(|_| DEFAULT_TEST_TARGET_NETWORK.to_string());
+    specs
+        .remove(&network)
+        .unwrap()
+        .into_network_config()
+        .unwrap()
 }
 
 pub fn get_runner_secret_key() -> String {

@@ -27,6 +27,14 @@ func (m *Ci) Test(
 
 	return m.codeContainer(source, testTargetNetwork, recallPrivateKey).
 		WithServiceBinding("localnet", m.localnetService(dockerUsername, dockerPassword)).
+		WithExec([]string{
+			"sh", "-c",
+			"make test",
+		}).
+		WithExec([]string{
+			"sh", "-c",
+			"recall --network localnet account deposit 1",
+		}).
 		Stdout(ctx)
 }
 
@@ -95,15 +103,12 @@ EOL`,
 		}).
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
+		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
 		WithEnvVariable("TEST_TARGET_NETWORK", testTargetNetwork).
 		WithSecretVariable("RECALL_PRIVATE_KEY", recallPrivateKey).
 		WithExec([]string{
 			"sh", "-c",
 			"make build install",
-		}).
-		WithExec([]string{
-			"sh", "-c",
-			"recall --network localnet account deposit 1",
 		})
 }
 

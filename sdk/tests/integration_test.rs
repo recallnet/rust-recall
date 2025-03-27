@@ -26,7 +26,7 @@ mod common;
 #[tokio::test]
 #[ignore]
 async fn runner_has_token() {
-    let network_config = common::get_network();
+    let network_config = common::get_network_config();
     let sk_env = common::get_runner_secret_key();
     let sk = parse_secret_key(&sk_env).unwrap();
     let signer = Wallet::new_secp256k1(
@@ -52,12 +52,9 @@ async fn runner_has_token() {
     assert_lt!(balance, TokenAmount::from_whole(10000));
 }
 
-// TODO: this test fails, but it seems like it's because account deplosit is broken...
 #[tokio::test]
-#[ignore]
 async fn can_deposit() {
-    let network_config = common::get_network();
-
+    let network_config = common::get_network_config();
     let sk_env = common::get_runner_secret_key();
     let sk = parse_secret_key(&sk_env).unwrap();
     let signer = Wallet::new_secp256k1(
@@ -97,7 +94,7 @@ async fn can_deposit() {
 #[tokio::test]
 #[ignore]
 async fn can_add_bucket() {
-    let network_config = common::get_network();
+    let network_config = common::get_network_config();
     let sk_env = common::get_runner_secret_key();
     let sk = parse_secret_key(&sk_env).unwrap();
     let mut signer =
