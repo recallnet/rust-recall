@@ -15,7 +15,7 @@ use fendermint_actor_bucket::{
 use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use indicatif::HumanDuration;
 use infer::Type;
-use iroh::blobs::Hash as IrohHash;
+use iroh_blobs::Hash as IrohHash;
 use peekable::tokio::AsyncPeekable;
 use tendermint::abci::response::DeliverTx;
 use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
