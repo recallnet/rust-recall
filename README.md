@@ -64,6 +64,58 @@ All the available commands include:
 - Do all of the above: `make all`
 - Clean dependencies: `make clean`
 
+## Testing
+
+Some of the tests require a Docker container to be running for `localnet`, and so will fail if you run `make test`
+without starting the container first. You can start this container using the following command:
+
+```bash
+docker run --privileged --rm --name recall-localnet \
+  -p 8545:8545 \
+  -p 8645:8645 \
+  -p 26657:26657  \
+  textile/recall-localnet:latest
+```
+
+If you'd like to test against a specific IPC commit, look for the corresponding `localnet` image in the
+[Docker Hub repository](https://hub.docker.com/r/textile/recall-localnet/tags) using the first 7 characters of the IPC
+commit hash. For example, for commit `8c6792f5c306420a6915e9a83fefb10520417a8b`, the corresponding `localnet` image
+would be tagged `sha-8c6792f-*` (in this case, `sha-8c6792f-be1693d`). You can then run the following command:
+
+```bash
+docker run --privileged --rm -d --name recall-localnet \
+  -p 8545:8545 \
+  -p 8645:8645 \
+  -p 26657:26657  \
+  textile/recall-localnet:sha-8c6792f-be1693d
+```
+
+Note that it can take several minutes for the `localnet` container to start up and be ready for testing. You can check
+the status of the container using the following command:
+
+```text
+docker logs -f recall-localnet
+```
+
+The following logs should appear when the container is ready:
+
+```bash
+All containers started. Waiting for termination signal...
+```
+
+Also note that some tests (e.g. the SDK tests) require additional environment variables to be set. You can set these
+environment variables in your shell before running the tests. For example, you can run the following command:
+
+```bash
+export RECALL_PRIVATE_KEY=0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97
+```
+
+### Adding New Integration Tests
+
+All the tests in the repo are written as Rust unit tests, even the integration tests. New integration tests can be added
+to the `sdk/tests` directory. The tests are run using the `cargo test` command, but note that you will need to set the
+`RECALL_PRIVATE_KEY` environment variable and start the `localnet` container before running the tests.
+
 ## Contributing
 
 PRs accepted.
