@@ -53,7 +53,7 @@ func (m *Ci) codeContainer(
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache).
-		From("rust:slim").
+		From("debian:slim").
 		WithExec([]string{
 			"apt-get", "update",
 		}).
@@ -74,9 +74,8 @@ func (m *Ci) codeContainer(
 		WithEnvVariable("CARGO_INCREMENTAL", "1").
 		WithEnvVariable("CARGO_NET_RETRY", "10").
 		WithEnvVariable("CARGO_NET_GIT_FETCH_WITH_CLI", "true").
-		WithEnvVariable("RUSTFLAGS", "-C target-cpu=native").
 		WithExec([]string{"bash", "-c",
-			"curl -o- https://sh.rustup.rs | sh -s -- -y --default-toolchain stable",
+			"curl -o- https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal",
 		}).
 		// Create the config directory and file
 		WithExec([]string{
@@ -102,6 +101,7 @@ evm_supply_source_address = "0x4a679253410272dd5232b3ff7cf5dbb88f295319"
 EOL`,
 		}).
 		WithDirectory("/src", source).
+		WithoutDirectory("/src/dagger").
 		WithWorkdir("/src").
 		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
 		WithEnvVariable("TEST_TARGET_NETWORK", testTargetNetwork).
