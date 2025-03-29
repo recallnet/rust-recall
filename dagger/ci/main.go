@@ -53,7 +53,7 @@ func (m *Ci) codeContainer(
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache).
-		From("debian:bookworm-slim").
+		From("rust:slim-bookworm").
 		WithExec([]string{
 			"apt-get", "update",
 		}).
@@ -64,7 +64,6 @@ func (m *Ci) codeContainer(
 			"pkg-config",
 			"libssl-dev",
 			"git",
-			"curl",
 		}).
 		// Rust caches and env vars
 		WithMountedCache("/root/.cargo/registry", cargoRegistry).
@@ -74,9 +73,6 @@ func (m *Ci) codeContainer(
 		WithEnvVariable("CARGO_INCREMENTAL", "1").
 		WithEnvVariable("CARGO_NET_RETRY", "10").
 		WithEnvVariable("CARGO_NET_GIT_FETCH_WITH_CLI", "true").
-		WithExec([]string{"bash", "-c",
-			"curl -o- https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal",
-		}).
 		// Create the config directory and file
 		WithExec([]string{
 			"mkdir", "-p", "/root/.config/recall",
