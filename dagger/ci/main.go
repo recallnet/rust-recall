@@ -53,7 +53,7 @@ func (m *Ci) codeContainer(
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache).
-		From("debian:slim").
+		From("debian:bookworm-slim").
 		WithExec([]string{
 			"apt-get", "update",
 		}).
@@ -69,8 +69,8 @@ func (m *Ci) codeContainer(
 		// Rust caches and env vars
 		WithMountedCache("/root/.cargo/registry", cargoRegistry).
 		WithMountedCache("/root/.cargo/git", cargoGit).
-		WithMountedCache("/src/target", cargoTarget).
 		WithMountedCache("/root/.rustup", rustupCache).
+		WithMountedCache("/src/target", cargoTarget).
 		WithEnvVariable("CARGO_INCREMENTAL", "1").
 		WithEnvVariable("CARGO_NET_RETRY", "10").
 		WithEnvVariable("CARGO_NET_GIT_FETCH_WITH_CLI", "true").
