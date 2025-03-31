@@ -32,7 +32,7 @@ func (m *Ci) Test(
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"recall --network localnet account deposit 1",
+			"find cli-tests -name \"[0-9][0-9]-*.sh\" | sort | xargs -I{} sh -c '{}'",
 		}).
 		Stdout(ctx)
 }
