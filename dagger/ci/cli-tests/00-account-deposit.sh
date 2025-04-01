@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-recall --network localnet account deposit 1
+recall account deposit 1

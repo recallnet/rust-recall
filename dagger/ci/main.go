@@ -99,6 +99,7 @@ EOL`,
 		WithWorkdir("/src").
 		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
 		WithEnvVariable("TEST_TARGET_NETWORK", "localnet").
+		WithEnvVariable("RECALL_NETWORK", "localnet").
 		WithSecretVariable("RECALL_PRIVATE_KEY", recallPrivateKey).
 		WithExec([]string{
 			"sh", "-c",
