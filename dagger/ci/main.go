@@ -32,7 +32,7 @@ func (m *Ci) Test(
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"find dagger/ci/cli-tests -type f | sort | xargs -I{} sh -c '{}'",
+			"find dagger/ci/cli-tests -type f | sort | xargs -I{} sh -c 'chmod +x {} && {}'",
 		}).
 		Stdout(ctx)
 }
