@@ -36,6 +36,7 @@ tokio-stream = { workspace = true }
 tokio-util = { workspace = true }
 
 fendermint_actor_blobs_shared = { workspace = true }
+fendermint_actor_blobs = { workspace = true }
 fendermint_actor_bucket = { workspace = true }
 fendermint_actor_recall_config_shared = { workspace = true }
 fendermint_actor_machine = { workspace = true }
