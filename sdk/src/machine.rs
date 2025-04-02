@@ -5,12 +5,12 @@ use std::collections::HashMap;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fendermint_actor_machine::{Metadata, GET_METADATA_METHOD};
-use fendermint_vm_actor_interface::adm::{
+use recall_fendermint_actor_machine::{Metadata, GET_METADATA_METHOD};
+use recall_fendermint_vm_actor_interface::adm::{
     self, CreateExternalParams, CreateExternalReturn, Kind, ListMetadataParams,
     Method::CreateExternal, Method::ListMetadata, ADM_ACTOR_ADDR,
 };
-use fendermint_vm_actor_interface::eam::EthAddress;
+use recall_fendermint_vm_actor_interface::eam::EthAddress;
 use tendermint::abci::response::DeliverTx;
 
 use recall_provider::{

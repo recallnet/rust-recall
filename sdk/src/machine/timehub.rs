@@ -6,11 +6,11 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use async_trait::async_trait;
 use bytes::Bytes;
-use fendermint_actor_timehub::{
+use recall_fendermint_actor_timehub::{
     Method::{Count, Get, Peaks, Push, Root},
     PushParams,
 };
-use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
+use recall_fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use serde::{Deserialize, Serialize};
 use tendermint::abci::response::DeliverTx;
 
@@ -38,7 +38,7 @@ pub struct PushOptions {
     pub gas_params: GasParams,
 }
 
-/// JSON serialization friendly version of [`fendermint_actor_timehub::PushReturn`].
+/// JSON serialization friendly version of [`recall_fendermint_actor_timehub::PushReturn`].
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PushReturn {
     /// The new timehub root.
@@ -47,15 +47,15 @@ pub struct PushReturn {
     pub index: u64,
 }
 
-impl From<fendermint_actor_timehub::PushReturn> for PushReturn {
-    fn from(v: fendermint_actor_timehub::PushReturn) -> Self {
+impl From<recall_fendermint_actor_timehub::PushReturn> for PushReturn {
+    fn from(v: recall_fendermint_actor_timehub::PushReturn) -> Self {
         Self {
             root: v.root.into(),
             index: v.index,
         }
     }
 }
-/// JSON serialization friendly version of [`fendermint_actor_timehub::Leaf`].
+/// JSON serialization friendly version of [`recall_fendermint_actor_timehub::Leaf`].
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Leaf {
     /// Timestamp of the witness in seconds since the UNIX epoch
@@ -64,8 +64,8 @@ pub struct Leaf {
     pub witnessed: Cid,
 }
 
-impl From<fendermint_actor_timehub::Leaf> for Leaf {
-    fn from(value: fendermint_actor_timehub::Leaf) -> Self {
+impl From<recall_fendermint_actor_timehub::Leaf> for Leaf {
+    fn from(value: recall_fendermint_actor_timehub::Leaf) -> Self {
         Self {
             timestamp: value.timestamp,
             witnessed: value.witnessed.into(),
@@ -193,7 +193,7 @@ impl Timehub {
 
 fn decode_push_return(deliver_tx: &DeliverTx) -> anyhow::Result<PushReturn> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_timehub::PushReturn>(&data)
+    fvm_ipld_encoding::from_slice::<recall_fendermint_actor_timehub::PushReturn>(&data)
         .map(|r| r.into())
         .map_err(|e| anyhow!("error parsing as PushReturn: {e}"))
 }
@@ -201,7 +201,7 @@ fn decode_push_return(deliver_tx: &DeliverTx) -> anyhow::Result<PushReturn> {
 fn decode_leaf(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Leaf>> {
     let data = decode_bytes(deliver_tx)?;
     Ok(
-        fvm_ipld_encoding::from_slice::<Option<fendermint_actor_timehub::Leaf>>(&data)
+        fvm_ipld_encoding::from_slice::<Option<recall_fendermint_actor_timehub::Leaf>>(&data)
             .map_err(|e| anyhow!("error parsing leaf: {e}"))?
             .map(|r| r.into()),
     )

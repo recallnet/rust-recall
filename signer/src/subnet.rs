@@ -9,7 +9,7 @@ use std::str::FromStr;
 
 use anyhow::anyhow;
 use fnv::FnvHasher;
-use ipc_api::{error::Error, subnet_id::MAX_CHAIN_ID};
+use recall_ipc_api::{error::Error, subnet_id::MAX_CHAIN_ID};
 
 use recall_provider::{fvm_shared::chainid::ChainID, util::parse_address};
 
@@ -30,18 +30,18 @@ fn hash(bytes: &[u8]) -> u64 {
 /// working with networks that may not have a parent.
 #[derive(Clone, Debug)]
 pub struct SubnetID {
-    /// Value that is not valid [`ipc_api::subnet_id::SubnetID`], which is convenient for networks
+    /// Value that is not valid [`recall_ipc_api::subnet_id::SubnetID`], which is convenient for networks
     /// without a real parent.
     faux: String,
-    /// A valid [`ipc_api::subnet_id::SubnetID`].
-    real: ipc_api::subnet_id::SubnetID,
+    /// A valid [`recall_ipc_api::subnet_id::SubnetID`].
+    real: recall_ipc_api::subnet_id::SubnetID,
     /// Explicitly set chain ID. If not set, the chain ID is computed as a hash from the subnet ID.
     explicit_chain_id: Option<ChainID>,
 }
 
 impl SubnetID {
     /// Returns the real subnet ID.
-    pub fn inner(&self) -> ipc_api::subnet_id::SubnetID {
+    pub fn inner(&self) -> recall_ipc_api::subnet_id::SubnetID {
         self.real.clone()
     }
 
@@ -130,7 +130,7 @@ impl FromStr for SubnetID {
 
         Ok(Self {
             faux: Default::default(),
-            real: ipc_api::subnet_id::SubnetID::new(root, children),
+            real: recall_ipc_api::subnet_id::SubnetID::new(root, children),
             explicit_chain_id: None,
         })
     }

@@ -15,7 +15,7 @@ use recall_provider::{
 use crate::key::SecretKey;
 use crate::SubnetID;
 
-pub use fendermint_vm_actor_interface::eam::EthAddress;
+pub use recall_fendermint_vm_actor_interface::eam::EthAddress;
 
 /// Trait that must be implemented by all signers.
 ///

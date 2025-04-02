@@ -14,7 +14,7 @@ use tendermint_rpc::endpoint::abci_query::AbciQuery;
 use crate::fvm_shared::{address::Address, error::ExitCode, message::Message, ActorID};
 use crate::response::encode_data;
 
-pub use fendermint_vm_message::query::{
+pub use recall_fendermint_vm_message::query::{
     ActorState, BuiltinActors, FvmQuery, FvmQueryHeight, GasEstimate, StateParams,
 };
 

@@ -3,7 +3,7 @@
 
 use anyhow::Context;
 
-pub use fendermint_crypto::SecretKey;
+pub use recall_fendermint_crypto::SecretKey;
 
 /// Parse [`SecretKey`] from a hex string.
 pub fn parse_secret_key(hex_str: &str) -> anyhow::Result<SecretKey> {

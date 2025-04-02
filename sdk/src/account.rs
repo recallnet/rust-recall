@@ -1,11 +1,11 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use fendermint_actor_blobs_shared::params::{SetAccountStatusParams, SetSponsorParams};
-use fendermint_actor_blobs_shared::Method::{SetAccountSponsor, SetAccountStatus};
-use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
+use recall_fendermint_actor_blobs_shared::params::{SetAccountStatusParams, SetSponsorParams};
+use recall_fendermint_actor_blobs_shared::Method::{SetAccountSponsor, SetAccountStatus};
+use recall_fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 
-pub use fendermint_actor_blobs_shared::state::TtlStatus;
+pub use recall_fendermint_actor_blobs_shared::state::TtlStatus;
 
 use recall_provider::{
     fvm_ipld_encoding::RawBytes,
