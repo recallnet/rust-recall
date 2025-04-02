@@ -32,7 +32,7 @@ func (m *Ci) Test(
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"find cli-tests -name \"[0-9][0-9]-*.sh\" | sort | xargs -I{} sh -c '{}'",
+			"find dagger/ci/cli-tests -type f | sort | xargs -I{} sh -c '{}'",
 		}).
 		Stdout(ctx)
 }
@@ -95,7 +95,6 @@ evm_supply_source_address = "0x4a679253410272dd5232b3ff7cf5dbb88f295319"
 EOL`,
 		}).
 		WithDirectory("/src", source).
-		WithoutDirectory("/src/dagger").
 		WithWorkdir("/src").
 		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
 		WithEnvVariable("TEST_TARGET_NETWORK", "localnet").
