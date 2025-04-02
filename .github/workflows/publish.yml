@@ -75,38 +75,11 @@ jobs:
       # We *could* pass through `--no-verify` so `cargo` doesn't build the crate before publishing,
       # which is reasonable, since this job only runs after the Linux, Windows, and WASM builds
       # have passed.
-      - name: "cargo release publish"
-        run: |-
-          cargo publish \
-            --workspace \
-            --all-features \
-            --allow-branch HEAD \
-            --no-confirm \
-            --no-verify \
-            --locked \
-            --execute
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      - name: "cargo publish"
+        run: |
+          cargo publish --locked --package recall_provider
+          cargo publish --locked --package recall_signer
+          cargo publish --locked --package recall_sdk
 
       - name: Version 👍
         id: version-bump

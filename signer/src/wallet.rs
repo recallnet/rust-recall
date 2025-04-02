@@ -19,7 +19,7 @@ use recall_provider::{
 use crate::signer::{EthAddress, Signer};
 use crate::SubnetID;
 
-pub use fendermint_crypto::SecretKey;
+pub use recall_fendermint_crypto::SecretKey;
 
 /// Indicates how an [`Address`] should be derived from a public key.
 ///

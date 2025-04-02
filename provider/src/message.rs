@@ -2,14 +2,14 @@
 // Copyright 2022-2024 Protocol Labs
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use fendermint_vm_actor_interface::system::SYSTEM_ACTOR_ADDR;
 use fvm_shared::{address::Address, econ::TokenAmount};
+use recall_fendermint_vm_actor_interface::system::SYSTEM_ACTOR_ADDR;
 
 pub use crate::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{message::Message, MethodNum},
 };
-pub use fendermint_vm_message::{
+pub use recall_fendermint_vm_message::{
     chain::ChainMessage,
     signed::{OriginKind, SignedMessage},
 };

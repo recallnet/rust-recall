@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use ethers::utils::hex::ToHexExt;
-use fendermint_vm_actor_interface::eam::EthAddress;
+use recall_fendermint_vm_actor_interface::eam::EthAddress;
 
 use recall_provider::fvm_shared::address::Address;
 use recall_sdk::network::Network;

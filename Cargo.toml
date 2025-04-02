@@ -11,7 +11,7 @@ license = "MIT OR Apache-2.0"
 readme = "./README.md"
 repository = "https://github.com/recallnet/rust-recall/"
 keywords = ["recall", "verifiable", "agents", "ai"]
-version = "0.1.0"
+version = "0.1.2"
 
 [workspace.dependencies]
 anyhow = "1.0.82"
@@ -69,33 +69,35 @@ tendermint-rpc = { version = "0.31.1", features = [
     "websocket-client",
 ] }
 
-fvm_shared = "4.4.0"
-fvm_ipld_encoding = "0.4.0"
+fvm_shared = "~4.3.0"
+fvm_ipld_encoding = "~0.4.0"
 
-fendermint_actor_blobs_shared = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_actor_bucket = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_actor_recall_config_shared = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_actor_machine = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_actor_timehub = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_crypto = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_eth_api = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_vm_actor_interface = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-fendermint_vm_message = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
+recall_provider = { path = "provider", version = "0.1.2" }
+recall_signer = { path = "signer", version = "0.1.2" }
 
-ipc_actors_abis = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
-ipc-api = { git = "https://github.com/recallnet/ipc.git", rev = "dc4da8c14c541e1ef9e398a594e65660465c47f5" }
+recall_fendermint_actor_blobs_shared = "=0.1.2"
+recall_fendermint_actor_bucket = "=0.1.2"
+recall_fendermint_actor_recall_config_shared = "=0.1.2"
+recall_fendermint_actor_machine = "=0.1.2"
+recall_fendermint_actor_timehub = "=0.1.2"
+recall_fendermint_crypto = "=0.1.2"
+recall_fendermint_eth_api = "=0.1.2"
+recall_fendermint_vm_actor_interface = "=0.1.2"
+recall_fendermint_vm_message = "=0.1.2"
+recall_ipc_actors_abis = "=0.1.2"
+recall_ipc_api = "=0.1.2"
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.
 #[patch."https://github.com/recallnet/ipc.git"]
-#fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
-#fendermint_actor_bucket = { path = "../ipc/fendermint/actors/bucket" }
-#fendermint_actor_recall_config_shared = { path = "../ipc/fendermint/actors/recall_config/shared" }
-#fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
-#fendermint_actor_timehub = { path = "../ipc/fendermint/actors/timehub" }
-#fendermint_crypto = { path = "../ipc/fendermint/crypto" }
-#fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
-#fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
+#recall_fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
+#recall_fendermint_actor_bucket = { path = "../ipc/fendermint/actors/bucket" }
+#recall_fendermint_actor_recall_config_shared = { path = "../ipc/fendermint/actors/recall_config/shared" }
+#recall_fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
+#recall_fendermint_actor_timehub = { path = "../ipc/fendermint/actors/timehub" }
+#recall_fendermint_crypto = { path = "../ipc/fendermint/crypto" }
+#recall_fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
+#recall_fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
 #
-#ipc_actors_abis = { path = "../ipc/contracts/binding" }
-#ipc-api = { path = "../ipc/ipc/api" }
+#recall_ipc_actors_abis = { path = "../ipc/contracts/binding" }
+#recall_ipc_api = { path = "../ipc/ipc/api" }
