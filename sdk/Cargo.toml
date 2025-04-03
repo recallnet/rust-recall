@@ -45,8 +45,8 @@ recall_fendermint_vm_actor_interface = { workspace = true }
 recall_ipc_actors_abis = { workspace = true }
 recall_ipc_api = { workspace = true }
 
-recall_provider = { path = "../provider" }
-recall_signer = { path = "../signer" }
+recall_provider = { workspace = true }
+recall_signer = { workspace = true }
 
 [dev-dependencies]
 hex = { workspace = true }
