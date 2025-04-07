@@ -1217,7 +1217,7 @@ dependencies = [
  "multihash",
  "serde",
  "serde_bytes",
- "unsigned-varint 0.7.2",
+ "unsigned-varint",
 ]
 
 [[package]]
@@ -3110,7 +3110,7 @@ dependencies = [
  "fvm_ipld_encoding",
  "serde",
  "thiserror 1.0.69",
- "unsigned-varint 0.7.2",
+ "unsigned-varint",
 ]
 
 [[package]]
@@ -3163,9 +3163,9 @@ dependencies = [
 
 [[package]]
 name = "fvm_sdk"
-version = "4.4.0"
+version = "4.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8ba6f409bef51c1c7554b8c159a649397df35b278647f2a5119a08e7e5f938e"
+checksum = "7e53061f4d51562b90fb3fe9be7a3ab9650a9bd8f08cc6b48d25e6bfe052a21b"
 dependencies = [
  "cid",
  "fvm_ipld_encoding",
@@ -3178,9 +3178,9 @@ dependencies = [
 
 [[package]]
 name = "fvm_shared"
-version = "4.4.4"
+version = "4.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb7838d3fc1eeeb47c7a8e32bdc3b37e6d806ac261cb96e38f15b503df671648"
+checksum = "9d3355d3bd2eb159a734a06d67dbb21b067a99540f5aefaf7d0d26503ccc73e3"
 dependencies = [
  "anyhow",
  "bitflags 2.8.0",
@@ -3201,7 +3201,7 @@ dependencies = [
  "serde",
  "serde_tuple",
  "thiserror 1.0.69",
- "unsigned-varint 0.8.0",
+ "unsigned-varint",
 ]
 
 [[package]]
@@ -5157,7 +5157,7 @@ dependencies = [
  "serde-big-array",
  "sha2 0.10.8",
  "sha3",
- "unsigned-varint 0.7.2",
+ "unsigned-varint",
 ]
 
 [[package]]
@@ -6829,9 +6829,9 @@ dependencies = [
 
 [[package]]
 name = "recall_actor_sdk"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f02a0cca5b7be132cee96c11820bc73480fa37a10dee41409aab77fe463f2994"
+checksum = "22f9dd5492615db89996f4be3027aaf68b49a528602dd3d689644711f55f2cf0"
 dependencies = [
  "anyhow",
  "fvm_ipld_encoding",
@@ -6846,7 +6846,7 @@ dependencies = [
 
 [[package]]
 name = "recall_cli"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "bytes",
@@ -6870,9 +6870,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_actor_blobs_shared"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2f3647a43b026e671cc215faa0a7deb3f93fc5a05bfde97efec6a640bc7d027"
+checksum = "a4e1f321f3588a8603495b4c4ba54674cda02cf4a880f42471a9dfc7bba0d442"
 dependencies = [
  "anyhow",
  "data-encoding",
@@ -6890,9 +6890,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_actor_bucket"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "419dcb9cada03f4204994d29976e199c4e680a1a801c3f1d5bf893ec4ea7f8c9"
+checksum = "7ca8ddbd81118b8ac82901d8a04606d0a90bac0d147adb2514d7074c0ea3168a"
 dependencies = [
  "anyhow",
  "blake3",
@@ -6914,9 +6914,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_actor_eam"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "364f31b50ca40fa21789b7e7e71b92e56a621c8efa62f4a3b174c551b9fe42ae"
+checksum = "ea08c2c23d6a437e2bd8a915ddf6b2ea28166df6a8bf04671aa54dc580c98dd7"
 dependencies = [
  "anyhow",
  "cid",
@@ -6936,9 +6936,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_actor_machine"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e5588bb6f77c00bed3f3f12911117b92e7d4f50081420bc85c3e543cf44c7a1"
+checksum = "a5dbf4474b8c197c36901fdf891c3a7b43822607ce95e9bbc2a3213fe3e3f70c"
 dependencies = [
  "anyhow",
  "fvm_ipld_blockstore",
@@ -6954,9 +6954,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_actor_recall_config_shared"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dee25856c03a4a0db11cdf503d5c134aac81d27ab91a89f0c8cc779dc921ff4a"
+checksum = "a4ca093ac131f654abac332863f89e6d54ec51e06d0792c3a88b81302e33ee05"
 dependencies = [
  "fvm_ipld_encoding",
  "fvm_shared",
@@ -6970,9 +6970,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_actor_timehub"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2edac0bc9248f8a6ae467af7f2beb5f46adebd4295ed08e6e59a7c2ac1c8bc0e"
+checksum = "62ef78e519bdbf48adffd475575d7dbcf5b22772d84f7856409febbcc6c97dc6"
 dependencies = [
  "anyhow",
  "cid",
@@ -6994,9 +6994,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_crypto"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f9fa6b4d863356be8e709b0b3092e8419095fce1c438d9664ff2a0970826ae3"
+checksum = "6b4c95474a14ab39b9f77e735243ded23243d65a6e2e35d7b95d9df4be9f8cdf"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -7007,9 +7007,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_eth_api"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85ce988b332eaa2ff2c8938325fb8ed9bfa72a96b6434e2ce8387000ddf37bba"
+checksum = "2e3be32655d0dde1780ebb1ee63ac4d5c298e69275f6c44c1832b7ca43fb5f99"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7045,9 +7045,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_rpc"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ead97a50c03aac55a34bb46b3943399a5f3fe4d891343ed8e2bd404ff380092"
+checksum = "824e434038e16980425f7bd26ac0035f13041ed5bc7a7aa51ff5bc4b79c1d4f9"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7073,9 +7073,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_testing"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c976d7b504b21f6ed4d2cc4164949763fa9eca248c59f35f0a44a17c834549f1"
+checksum = "67b4d9277b05c359f275e7b019102f3fb512fca54b84fc8b337d87a21b5f99f1"
 dependencies = [
  "cid",
  "fvm_ipld_encoding",
@@ -7090,9 +7090,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_vm_actor_interface"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2c75a3b9b2494ee0db24b8047e7075567bbae77c32f2a3c10d14a553f81899e"
+checksum = "9b77fa30af7a9d732b6d1df50be00ee7ddab6a2daa701a1cbbfb8a064c7b5e9d"
 dependencies = [
  "anyhow",
  "cid",
@@ -7119,9 +7119,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_vm_core"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c59e3f5f0724d00e3ed891fbb4430d4414186b40c6f30f959085fb048ed1108c"
+checksum = "bf9cd6106ab5294c7ebccc99563ad7b80a27b7cb2513cabd15545434f07c7301"
 dependencies = [
  "cid",
  "fnv",
@@ -7134,9 +7134,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_vm_encoding"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12c450edae2af648aa996c2dce04b3147d13eff058d8d7ba44272c49e1b0d823"
+checksum = "787e051a8b13000a883e2cb350600f8b08e2207dd630a7dcfe8a0d5afae45637"
 dependencies = [
  "cid",
  "fvm_shared",
@@ -7148,9 +7148,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_vm_genesis"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "809810753af1954f544512d30448dcd5db5250ef5e542f2978c69350f37c83ea"
+checksum = "707590c02085a80134114ca8e7f23534e5fa0574c5891730704c611d65c7ee08"
 dependencies = [
  "anyhow",
  "fvm_shared",
@@ -7168,9 +7168,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fendermint_vm_message"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cde57a14f440b39677b319edc698fa2b015451c8da2004bc4a824179706d4754"
+checksum = "d7e9c11a87539528990c44f4c993c270fc4d33fc16d1822ed7330e2b475ad33a"
 dependencies = [
  "anyhow",
  "blake2b_simd",
@@ -7194,9 +7194,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fil_actor_adm"
-version = "0.0.0"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2f2a2c80aff52285f11e5fbedae59c699b0b0d2b16da9435c120cfc81ca55dd"
+checksum = "db450fef8a8467f423f5d8cdf136d3cfee3f4468040c38f511cedbe5dc5cf150"
 dependencies = [
  "anyhow",
  "cid",
@@ -7215,9 +7215,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fil_actor_eam"
-version = "0.0.0"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8b972004745c5d6b5e1df2f793b295c12df224e45351c7acb2221c939570966"
+checksum = "446b5b77fab0970b0c8ffa7a7712baa53334d520dc99ae0e23984a30f3b8297b"
 dependencies = [
  "anyhow",
  "cid",
@@ -7237,9 +7237,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fil_actors_evm_shared"
-version = "0.0.0"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "648804e121fc66cb4ff30a132b839fd7d546c64d35e687858b5c31d3667e2fc9"
+checksum = "857e548cac272c53a10ba3780ab2ea81b819cf1d4352a6fdedd1703f751d964f"
 dependencies = [
  "fvm_ipld_encoding",
  "fvm_shared",
@@ -7251,9 +7251,9 @@ dependencies = [
 
 [[package]]
 name = "recall_fil_actors_runtime"
-version = "0.0.0"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5053f98e24e09c0b1a670aaaf66d9b328517d790c83966c9838bebcc83e4c265"
+checksum = "5d12494611b1ed882f7570573c427c8c1cc112c238fb7468aaf3cb5bfbe5952b"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -7281,14 +7281,14 @@ dependencies = [
  "serde_repr",
  "sha2 0.10.8",
  "thiserror 1.0.69",
- "unsigned-varint 0.7.2",
+ "unsigned-varint",
 ]
 
 [[package]]
 name = "recall_frc42_dispatch"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8bdc51486708ab61d396d3d3757591c6d0c6fdb6068a8fdb932c48568dbe58e6"
+checksum = "583313818fe2d2c715334d0829b58191fff86b7dd681b31fbb48ecb17997d0e5"
 dependencies = [
  "fvm_ipld_encoding",
  "fvm_sdk",
@@ -7300,9 +7300,9 @@ dependencies = [
 
 [[package]]
 name = "recall_frc42_hasher"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d051a006d9bd7da9601530299e10d20d5ab3f961c5b6aaa0cc3ba65a3a085599"
+checksum = "9f405d146a9ca3f51cb1ad743ae3fc029fca00a59290f4cc988fcaa5fa7010ec"
 dependencies = [
  "fvm_sdk",
  "fvm_shared",
@@ -7311,9 +7311,9 @@ dependencies = [
 
 [[package]]
 name = "recall_frc42_macros"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17661ad8d8d4398133709dcff39785d232ae93ba65c9d3ae02c937cada3c4c2d"
+checksum = "7aea9564dc6ea613ee79aae3051591d717de15c7150ba48354631796eb4e73c1"
 dependencies = [
  "blake2b_simd",
  "proc-macro2",
@@ -7324,9 +7324,9 @@ dependencies = [
 
 [[package]]
 name = "recall_ipc_actors_abis"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9089d71b9073f3efe45ed74dfab83ed3a206b1a13ef1cd65a83801bc1c5570e7"
+checksum = "3d936ca14b191a854e18c354119e09c3678b50891e24a9c1722a9c21aef5514e"
 dependencies = [
  "anyhow",
  "ethers",
@@ -7335,9 +7335,9 @@ dependencies = [
 
 [[package]]
 name = "recall_ipc_api"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0022e2dabba0a9706548659d589b61e261b1f936e203297c0083f6a521c3f684"
+checksum = "54f0b4a3c959994ffdaf8c97223b188f5e1aead30c4fbd00bad7cd893b4d83d1"
 dependencies = [
  "anyhow",
  "cid",
@@ -7365,9 +7365,9 @@ dependencies = [
 
 [[package]]
 name = "recall_ipc_types"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6dc6b5615f80f11ec4e1555cb32a12eea8cba9832421992127753e3952c07efe"
+checksum = "dc8312ccd40887d437e44360ef8ba52c965eb5bc9893f39db1863cf32fc63db7"
 dependencies = [
  "anyhow",
  "cid",
@@ -7390,9 +7390,9 @@ dependencies = [
 
 [[package]]
 name = "recall_ipld"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6f80e175f351c76c3bcf16d2b09fb8ef7630035cb38cb8f125e3cec377a9831"
+checksum = "dbc0c3764587be66a612551e4b50dc48e289db98fee7e706e6fe548fce009372"
 dependencies = [
  "anyhow",
  "cid",
@@ -7409,9 +7409,9 @@ dependencies = [
 
 [[package]]
 name = "recall_merkle_tree_rs"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29d3e61139fa61646301d8cfdb0e5c675a06b916197d0c679d437be360c766f3"
+checksum = "b198835e094761e37d17d9b41d8487c44f2f3858dea91868fffe4399318ed419"
 dependencies = [
  "anyhow",
  "ethers",
@@ -7423,7 +7423,7 @@ dependencies = [
 
 [[package]]
 name = "recall_provider"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7453,7 +7453,7 @@ dependencies = [
 
 [[package]]
 name = "recall_sdk"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-tempfile",
@@ -7495,7 +7495,7 @@ dependencies = [
 
 [[package]]
 name = "recall_signer"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7513,9 +7513,9 @@ dependencies = [
 
 [[package]]
 name = "recall_sol_facade"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7cfd78a9517883551cf7a2bf8a41400052745de86507ce2d00b5646631ddce7"
+checksum = "8fee68f707c2b1aaac02696a67efcd87a8c0c1242833d7e3987be766dc7624a7"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-macro-expander",
@@ -7539,9 +7539,9 @@ dependencies = [
 
 [[package]]
 name = "recall_vm_api"
-version = "0.0.0"
+version = "0.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59b19f20c729ad1618be0f360541c08d6df212472e4b5aa532c0f8e780ad271a"
+checksum = "1f05d6fb3b0ee7a0fe30d89d675d1a3447e3080956d779ffc0c46be32bef1cae"
 dependencies = [
  "anyhow",
  "cid",
@@ -10153,12 +10153,6 @@ name = "unsigned-varint"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6889a77d49f1f013504cec6bf97a2c730394adedaeb1deb5ea08949a50541105"
-
-[[package]]
-name = "unsigned-varint"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb066959b24b5196ae73cb057f45598450d2c5f71460e98c49b738086eff9c06"
 
 [[package]]
 name = "untrusted"
