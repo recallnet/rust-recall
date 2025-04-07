@@ -46,21 +46,13 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     
-      # Cache Dagger volumes
-      - name: Cache Dagger volumes
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/dagger
-          key: ${{ runner.os }}-dagger-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Build
         run: make build
 
       - name: Run tests
         uses: dagger/dagger-for-github@8.0.0
         with:
-          version: '0.18.1'
+          version: '0.18.2'
           workdir: 'dagger'
           verb: call
           module: ci
