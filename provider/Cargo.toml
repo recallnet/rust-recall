@@ -26,6 +26,7 @@ tendermint-proto = { workspace = true }
 tracing = { workspace = true }
 reqwest = { workspace = true }
 rust_decimal = { workspace = true }
+urlencoding = { workspace = true }
 
 fvm_ipld_encoding = { workspace = true }
 fvm_shared = { workspace = true }
