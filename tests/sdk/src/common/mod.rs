@@ -1,6 +1,10 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
+// The code in this file is used only for testing purposes, so ignore warnings for unused code and imports.
+#![allow(dead_code)]
+#![allow(unused_imports)]
+
 use recall_sdk::network::{self, NetworkConfig};
 use std::{env, fs, path::Path};
 
