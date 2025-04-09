@@ -19,13 +19,12 @@ func (m *Ci) Test(
 	dockerUsername string,
 	dockerPassword *dagger.Secret,
 	source *dagger.Directory,
-	testTargetNetwork string,
 	recallPrivateKey *dagger.Secret,
 ) (string, error) {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.Ltime | log.Lmsgprefix)
 
-	return m.codeContainer(source, testTargetNetwork, recallPrivateKey).
+	return m.codeContainer(source, recallPrivateKey).
 		WithServiceBinding("localnet", m.localnetService(dockerUsername, dockerPassword)).
 		WithExec([]string{
 			"sh", "-c",
@@ -33,14 +32,13 @@ func (m *Ci) Test(
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"recall --network localnet account deposit 1",
+			"find dagger/ci/cli-tests -type f | sort | xargs -I{} sh -c 'chmod +x {} && {}'",
 		}).
 		Stdout(ctx)
 }
 
 func (m *Ci) codeContainer(
 	source *dagger.Directory,
-	testTargetNetwork string,
 	recallPrivateKey *dagger.Secret,
 ) *dagger.Container {
 	// Create Rust-specific caches
@@ -53,7 +51,7 @@ func (m *Ci) codeContainer(
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache).
-		From("rust:slim").
+		From("rust:slim-bookworm").
 		WithExec([]string{
 			"apt-get", "update",
 		}).
@@ -64,20 +62,15 @@ func (m *Ci) codeContainer(
 			"pkg-config",
 			"libssl-dev",
 			"git",
-			"curl",
 		}).
 		// Rust caches and env vars
 		WithMountedCache("/root/.cargo/registry", cargoRegistry).
 		WithMountedCache("/root/.cargo/git", cargoGit).
-		WithMountedCache("/src/target", cargoTarget).
 		WithMountedCache("/root/.rustup", rustupCache).
+		WithMountedCache("/src/target", cargoTarget).
 		WithEnvVariable("CARGO_INCREMENTAL", "1").
 		WithEnvVariable("CARGO_NET_RETRY", "10").
 		WithEnvVariable("CARGO_NET_GIT_FETCH_WITH_CLI", "true").
-		WithEnvVariable("RUSTFLAGS", "-C target-cpu=native").
-		WithExec([]string{"bash", "-c",
-			"curl -o- https://sh.rustup.rs | sh -s -- -y --default-toolchain stable",
-		}).
 		// Create the config directory and file
 		WithExec([]string{
 			"mkdir", "-p", "/root/.config/recall",
@@ -104,7 +97,8 @@ EOL`,
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
 		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
-		WithEnvVariable("TEST_TARGET_NETWORK", testTargetNetwork).
+		WithEnvVariable("TEST_TARGET_NETWORK", "localnet").
+		WithEnvVariable("RECALL_NETWORK", "localnet").
 		WithSecretVariable("RECALL_PRIVATE_KEY", recallPrivateKey).
 		WithExec([]string{
 			"sh", "-c",
@@ -126,6 +120,8 @@ func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secre
 			"echo $DOCKER_PASSWORD | docker login -u " + dockerUsername + " --password-stdin",
 		}).
 		WithExposedPort(8545).
+		WithExposedPort(8645).
+		WithExposedPort(26657).
 		AsService(
 			dagger.ContainerAsServiceOpts{
 				InsecureRootCapabilities: true,

@@ -73,31 +73,31 @@ tendermint-rpc = { version = "0.31.1", features = [
 fvm_shared = "4.4.0"
 fvm_ipld_encoding = "0.4.0"
 
-fendermint_actor_blobs_shared = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_actor_bucket = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_actor_recall_config_shared = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_actor_machine = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_actor_timehub = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_crypto = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_eth_api = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_vm_actor_interface = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-fendermint_vm_message = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
+fendermint_actor_blobs_shared = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_actor_bucket = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_actor_recall_config_shared = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_actor_machine = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_actor_timehub = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_crypto = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_eth_api = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_vm_actor_interface = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+fendermint_vm_message = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
 
-ipc_actors_abis = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
-ipc-api = { git = "https://github.com/recallnet/ipc.git", rev = "f58994947e96e5bc9a79cd9651e37af2ba82e290" }
+ipc_actors_abis = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
+ipc-api = { git = "https://github.com/recallnet/ipc.git", rev = "4713dc217855ea6e69891ea8bb809df8a30cce4a" }
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.
-[patch."https://github.com/recallnet/ipc.git"]
-fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
-fendermint_actor_bucket = { path = "../ipc/fendermint/actors/bucket" }
-fendermint_actor_recall_config_shared = { path = "../ipc/fendermint/actors/recall_config/shared" }
-fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
-fendermint_actor_timehub = { path = "../ipc/fendermint/actors/timehub" }
-fendermint_crypto = { path = "../ipc/fendermint/crypto" }
-fendermint_eth_api = { path = "../ipc/fendermint/eth/api" }
-fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
-fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
-
-ipc_actors_abis = { path = "../ipc/contracts/binding" }
-ipc-api = { path = "../ipc/ipc/api" }
+#[patch."https://github.com/recallnet/ipc.git"]
+#fendermint_actor_blobs_shared = { path = "../ipc/fendermint/actors/blobs/shared" }
+#fendermint_actor_bucket = { path = "../ipc/fendermint/actors/bucket" }
+#fendermint_actor_recall_config_shared = { path = "../ipc/fendermint/actors/recall_config/shared" }
+#fendermint_actor_machine = { path = "../ipc/fendermint/actors/machine" }
+#fendermint_actor_timehub = { path = "../ipc/fendermint/actors/timehub" }
+#fendermint_crypto = { path = "../ipc/fendermint/crypto" }
+#fendermint_eth_api = { path = "../ipc/fendermint/eth/api" }
+#fendermint_vm_actor_interface = { path = "../ipc/fendermint/vm/actor_interface" }
+#fendermint_vm_message = { path = "../ipc/fendermint/vm/message" }
+#
+#ipc_actors_abis = { path = "../ipc/contracts/binding" }
+#ipc-api = { path = "../ipc/ipc/api" }
