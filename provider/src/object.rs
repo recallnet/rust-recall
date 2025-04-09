@@ -3,7 +3,7 @@
 
 use async_trait::async_trait;
 use fvm_shared::address::Address;
-pub use iroh::net::NodeAddr;
+pub use iroh_base::NodeAddr;
 use serde::Deserialize;
 
 /// Provider for object interactions.

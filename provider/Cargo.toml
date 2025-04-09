@@ -37,5 +37,5 @@ fendermint_vm_message = { workspace = true }
 
 ipc-api = { workspace = true }
 
-iroh = { workspace = true }
+iroh-base = { workspace = true }
 serde_json = { workspace = true }
