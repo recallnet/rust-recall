@@ -7430,12 +7430,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-tempfile",
- "fendermint_actor_blobs_shared",
- "fendermint_actor_bucket",
- "fendermint_actor_machine",
- "fendermint_actor_recall_config_shared",
- "fendermint_actor_timehub",
- "fendermint_vm_actor_interface",
  "hex",
  "more-asserts",
  "rand",
