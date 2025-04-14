@@ -42,47 +42,52 @@ mod test_utils {
     #[tokio::test]
     async fn can_deposit_into_subnet() {
         let network_config = test_utils::get_network_config();
-        let from_sk = test_utils::get_runner_secret_key();
-        let from_sk = parse_secret_key(&from_sk).unwrap();
-        let from_signer = Wallet::new_secp256k1(
-            from_sk,
+        let sk = test_utils::get_runner_secret_key();
+        let sk = parse_secret_key(&sk).unwrap();
+        let signer = Wallet::new_secp256k1(
+            sk,
             AccountKind::Ethereum,
             network_config.subnet_id.parent().unwrap(),
         )
         .unwrap();
-        let to_sk = test_utils::get_runner_secret_key();
-        let to_sk = parse_secret_key(&to_sk).unwrap();
-        let subnet_id = network_config.subnet_id.clone();
-        let to_signer =
-            Wallet::new_secp256k1(to_sk, AccountKind::Ethereum, subnet_id.clone()).unwrap();
 
         // Deposit some funds into the subnet
         // Note: The debit account _must_ have Funds on parent
         let tx = match Account::deposit(
-            &from_signer,
-            to_signer.address(),
+            &signer,
+            signer.address(),
             network_config
                 .parent_subnet_config()
                 .ok_or(anyhow!("network does not have parent"))
                 .unwrap(),
-            subnet_id,
-            TokenAmount::from_whole(10),
+            network_config.subnet_id.clone(),
+            TokenAmount::from_whole(1),
         )
         .await
         {
-            Ok(txr) => txr,
+            Ok(tx_receipt) => tx_receipt,
             Err(e) => panic!("transaction failed {}", e),
         };
 
-        println!(
-            "Deposited 10 RECALL to {}",
-            to_signer.eth_address().unwrap()
-        );
+        println!("Deposited 1 RECALL to {}", signer.eth_address().unwrap());
         println!(
             "Transaction hash: 0x{}",
             hex::encode(tx.transaction_hash.to_fixed_bytes())
         );
 
-        // TODO: some failures will throw, but we should assert that deposit worked too
+        let balance = match Account::balance(
+            &signer,
+            EVMSubnet {
+                auth_token: Some(test_utils::get_runner_auth_token()),
+                ..network_config.subnet_config()
+            },
+        )
+        .await
+        {
+            Ok(token_amount) => token_amount,
+            Err(e) => panic!("balance request failed {}", e),
+        };
+
+        println!("Balance of {}: {}", signer.eth_address().unwrap(), balance);
     }
 }
