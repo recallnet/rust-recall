@@ -35,18 +35,18 @@ tokio = { workspace = true }
 tokio-stream = { workspace = true }
 tokio-util = { workspace = true }
 
-fendermint_actor_blobs_shared = { workspace = true }
-fendermint_actor_bucket = { workspace = true }
-fendermint_actor_recall_config_shared = { workspace = true }
-fendermint_actor_machine = { workspace = true }
-fendermint_actor_timehub = { workspace = true }
-fendermint_vm_actor_interface = { workspace = true }
+recall_fendermint_actor_blobs_shared = { workspace = true }
+recall_fendermint_actor_bucket = { workspace = true }
+recall_fendermint_actor_recall_config_shared = { workspace = true }
+recall_fendermint_actor_machine = { workspace = true }
+recall_fendermint_actor_timehub = { workspace = true }
+recall_fendermint_vm_actor_interface = { workspace = true }
 
-ipc_actors_abis = { workspace = true }
-ipc-api = { workspace = true }
+recall_ipc_actors_abis = { workspace = true }
+recall_ipc_api = { workspace = true }
 
-recall_provider = { path = "../provider" }
-recall_signer = { path = "../signer" }
+recall_provider = { workspace = true }
+recall_signer = { workspace = true }
 
 [dev-dependencies]
 hex = { workspace = true }

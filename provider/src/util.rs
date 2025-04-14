@@ -5,17 +5,17 @@
 use std::str::FromStr;
 
 use anyhow::anyhow;
-use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
-use fendermint_vm_actor_interface::eam::EthAddress;
-use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::{
     address::{Address, Error, Network, Payload},
     bigint::{BigInt, BigUint},
     econ::TokenAmount,
 };
+use recall_fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
+use recall_fendermint_vm_actor_interface::eam::EthAddress;
+use recall_fendermint_vm_message::query::FvmQueryHeight;
 use rust_decimal::Decimal;
 
-pub use ipc_api::{ethers_address_to_fil_address, evm::payload_to_evm_address};
+pub use recall_ipc_api::{ethers_address_to_fil_address, evm::payload_to_evm_address};
 
 /// Parse an f/eth-address from string.
 pub fn parse_address(s: &str) -> anyhow::Result<Address> {

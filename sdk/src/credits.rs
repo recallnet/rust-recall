@@ -5,13 +5,13 @@ use std::collections::HashMap;
 
 use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
-use fendermint_actor_blobs_shared::params::{
+use recall_fendermint_actor_blobs_shared::params::{
     ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
 };
-use fendermint_actor_blobs_shared::Method::{
+use recall_fendermint_actor_blobs_shared::Method::{
     ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit,
 };
-use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
+use recall_fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
 use serde::{Deserialize, Serialize};
 
 use recall_provider::{
@@ -26,7 +26,7 @@ use recall_provider::{
 };
 use recall_signer::Signer;
 
-pub use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
+pub use recall_fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
 
 /// Options for buying credit.
 #[derive(Clone, Default, Debug)]
@@ -102,8 +102,8 @@ impl Default for Balance {
     }
 }
 
-impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
-    fn from(v: fendermint_actor_blobs_shared::state::AccountInfo) -> Self {
+impl From<recall_fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
+    fn from(v: recall_fendermint_actor_blobs_shared::state::AccountInfo) -> Self {
         let last_debit_epoch = if v.last_debit_epoch != 0 {
             Some(v.last_debit_epoch)
         } else {
@@ -170,8 +170,8 @@ impl Default for Approval {
     }
 }
 
-impl From<fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
-    fn from(v: fendermint_actor_blobs_shared::state::CreditApproval) -> Self {
+impl From<recall_fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
+    fn from(v: recall_fendermint_actor_blobs_shared::state::CreditApproval) -> Self {
         Self {
             credit_limit: v.credit_limit.map(|l| l.to_string()),
             credit_used: v.credit_used.to_string(),
@@ -199,8 +199,8 @@ pub struct CreditStats {
     pub num_accounts: u64,
 }
 
-impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats {
-    fn from(v: fendermint_actor_blobs_shared::params::GetStatsReturn) -> Self {
+impl From<recall_fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats {
+    fn from(v: recall_fendermint_actor_blobs_shared::params::GetStatsReturn) -> Self {
         Self {
             balance: v.balance.to_string(),
             credit_sold: v.credit_sold.to_string(),
@@ -336,14 +336,16 @@ impl Credits {
 
 fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<CreditStats> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::params::GetStatsReturn>(&data)
-        .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as CreditStats: {e}"))
+    fvm_ipld_encoding::from_slice::<recall_fendermint_actor_blobs_shared::params::GetStatsReturn>(
+        &data,
+    )
+    .map(|v| v.into())
+    .map_err(|e| anyhow!("error parsing as CreditStats: {e}"))
 }
 
 fn decode_balance(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Balance>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::AccountInfo>>(
+    fvm_ipld_encoding::from_slice::<Option<recall_fendermint_actor_blobs_shared::state::AccountInfo>>(
         &data,
     )
     .map(|v| v.map(|v| v.into()))
@@ -352,14 +354,16 @@ fn decode_balance(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Balance>> {
 
 fn decode_buy(deliver_tx: &DeliverTx) -> anyhow::Result<Balance> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::AccountInfo>(&data)
+    fvm_ipld_encoding::from_slice::<recall_fendermint_actor_blobs_shared::state::AccountInfo>(&data)
         .map(|v| v.into())
         .map_err(|e| anyhow!("error parsing as Balance: {e}"))
 }
 
 fn decode_approve(deliver_tx: &DeliverTx) -> anyhow::Result<Approval> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::CreditApproval>(&data)
-        .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
+    fvm_ipld_encoding::from_slice::<recall_fendermint_actor_blobs_shared::state::CreditApproval>(
+        &data,
+    )
+    .map(|v| v.into())
+    .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
 }

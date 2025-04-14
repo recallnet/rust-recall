@@ -6,17 +6,17 @@ use std::{cmp::min, collections::HashMap, str::FromStr};
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fendermint_actor_blobs_shared::state::{Hash, PublicKey};
-use fendermint_actor_bucket::{
-    AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
-    Method::{AddObject, DeleteObject, GetObject, ListObjects, UpdateObjectMetadata},
-    UpdateObjectMetadataParams, MAX_METADATA_KEY_SIZE, MAX_METADATA_VALUE_SIZE,
-};
-use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use indicatif::HumanDuration;
 use infer::Type;
 use iroh::blobs::Hash as IrohHash;
 use peekable::tokio::AsyncPeekable;
+use recall_fendermint_actor_blobs_shared::state::{Hash, PublicKey};
+use recall_fendermint_actor_bucket::{
+    AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
+    Method::{AddObject, DeleteObject, GetObject, ListObjects, UpdateObjectMetadata},
+    UpdateObjectMetadataParams, MAX_METADATA_KEY_SIZE, MAX_METADATA_VALUE_SIZE,
+};
+use recall_fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use tendermint::abci::response::DeliverTx;
 use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
 use tokio::time::Instant;
@@ -41,7 +41,7 @@ use crate::{
     machine::{deploy_machine, Machine},
     progress::new_progress_bar,
 };
-pub use fendermint_actor_bucket::{Object, ObjectState};
+pub use recall_fendermint_actor_bucket::{Object, ObjectState};
 
 /// Maximum allowed object size in bytes.
 const MAX_OBJECT_LENGTH: u64 = 5_000_000_000; // 5GB

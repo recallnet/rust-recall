@@ -17,14 +17,12 @@ fnv = { workspace = true }
 hex = { workspace = true }
 rand = { workspace = true }
 tokio = { workspace = true }
-
-fendermint_crypto = { workspace = true }
-fendermint_vm_actor_interface = { workspace = true }
 tendermint-rpc = { workspace = true }
 
-ipc-api = { workspace = true }
-
-recall_provider = { path = "../provider" }
+recall_fendermint_crypto = { workspace = true }
+recall_fendermint_vm_actor_interface = { workspace = true }
+recall_ipc_api = { workspace = true }
+recall_provider = { workspace = true }
 
 [dev-dependencies]
 serde_json = { workspace = true }
