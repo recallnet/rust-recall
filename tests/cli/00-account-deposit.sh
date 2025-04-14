@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-recall account deposit 1
+RECALL_CLI=${RECALL_CLI:-"recall"}
+
+${RECALL_CLI} account deposit 1
