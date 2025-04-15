@@ -1,7 +1,7 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 #[cfg(test)]
-mod test_utils {
+mod tests {
     use anyhow::anyhow;
     use more_asserts::{assert_gt, assert_lt};
     use recall_provider::fvm_shared::econ::TokenAmount;
@@ -89,5 +89,6 @@ mod test_utils {
         };
 
         println!("Balance of {}: {}", signer.eth_address().unwrap(), balance);
+        assert_gt!(balance, TokenAmount::from_whole(1));
     }
 }
