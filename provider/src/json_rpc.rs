@@ -280,6 +280,7 @@ where
             .clone()
             .ok_or_else(|| anyhow!("object provider is required"))?;
 
+        let key = urlencoding::encode(key);
         let url = format!(
             "{}v1/objects/{}/{}?height={}",
             client.url, address, key, height
