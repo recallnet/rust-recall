@@ -284,7 +284,7 @@ fn apply_flags_on_network_spec(mut spec: NetworkSpec, cli: &Cli) -> NetworkSpec 
         spec.subnet_config.evm_registry_address = x;
     }
 
-    if let Some(parent) = spec.parent_config.as_mut() {
+    if let Some(parent) = spec.parent_network_config.as_mut() {
         if let Some(ref x) = cli.parent_evm_rpc_url {
             parent.evm_rpc_url = x.clone();
         }

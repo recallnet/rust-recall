@@ -72,7 +72,7 @@ pub fn default_networks() -> HashMap<String, NetworkSpec> {
                 evm_gateway_address: parse_address(TESTNET_EVM_GATEWAY_ADDRESS).unwrap(),
                 evm_registry_address: parse_address(TESTNET_EVM_REGISTRY_ADDRESS).unwrap(),
             },
-            parent_config: Some(ParentNetworkConfig {
+            parent_network_config: Some(ParentNetworkConfig {
                 evm_rpc_url: reqwest::Url::from_str(TESTNET_PARENT_EVM_RPC_URL).unwrap(),
                 evm_gateway_address: parse_address(TESTNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
                 evm_registry_address: parse_address(TESTNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
@@ -94,7 +94,7 @@ pub fn default_networks() -> HashMap<String, NetworkSpec> {
                 evm_gateway_address: parse_address(LOCALNET_EVM_GATEWAY_ADDRESS).unwrap(),
                 evm_registry_address: parse_address(LOCALNET_EVM_REGISTRY_ADDRESS).unwrap(),
             },
-            parent_config: Some(ParentNetworkConfig {
+            parent_network_config: Some(ParentNetworkConfig {
                 evm_rpc_url: reqwest::Url::from_str(LOCALNET_PARENT_EVM_RPC_URL).unwrap(),
                 evm_gateway_address: parse_address(LOCALNET_PARENT_EVM_GATEWAY_ADDRESS).unwrap(),
                 evm_registry_address: parse_address(LOCALNET_PARENT_EVM_REGISTRY_ADDRESS).unwrap(),
@@ -115,7 +115,7 @@ pub fn default_networks() -> HashMap<String, NetworkSpec> {
                 evm_gateway_address: parse_address(DEVNET_EVM_GATEWAY_ADDRESS).unwrap(),
                 evm_registry_address: parse_address(DEVNET_EVM_REGISTRY_ADDRESS).unwrap(),
             },
-            parent_config: None,
+            parent_network_config: None,
         },
     );
     hm
@@ -124,7 +124,7 @@ pub fn default_networks() -> HashMap<String, NetworkSpec> {
 #[derive(Serialize, Deserialize)]
 pub struct NetworkSpec {
     pub subnet_config: SubnetConfig,
-    pub parent_config: Option<ParentNetworkConfig>,
+    pub parent_network_config: Option<ParentNetworkConfig>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -195,7 +195,7 @@ impl NetworkSpec {
             evm_rpc_url: self.subnet_config.evm_rpc_url,
             evm_gateway_address: self.subnet_config.evm_gateway_address,
             evm_registry_address: self.subnet_config.evm_registry_address,
-            parent_network_config: self.parent_config,
+            parent_network_config: self.parent_network_config,
         })
     }
 }
