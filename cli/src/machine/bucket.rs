@@ -188,7 +188,7 @@ struct BucketQueryArgs {
     /// The key from which to start listing objects.
     #[arg(long)]
     start_key: Option<String>,
-    /// The maximum number of objects to list. '0' indicates max (10k).
+    /// The maximum number of objects to list. '0' indicates max (1000).
     #[arg(short, long, default_value_t = 0)]
     limit: u64,
     /// Query block height.
