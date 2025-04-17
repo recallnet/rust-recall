@@ -50,6 +50,3 @@ recall_signer = { path = "../signer" }
 
 [dev-dependencies]
 hex = { workspace = true }
-more-asserts = { workspace = true }
-shellexpand = { workspace = true }
-toml = { workspace = true }

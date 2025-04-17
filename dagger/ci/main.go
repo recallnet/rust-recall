@@ -32,7 +32,7 @@ func (m *Ci) Test(
 		}).
 		WithExec([]string{
 			"sh", "-c",
-			"find dagger/ci/cli-tests -type f | sort | xargs -I{} sh -c 'chmod +x {} && {}'",
+			"find tests/cli -type f | sort | xargs -I{} sh -c 'chmod +x {} && {}'",
 		}).
 		Stdout(ctx)
 }
@@ -97,7 +97,6 @@ EOL`,
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
 		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
-		WithEnvVariable("TEST_TARGET_NETWORK", "localnet").
 		WithEnvVariable("RECALL_NETWORK", "localnet").
 		WithSecretVariable("RECALL_PRIVATE_KEY", recallPrivateKey).
 		WithExec([]string{
