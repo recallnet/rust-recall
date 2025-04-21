@@ -43,7 +43,7 @@ func (m *Ci) Test(
 	// Replace "localhost" with "localnet" in the networks.toml content
 	networksTomlContent = strings.ReplaceAll(networksTomlContent, "localhost", "localnet")
 
-	codeContainer, err := m.codeContainer(ctx, containerWithAuth, source, networksTomlContent)
+	codeContainer, err := m.codeContainer(containerWithAuth, source, networksTomlContent)
 	if err != nil {
 		return "", err
 	}
@@ -79,6 +79,7 @@ func (m *Ci) getContainerWithAuth(
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache)
+
 	dockerPasswordText, err := dockerPassword.Plaintext(ctx)
 	if err != nil {
 		return nil, err
@@ -86,6 +87,7 @@ func (m *Ci) getContainerWithAuth(
 	if dockerUsername == "" || dockerPasswordText == "" {
 		return container, nil
 	}
+
 	return container.
 		WithRegistryAuth("docker.io", dockerUsername, dockerPassword).
 		WithSecretVariable("DOCKER_PASSWORD", dockerPassword).
@@ -97,7 +99,6 @@ func (m *Ci) getContainerWithAuth(
 }
 
 func (m *Ci) codeContainer(
-	ctx context.Context,
 	containerWithAuth *dagger.Container,
 	source *dagger.Directory,
 	networksTomlContent string,
@@ -120,6 +121,8 @@ func (m *Ci) codeContainer(
 			"pkg-config",
 			"libssl-dev",
 			"git",
+			"jq",
+			"bc",
 		}).
 		// Rust caches and env vars
 		WithMountedCache("/root/.cargo/registry", cargoRegistry).
