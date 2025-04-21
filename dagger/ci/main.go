@@ -15,11 +15,26 @@ type Ci struct{}
 var buildkitCache = dag.CacheVolume("buildkit-cache")
 var dockerCache = dag.CacheVolume("docker-cache")
 
-func (m *Ci) Test(ctx context.Context, source *dagger.Directory) (string, error) {
+func (m *Ci) Test(
+	ctx context.Context,
+	localnetImage string,
+	dockerUsername string,
+	dockerPassword *dagger.Secret,
+	source *dagger.Directory,
+) (string, error) {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.Ltime | log.Lmsgprefix)
 
-	networksTomlContent, err := m.getLocalnetImage().
+	containerWithAuth, err := m.getContainerWithAuth(ctx, dockerUsername, dockerPassword)
+	if err != nil {
+		return "", err
+	}
+	localnetContainer, err := m.getLocalnetImage(containerWithAuth, localnetImage)
+	if err != nil {
+		return "", err
+	}
+
+	networksTomlContent, err := localnetContainer.
 		File("/workdir/localnet-data/networks.toml").
 		Contents(ctx)
 	if err != nil {
@@ -28,8 +43,12 @@ func (m *Ci) Test(ctx context.Context, source *dagger.Directory) (string, error)
 	// Replace "localhost" with "localnet" in the networks.toml content
 	networksTomlContent = strings.ReplaceAll(networksTomlContent, "localhost", "localnet")
 
-	return m.codeContainer(source, networksTomlContent).
-		WithServiceBinding("localnet", m.localnetService()).
+	codeContainer, err := m.codeContainer(ctx, containerWithAuth, source, networksTomlContent)
+	if err != nil {
+		return "", err
+	}
+	return codeContainer.
+		WithServiceBinding("localnet", m.localnetService(localnetContainer)).
 		WithExec([]string{
 			"sh", "-c",
 			"make test",
@@ -41,51 +60,55 @@ func (m *Ci) Test(ctx context.Context, source *dagger.Directory) (string, error)
 		Stdout(ctx)
 }
 
-func (m *Ci) getLocalnetImage() *dagger.Container {
-	localnetImage := os.Getenv("LOCALNET_IMAGE")
+func (m *Ci) getLocalnetImage(
+	containerWithAuth *dagger.Container,
+	localnetImage string,
+) (*dagger.Container, error) {
 	if localnetImage == "" {
 		localnetImage = "textile/recall-localnet"
 	}
-	return m.getContainerWithAuth().From(localnetImage)
+	return containerWithAuth.From(localnetImage), nil
 }
 
-func (m *Ci) getContainerWithAuth() *dagger.Container {
+func (m *Ci) getContainerWithAuth(
+	ctx context.Context,
+	dockerUsername string,
+	dockerPassword *dagger.Secret,
+) (*dagger.Container, error) {
 	container := dag.Container().
 		WithEnvVariable("DOCKER_BUILDKIT", "1").
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache)
-	dockerUsername := os.Getenv("DOCKER_USERNAME")
-	dockerPassword := os.Getenv("DOCKER_PASSWORD")
-	if dockerUsername == "" || dockerPassword == "" {
-		return container
+	dockerPasswordText, err := dockerPassword.Plaintext(ctx)
+	if err != nil {
+		return nil, err
 	}
-	dockerPasswordSecret := dag.SetSecret("DOCKER_PASSWORD", dockerPassword)
+	if dockerUsername == "" || dockerPasswordText == "" {
+		return container, nil
+	}
 	return container.
-		WithRegistryAuth("docker.io", dockerUsername, dockerPasswordSecret).
-		WithSecretVariable("DOCKER_PASSWORD", dockerPasswordSecret).
+		WithRegistryAuth("docker.io", dockerUsername, dockerPassword).
+		WithSecretVariable("DOCKER_PASSWORD", dockerPassword).
 		// Login to Docker so that we don't run into rate limits while pulling images from inside the localnet image
 		WithExec([]string{
 			"sh", "-c",
 			"echo $DOCKER_PASSWORD | docker login -u " + dockerUsername + " --password-stdin",
-		})
+		}), nil
 }
 
-func (m *Ci) codeContainer(source *dagger.Directory, networksTomlContent string) *dagger.Container {
+func (m *Ci) codeContainer(
+	ctx context.Context,
+	containerWithAuth *dagger.Container,
+	source *dagger.Directory,
+	networksTomlContent string,
+) (*dagger.Container, error) {
 	// Create Rust-specific caches
 	cargoRegistry := dag.CacheVolume("cargo-registry")
 	cargoGit := dag.CacheVolume("cargo-git")
 	cargoTarget := dag.CacheVolume("cargo-target")
 	rustupCache := dag.CacheVolume("rustup-cache")
 
-	container := m.getContainerWithAuth()
-
-	// Only set up a private key if one was provided
-	recallPrivateKey := os.Getenv("RECALL_PRIVATE_KEY")
-	if recallPrivateKey != "" {
-		container = container.WithSecretVariable("RECALL_PRIVATE_KEY", dag.SetSecret("RECALL_PRIVATE_KEY", recallPrivateKey))
-	}
-
-	return container.
+	return containerWithAuth.
 		From("rust:slim-bookworm").
 		WithExec([]string{
 			"apt-get", "update",
@@ -121,11 +144,11 @@ func (m *Ci) codeContainer(source *dagger.Directory, networksTomlContent string)
 		WithExec([]string{
 			"sh", "-c",
 			"make build install",
-		})
+		}), nil
 }
 
-func (m *Ci) localnetService() *dagger.Service {
-	return m.getLocalnetImage().
+func (m *Ci) localnetService(localnetContainer *dagger.Container) *dagger.Service {
+	return localnetContainer.
 		WithExposedPort(8545).
 		WithExposedPort(8645).
 		WithExposedPort(26657).
