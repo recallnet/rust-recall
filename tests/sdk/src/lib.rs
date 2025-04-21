@@ -71,13 +71,15 @@ pub mod test_utils {
 
     pub fn get_runner_secret_key() -> String {
         if let Ok(pk) = env::var("RECALL_PRIVATE_KEY") {
-            pk
-        } else {
-            // Return a random private key from the test accounts
-            let mut rng = rand::thread_rng();
-            let random_index = rand::Rng::gen_range(&mut rng, 0..DEFAULT_TEST_ACCOUNTS.len());
-            DEFAULT_TEST_ACCOUNTS[random_index].1.to_string()
+            if !pk.is_empty() {
+                return pk;
+            }
         }
+
+        // Return a random private key from the test accounts
+        let mut rng = rand::thread_rng();
+        let random_index = rand::Rng::gen_range(&mut rng, 0..DEFAULT_TEST_ACCOUNTS.len());
+        DEFAULT_TEST_ACCOUNTS[random_index].1.to_string()
     }
 
     pub fn get_runner_auth_token() -> String {
