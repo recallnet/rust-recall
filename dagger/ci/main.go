@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"strings"
 
 	"dagger/ci/internal/dagger"
 )
@@ -18,7 +19,16 @@ func (m *Ci) Test(ctx context.Context, source *dagger.Directory) (string, error)
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.Ltime | log.Lmsgprefix)
 
-	return m.codeContainer(source).
+	networksTomlContent, err := m.getLocalnetImage().
+		File("/workdir/localnet-data/networks.toml").
+		Contents(ctx)
+	if err != nil {
+		return "", err
+	}
+	// Replace "localhost" with "localnet" in the networks.toml content
+	networksTomlContent = strings.ReplaceAll(networksTomlContent, "localhost", "localnet")
+
+	return m.codeContainer(source, networksTomlContent).
 		WithServiceBinding("localnet", m.localnetService()).
 		WithExec([]string{
 			"sh", "-c",
@@ -60,17 +70,22 @@ func (m *Ci) getContainerWithAuth() *dagger.Container {
 		})
 }
 
-func (m *Ci) codeContainer(source *dagger.Directory) *dagger.Container {
+func (m *Ci) codeContainer(source *dagger.Directory, networksTomlContent string) *dagger.Container {
 	// Create Rust-specific caches
 	cargoRegistry := dag.CacheVolume("cargo-registry")
 	cargoGit := dag.CacheVolume("cargo-git")
 	cargoTarget := dag.CacheVolume("cargo-target")
 	rustupCache := dag.CacheVolume("rustup-cache")
 
-	recallPrivateKey := dag.SetSecret("RECALL_PRIVATE_KEY", os.Getenv("RECALL_PRIVATE_KEY"))
-	networksConfig := m.getLocalnetImage().File("/workdir/localnet-data/networks.toml")
+	container := m.getContainerWithAuth()
 
-	return m.getContainerWithAuth().
+	// Only set up a private key if one was provided
+	recallPrivateKey := os.Getenv("RECALL_PRIVATE_KEY")
+	if recallPrivateKey != "" {
+		container = container.WithSecretVariable("RECALL_PRIVATE_KEY", dag.SetSecret("RECALL_PRIVATE_KEY", recallPrivateKey))
+	}
+
+	return container.
 		From("rust:slim-bookworm").
 		WithExec([]string{
 			"apt-get", "update",
@@ -95,12 +110,14 @@ func (m *Ci) codeContainer(source *dagger.Directory) *dagger.Container {
 		WithExec([]string{
 			"mkdir", "-p", "/root/.config/recall",
 		}).
-		WithFile("/root/.config/recall/networks.toml", networksConfig).
+		WithExec([]string{
+			"sh", "-c",
+			"cat > /root/.config/recall/networks.toml << 'EOL'\n" + networksTomlContent + "\nEOL",
+		}).
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
 		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
 		WithEnvVariable("RECALL_NETWORK", "localnet").
-		WithSecretVariable("RECALL_PRIVATE_KEY", recallPrivateKey).
 		WithExec([]string{
 			"sh", "-c",
 			"make build install",
