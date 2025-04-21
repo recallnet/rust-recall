@@ -14,18 +14,12 @@ type Ci struct{}
 var buildkitCache = dag.CacheVolume("buildkit-cache")
 var dockerCache = dag.CacheVolume("docker-cache")
 
-func (m *Ci) Test(
-	ctx context.Context,
-	dockerUsername string,
-	dockerPassword *dagger.Secret,
-	source *dagger.Directory,
-	recallPrivateKey *dagger.Secret,
-) (string, error) {
+func (m *Ci) Test(ctx context.Context, source *dagger.Directory) (string, error) {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.Ltime | log.Lmsgprefix)
 
-	return m.codeContainer(source, recallPrivateKey).
-		WithServiceBinding("localnet", m.localnetService(dockerUsername, dockerPassword)).
+	return m.codeContainer(source).
+		WithServiceBinding("localnet", m.localnetService()).
 		WithExec([]string{
 			"sh", "-c",
 			"make test",
@@ -37,20 +31,46 @@ func (m *Ci) Test(
 		Stdout(ctx)
 }
 
-func (m *Ci) codeContainer(
-	source *dagger.Directory,
-	recallPrivateKey *dagger.Secret,
-) *dagger.Container {
+func (m *Ci) getLocalnetImage() *dagger.Container {
+	localnetImage := os.Getenv("LOCALNET_IMAGE")
+	if localnetImage == "" {
+		localnetImage = "textile/recall-localnet"
+	}
+	return m.getContainerWithAuth().From(localnetImage)
+}
+
+func (m *Ci) getContainerWithAuth() *dagger.Container {
+	container := dag.Container().
+		WithEnvVariable("DOCKER_BUILDKIT", "1").
+		WithMountedCache("/root/.cache/buildkit", buildkitCache).
+		WithMountedCache("/var/lib/docker", dockerCache)
+	dockerUsername := os.Getenv("DOCKER_USERNAME")
+	dockerPassword := os.Getenv("DOCKER_PASSWORD")
+	if dockerUsername == "" || dockerPassword == "" {
+		return container
+	}
+	dockerPasswordSecret := dag.SetSecret("DOCKER_PASSWORD", dockerPassword)
+	return container.
+		WithRegistryAuth("docker.io", dockerUsername, dockerPasswordSecret).
+		WithSecretVariable("DOCKER_PASSWORD", dockerPasswordSecret).
+		// Login to Docker so that we don't run into rate limits while pulling images from inside the localnet image
+		WithExec([]string{
+			"sh", "-c",
+			"echo $DOCKER_PASSWORD | docker login -u " + dockerUsername + " --password-stdin",
+		})
+}
+
+func (m *Ci) codeContainer(source *dagger.Directory) *dagger.Container {
 	// Create Rust-specific caches
 	cargoRegistry := dag.CacheVolume("cargo-registry")
 	cargoGit := dag.CacheVolume("cargo-git")
 	cargoTarget := dag.CacheVolume("cargo-target")
 	rustupCache := dag.CacheVolume("rustup-cache")
 
-	return dag.Container().
-		WithEnvVariable("DOCKER_BUILDKIT", "1").
-		WithMountedCache("/root/.cache/buildkit", buildkitCache).
-		WithMountedCache("/var/lib/docker", dockerCache).
+	recallPrivateKey := dag.SetSecret("RECALL_PRIVATE_KEY", os.Getenv("RECALL_PRIVATE_KEY"))
+	networksConfig := m.getLocalnetImage().File("/workdir/localnet-data/networks.toml")
+
+	return m.getContainerWithAuth().
 		From("rust:slim-bookworm").
 		WithExec([]string{
 			"apt-get", "update",
@@ -75,25 +95,7 @@ func (m *Ci) codeContainer(
 		WithExec([]string{
 			"mkdir", "-p", "/root/.config/recall",
 		}).
-		WithExec([]string{
-			"sh", "-c",
-			`cat > /root/.config/recall/networks.toml << 'EOL'
-[localnet.subnet_config]
-chain_id = 248163216
-subnet_id = "/r31337/t410f6gbdxrbehnaeeo4mrq7wc5hgq6smnefys4qanwi"
-rpc_url = "http://localnet:26657/"
-object_api_url = "http://localnet:8001/"
-evm_rpc_url = "http://localnet:8645/"
-evm_gateway_address = "0x77aa40b105843728088c0132e43fc44348881da8"
-evm_registry_address = "0x74539671a1d2f1c8f200826baba665179f53a1b7"
-
-[localnet.parent_config]
-evm_rpc_url = "http://localnet:8545/"
-evm_gateway_address = "0x9a676e781a523b5d0c0e43731313a708cb607508"
-evm_registry_address = "0x322813fd9a801c5507c9de605d63cea4f2ce6c44"
-evm_supply_source_address = "0x4a679253410272dd5232b3ff7cf5dbb88f295319"
-EOL`,
-		}).
+		WithFile("/root/.config/recall/networks.toml", networksConfig).
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
 		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
@@ -105,19 +107,8 @@ EOL`,
 		})
 }
 
-func (m *Ci) localnetService(dockerUsername string, dockerPassword *dagger.Secret) *dagger.Service {
-	return dag.Container().
-		WithRegistryAuth("docker.io", dockerUsername, dockerPassword).
-		WithEnvVariable("DOCKER_BUILDKIT", "1").
-		WithMountedCache("/root/.cache/buildkit", buildkitCache).
-		WithMountedCache("/var/lib/docker", dockerCache).
-		From("textile/recall-localnet").
-		WithSecretVariable("DOCKER_PASSWORD", dockerPassword).
-		// Login to Docker so that we don't run into rate limits while pulling images from inside the localnet image
-		WithExec([]string{
-			"sh", "-c",
-			"echo $DOCKER_PASSWORD | docker login -u " + dockerUsername + " --password-stdin",
-		}).
+func (m *Ci) localnetService() *dagger.Service {
+	return m.getLocalnetImage().
 		WithExposedPort(8545).
 		WithExposedPort(8645).
 		WithExposedPort(26657).

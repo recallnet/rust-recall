@@ -15,6 +15,8 @@ env:
   RECALL_PRIVATE_KEY: "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97"
   DO_NOT_TRACK: 1
   DAGGER_NO_NAG: 1
+  # TODO: Use the latest localnet image once it can build with the latest IPC code
+  LOCALNET_IMAGE: "textile/recall-localnet:sha-dc4da8c-d95931a"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
@@ -52,11 +54,11 @@ jobs:
       - name: Run tests
         uses: dagger/dagger-for-github@8.0.0
         with:
-          version: '0.18.2'
+          version: '0.18.3'
           workdir: 'dagger'
           verb: call
           module: ci
-          args: test --source ../ --docker-username $DOCKER_USERNAME --docker-password env://DOCKER_PASSWORD --recall-private-key env://RECALL_PRIVATE_KEY
+          args: test --source ../
           dagger-flags: '--progress plain'
 
       - name: Run linter

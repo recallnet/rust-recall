@@ -25,12 +25,7 @@ To run the pipeline, use the following command:
 DAGGER_NO_NAG=1 \
 DO_NOT_TRACK=1 \
 RECALL_PRIVATE_KEY=0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97 \
-DOCKER_PASSWORD=[password] \
-dagger call test --progress plain \
-  --docker-username [username] \
-  --docker-password env://DOCKER_PASSWORD \
-  --recall-private-key env://RECALL_PRIVATE_KEY \
-  --source ../
+dagger call test --progress plain --source ../
 ```
 
 Docker credentials are passed in to avoid throughput issues with Docker Hub. These can be made optional in a future PR.
