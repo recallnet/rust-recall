@@ -103,25 +103,25 @@ The following logs should appear when the container is ready:
 All containers started. Waiting for termination signal...
 ```
 
-Also note that some tests (e.g. the SDK tests) require additional environment variables to be set. You can set these
-environment variables in your shell before running the tests. For example, you can run the following command:
+### Extracting Network Config
+
+To extract the network config from the `localnet` container, you can run the following command:
 
 ```bash
-export RECALL_PRIVATE_KEY=0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97
+docker exec -it recall-localnet /bin/bash -c "cat /workdir/networks.toml"
 ```
+
+Add the `localnet` configuration to your `~/.config/recall/networks.toml` file.
 
 ### Adding New Integration Tests
 
 All the tests in the repo are written as Rust unit tests, even the integration tests. New integration tests can be added
-to the `sdk/tests` directory. The tests are run using the `cargo test` command, but note that you will need to set the
-`RECALL_PRIVATE_KEY` environment variable and start the `localnet` container before running the tests.
+to the `sdk/tests` directory.
 
 ### Adding New CLI Tests
 
-CLI tests are currently bash scripts located in the `dagger/ci/cli-tests` directory. These tests are run through the
-[CI pipeline](./dagger/README.md) and run against a `localnet` Docker image launched through Dagger. You can add new
-tests by creating a new bash script in this directory. The test scripts are numbered to ensure a deterministic order of
-execution.
+CLI tests are currently bash scripts located in the `tests/cli` directory. You can add new tests by creating a new bash
+script in this directory. The test scripts are numbered to ensure a deterministic order of execution.
 
 ## Contributing
 

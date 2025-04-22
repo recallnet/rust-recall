@@ -18,15 +18,18 @@ var dockerCache = dag.CacheVolume("docker-cache")
 
 func (m *Ci) Test(
 	ctx context.Context,
+	// +optional
 	localnetImage string,
+	// +optional
 	dockerUsername string,
+	// +optional
 	dockerPassword *dagger.Secret,
 	source *dagger.Directory,
 ) (string, error) {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(log.Ltime | log.Lmsgprefix)
 
-	containerWithAuth, err := m.getContainerWithAuth(ctx, dockerUsername, dockerPassword)
+	containerWithAuth, err := m.getContainerWithAuth(dockerUsername, dockerPassword)
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +75,6 @@ func (m *Ci) getLocalnetImage(
 }
 
 func (m *Ci) getContainerWithAuth(
-	ctx context.Context,
 	dockerUsername string,
 	dockerPassword *dagger.Secret,
 ) (*dagger.Container, error) {
@@ -81,11 +83,7 @@ func (m *Ci) getContainerWithAuth(
 		WithMountedCache("/root/.cache/buildkit", buildkitCache).
 		WithMountedCache("/var/lib/docker", dockerCache)
 
-	dockerPasswordText, err := dockerPassword.Plaintext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	if dockerUsername == "" || dockerPasswordText == "" {
+	if (dockerUsername == "") || (dockerPassword == nil) {
 		return container, nil
 	}
 

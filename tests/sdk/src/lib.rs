@@ -11,10 +11,16 @@ pub mod test_utils {
     const DEFAULT_TEST_TARGET_NETWORK_CONFIG_PATH: &str = "~/.config/recall/networks.toml";
     const DEFAULT_TEST_TARGET_NETWORK: &str = "localnet";
 
-    // Map of test accounts and private keys. The first two Anvil test accounts are intentionally excluded below since
-    // they are used to submit validator IPC transactions in the 2-node localnet setup used for testing. Using those
-    // accounts in tests can lead to nonce clashing issues and cause unexpected failures.
-    const DEFAULT_TEST_ACCOUNTS: [(&str, &str); 8] = [
+    // Map of Anvil test accounts and private keys
+    const DEFAULT_TEST_ACCOUNTS: [(&str, &str); 10] = [
+        (
+            "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+        ),
+        (
+            "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+        ),
         (
             "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
             "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
@@ -78,7 +84,10 @@ pub mod test_utils {
 
         // Return a random private key from the test accounts
         let mut rng = rand::thread_rng();
-        let random_index = rand::Rng::gen_range(&mut rng, 0..DEFAULT_TEST_ACCOUNTS.len());
+        // The first two Anvil test accounts are intentionally excluded below since they are used to submit validator
+        // IPC transactions in the 2-node localnet setup used for testing. Using those accounts in tests can lead to
+        // nonce clashing issues and cause unexpected failures.
+        let random_index = rand::Rng::gen_range(&mut rng, 2..DEFAULT_TEST_ACCOUNTS.len());
         DEFAULT_TEST_ACCOUNTS[random_index].1.to_string()
     }
 

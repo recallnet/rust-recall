@@ -7430,7 +7430,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-tempfile",
- "hex",
  "more-asserts",
  "rand",
  "recall_provider",
