@@ -47,6 +47,10 @@ func (m *Ci) Test(
 	// Replace "localhost" with "localnet" in the networks.toml content
 	networksTomlContent = strings.ReplaceAll(networksTomlContent, "localhost", "localnet")
 
+	// Exclude the target and dagger directories from the sources
+	source = source.
+		WithoutDirectory("target").
+		WithoutDirectory("dagger")
 	codeContainer, err := m.codeContainer(containerWithAuth, source, networksTomlContent)
 	if err != nil {
 		return "", err
