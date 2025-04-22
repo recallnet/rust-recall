@@ -56,7 +56,7 @@ jobs:
           workdir: 'dagger'
           verb: call
           module: ci
-          args: test --source ../ --localnet-image "$LOCALNET_IMAGE" --docker-username "$DOCKER_USERNAME" --docker-password env://DOCKER_PASSWORD 2>&1 |  grep -vi -E "resolve|containerd|libnetwork|^$"
+          args: test --source ../ --localnet-image "$LOCALNET_IMAGE" --docker-username "$DOCKER_USERNAME" --docker-password env://DOCKER_PASSWORD 2>&1 |  grep -vi -E "resolve|containerd|libnetwork|client|daemon|checkpoint|task|^$"
           dagger-flags: '--progress plain'
 
       - name: Run linter
