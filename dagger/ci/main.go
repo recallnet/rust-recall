@@ -49,6 +49,7 @@ func (m *Ci) Test(
 
 	// Exclude the target and dagger directories from the sources
 	source = source.
+		WithoutDirectory(".git").
 		WithoutDirectory("target").
 		WithoutDirectory("dagger")
 	codeContainer, err := m.codeContainer(containerWithAuth, source, networksTomlContent)

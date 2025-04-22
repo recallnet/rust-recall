@@ -4,9 +4,8 @@ This module contains the code for the Recall CI pipeline. It uses [Dagger](https
 Recall CLI and SDK tests against a `localnet` Docker image. It can be run identically both locally and in CI.
 
 ## Prerequisites
-- [Dagger](https://dagger.io/docs/install) installed
+- [Dagger](https://docs.dagger.io/install) installed
 - [Docker](https://docs.docker.com/get-docker/) installed and running
-- [Golang](https://golang.org/doc/install) installed (for `dagger` CLI)
 
 ## Initializing the pipeline
 

@@ -108,7 +108,7 @@ All containers started. Waiting for termination signal...
 To extract the network config from the `localnet` container, you can run the following command:
 
 ```bash
-docker exec -it recall-localnet /bin/bash -c "cat /workdir/networks.toml"
+docker exec -it recall-localnet bash -c "cat /workdir/localnet-data/networks.toml"
 ```
 
 Add the `localnet` configuration to your `~/.config/recall/networks.toml` file.
