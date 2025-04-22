@@ -79,15 +79,15 @@ docker run --privileged --rm --name recall-localnet \
 
 If you'd like to test against a specific IPC commit, look for the corresponding `localnet` image in the
 [Docker Hub repository](https://hub.docker.com/r/textile/recall-localnet/tags) using the first 7 characters of the IPC
-commit hash. For example, for commit `8c6792f5c306420a6915e9a83fefb10520417a8b`, the corresponding `localnet` image
-would be tagged `sha-8c6792f-*` (in this case, `sha-8c6792f-be1693d`). You can then run the following command:
+commit hash. For example, for commit `dc4da8c14c541e1ef9e398a594e65660465c47f5`, the corresponding `localnet` image
+would be tagged `sha-dc4da8c-*` (in this case, `sha-dc4da8c-3e80bf0`). You can then run the following command:
 
 ```bash
 docker run --privileged --rm -d --name recall-localnet \
   -p 8545:8545 \
   -p 8645:8645 \
   -p 26657:26657  \
-  textile/recall-localnet:sha-8c6792f-be1693d
+  textile/recall-localnet:sha-dc4da8c-3e80bf0
 ```
 
 Note that it can take several minutes for the `localnet` container to start up and be ready for testing. You can check
