@@ -1,12 +1,12 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use fendermint_actor_blobs_shared::state::TokenCreditRate;
-use fendermint_actor_recall_config_shared::Method::{GetAdmin, GetConfig, SetAdmin, SetConfig};
-use fendermint_actor_recall_config_shared::{RecallConfig, SetAdminParams, SetConfigParams};
+use fendermint_actor_blobs_shared::credit::TokenCreditRate;
+use fendermint_actor_recall_config_shared::{
+    Method::{GetAdmin, GetConfig, SetAdmin, SetConfig},
+    RecallConfig, SetAdminParams, SetConfigParams,
+};
 use fendermint_vm_actor_interface::recall_config::RECALL_CONFIG_ACTOR_ADDR;
-use tendermint::chain;
-
 use recall_provider::{
     fvm_shared::{address::Address, clock::ChainEpoch},
     json_rpc::JsonRpcProvider,
@@ -17,6 +17,7 @@ use recall_provider::{
     {Client, Provider, TendermintClient},
 };
 use recall_signer::Signer;
+use tendermint::chain;
 
 /// Options for setting config admin.
 #[derive(Clone, Debug)]

@@ -5,7 +5,7 @@
 use std::str::FromStr;
 
 use anyhow::anyhow;
-use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
+use fendermint_actor_blobs_shared::credit::{Credit, TokenCreditRate};
 use fendermint_vm_actor_interface::eam::EthAddress;
 use fendermint_vm_message::query::FvmQueryHeight;
 use fvm_shared::{

@@ -5,16 +5,13 @@ use std::time::Duration;
 
 use anyhow::anyhow;
 use clap::{Args, Subcommand, ValueEnum};
-use reqwest::Url;
-use serde_json::{json, Value};
-
 use recall_provider::{
     fvm_shared::{address::Address, econ::TokenAmount},
     json_rpc::JsonRpcProvider,
     util::{get_eth_address, parse_address, parse_token_amount},
 };
 use recall_sdk::{
-    account::TtlStatus as SdkTtlStatus,
+    account::AccountStatus as SdkAccountStatus,
     account::{Account, SetSponsorOptions, SetStatusOptions},
     credits::{Balance, Credits},
     ipc::subnet::EVMSubnet,
@@ -25,6 +22,8 @@ use recall_signer::{
     key::{parse_secret_key, random_secretkey, SecretKey},
     AccountKind, EthAddress, Signer, SubnetID, Void, Wallet,
 };
+use reqwest::Url;
+use serde_json::{json, Value};
 
 use crate::credit::{handle_credit, CreditArgs};
 use crate::{get_address, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
@@ -161,7 +160,7 @@ pub struct SetStatusArgs {
     #[arg(long, value_parser = parse_address)]
     address: Address,
     /// TTL status to set.
-    status: TtlStatus,
+    status: AccountStatus,
     /// Broadcast mode for the transaction.
     #[arg(short, long, value_enum, env = "RECALL_BROADCAST_MODE", default_value_t = BroadcastMode::Commit)]
     broadcast_mode: BroadcastMode,
@@ -169,9 +168,9 @@ pub struct SetStatusArgs {
     tx_args: TxArgs,
 }
 
-/// The TTL status of an account.
+/// The status of an account.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-enum TtlStatus {
+enum AccountStatus {
     /// Default TTL.
     Default,
     /// Reduced TTL.
@@ -180,12 +179,12 @@ enum TtlStatus {
     Extended,
 }
 
-impl TtlStatus {
-    pub fn get(&self) -> SdkTtlStatus {
+impl AccountStatus {
+    pub fn get(&self) -> SdkAccountStatus {
         match self {
-            TtlStatus::Default => SdkTtlStatus::Default,
-            TtlStatus::Reduced => SdkTtlStatus::Reduced,
-            TtlStatus::Extended => SdkTtlStatus::Extended,
+            AccountStatus::Default => SdkAccountStatus::Default,
+            AccountStatus::Reduced => SdkAccountStatus::Reduced,
+            AccountStatus::Extended => SdkAccountStatus::Extended,
         }
     }
 }
