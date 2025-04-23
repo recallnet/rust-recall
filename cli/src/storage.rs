@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use clap::{Args, Subcommand};
-use serde_json::json;
-
 use recall_provider::json_rpc::JsonRpcProvider;
 use recall_sdk::{network::NetworkConfig, storage::Storage};
+use serde_json::json;
 
 use crate::{get_address, print_json, AddressArgs};
 

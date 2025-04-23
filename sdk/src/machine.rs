@@ -11,8 +11,6 @@ use fendermint_vm_actor_interface::adm::{
     Method::CreateExternal, Method::ListMetadata, ADM_ACTOR_ADDR,
 };
 use fendermint_vm_actor_interface::eam::EthAddress;
-use tendermint::abci::response::DeliverTx;
-
 use recall_provider::{
     fvm_ipld_encoding::{self, RawBytes},
     fvm_shared::address::Address,
@@ -24,6 +22,7 @@ use recall_provider::{
     Client, Provider,
 };
 use recall_signer::Signer;
+use tendermint::abci::response::DeliverTx;
 
 pub mod bucket;
 pub mod timehub;

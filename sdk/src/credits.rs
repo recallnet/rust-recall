@@ -5,15 +5,13 @@ use std::collections::HashMap;
 
 use anyhow::anyhow;
 use ethers::utils::hex::ToHexExt;
-use fendermint_actor_blobs_shared::params::{
-    ApproveCreditParams, BuyCreditParams, GetAccountParams, RevokeCreditParams,
-};
-use fendermint_actor_blobs_shared::Method::{
-    ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit,
+use fendermint_actor_blobs_shared::{
+    accounts::{Account, GetAccountParams},
+    credit::{ApproveCreditParams, BuyCreditParams, CreditApproval, RevokeCreditParams},
+    method::Method::{ApproveCredit, BuyCredit, GetAccount, GetStats, RevokeCredit},
+    GetStatsReturn,
 };
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
-use serde::{Deserialize, Serialize};
-
 use recall_provider::{
     fvm_ipld_encoding::{self, RawBytes},
     fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
@@ -25,8 +23,9 @@ use recall_provider::{
     {Client, Provider},
 };
 use recall_signer::Signer;
+use serde::{Deserialize, Serialize};
 
-pub use fendermint_actor_blobs_shared::state::{Credit, TokenCreditRate};
+pub use fendermint_actor_blobs_shared::credit::{Credit, TokenCreditRate};
 
 /// Options for buying credit.
 #[derive(Clone, Default, Debug)]
@@ -77,7 +76,7 @@ pub struct Balance {
     pub credit_sponsor: Option<String>,
     /// The chain epoch of the last debit.
     pub last_debit_epoch: Option<ChainEpoch>,
-    /// Credit approvals to other accounts from this account, keyed by receiver.
+    /// Credit approvals to other accounts from this account, keyed by the receiver.
     pub approvals_to: HashMap<String, Approval>,
     /// Credit approvals to this account from other accounts, keyed by sender.
     pub approvals_from: HashMap<String, Approval>,
@@ -102,8 +101,8 @@ impl Default for Balance {
     }
 }
 
-impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Balance {
-    fn from(v: fendermint_actor_blobs_shared::state::AccountInfo) -> Self {
+impl From<Account> for Balance {
+    fn from(v: Account) -> Self {
         let last_debit_epoch = if v.last_debit_epoch != 0 {
             Some(v.last_debit_epoch)
         } else {
@@ -170,13 +169,13 @@ impl Default for Approval {
     }
 }
 
-impl From<fendermint_actor_blobs_shared::state::CreditApproval> for Approval {
-    fn from(v: fendermint_actor_blobs_shared::state::CreditApproval) -> Self {
+impl From<CreditApproval> for Approval {
+    fn from(v: CreditApproval) -> Self {
         Self {
             credit_limit: v.credit_limit.map(|l| l.to_string()),
             credit_used: v.credit_used.to_string(),
-            gas_fee_limit: v.gas_fee_limit.map(|l| l.to_string()),
-            gas_fee_used: v.gas_fee_used.to_string(),
+            gas_fee_limit: v.gas_allowance_limit.map(|l| l.to_string()),
+            gas_fee_used: v.gas_allowance_used.to_string(),
             expiry: v.expiry,
         }
     }
@@ -199,8 +198,8 @@ pub struct CreditStats {
     pub num_accounts: u64,
 }
 
-impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for CreditStats {
-    fn from(v: fendermint_actor_blobs_shared::params::GetStatsReturn) -> Self {
+impl From<GetStatsReturn> for CreditStats {
+    fn from(v: GetStatsReturn) -> Self {
         Self {
             balance: v.balance.to_string(),
             credit_sold: v.credit_sold.to_string(),
@@ -336,30 +335,28 @@ impl Credits {
 
 fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<CreditStats> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::params::GetStatsReturn>(&data)
+    fvm_ipld_encoding::from_slice::<GetStatsReturn>(&data)
         .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as CreditStats: {e}"))
+        .map_err(|e| anyhow!("error parsing credit stats: {e}"))
 }
 
 fn decode_balance(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Balance>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::AccountInfo>>(
-        &data,
-    )
-    .map(|v| v.map(|v| v.into()))
-    .map_err(|e| anyhow!("error parsing as Option<Balance>: {e}"))
+    fvm_ipld_encoding::from_slice::<Option<Account>>(&data)
+        .map(|v| v.map(|v| v.into()))
+        .map_err(|e| anyhow!("error parsing as balance: {e}"))
 }
 
 fn decode_buy(deliver_tx: &DeliverTx) -> anyhow::Result<Balance> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::AccountInfo>(&data)
+    fvm_ipld_encoding::from_slice::<Account>(&data)
         .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as Balance: {e}"))
+        .map_err(|e| anyhow!("error parsing balance: {e}"))
 }
 
 fn decode_approve(deliver_tx: &DeliverTx) -> anyhow::Result<Approval> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::state::CreditApproval>(&data)
+    fvm_ipld_encoding::from_slice::<CreditApproval>(&data)
         .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as CreditApproval: {e}"))
+        .map_err(|e| anyhow!("error parsing credit approval: {e}"))
 }

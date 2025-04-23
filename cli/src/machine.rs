@@ -3,8 +3,6 @@
 
 use clap::{Args, Subcommand};
 use ethers::utils::hex::ToHexExt;
-use serde_json::json;
-
 use recall_provider::{
     fvm_shared::address::Address,
     json_rpc::JsonRpcProvider,
@@ -12,6 +10,7 @@ use recall_provider::{
     util::{get_eth_address, parse_address, parse_query_height},
 };
 use recall_sdk::{machine::info, network::NetworkConfig};
+use serde_json::json;
 
 use crate::print_json;
 

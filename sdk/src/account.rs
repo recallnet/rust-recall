@@ -1,12 +1,9 @@
 // Copyright 2025 Recall Contributors
 // SPDX-License-Identifier: Apache-2.0, MIT
 
-use fendermint_actor_blobs_shared::params::{SetAccountStatusParams, SetSponsorParams};
-use fendermint_actor_blobs_shared::Method::{SetAccountSponsor, SetAccountStatus};
+use fendermint_actor_blobs_shared::method::Method::{SetAccountSponsor, SetAccountStatus};
+use fendermint_actor_blobs_shared::{accounts::SetAccountStatusParams, credit::SetSponsorParams};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
-
-pub use fendermint_actor_blobs_shared::state::TtlStatus;
-
 use recall_provider::{
     fvm_ipld_encoding::RawBytes,
     fvm_shared::{address::Address, econ::TokenAmount},
@@ -20,6 +17,7 @@ use recall_signer::{Signer, SubnetID};
 
 pub use crate::ipc::{manager::EvmManager, subnet::EVMSubnet};
 pub use ethers::prelude::TransactionReceipt;
+pub use fendermint_actor_blobs_shared::accounts::AccountStatus;
 
 /// Options for setting credit sponsor.
 #[derive(Clone, Default, Debug)]
@@ -34,7 +32,7 @@ pub struct SetSponsorOptions {
 #[derive(Clone, Default, Debug)]
 pub struct SetStatusOptions {
     /// Status for the account to set.
-    pub status: TtlStatus,
+    pub status: AccountStatus,
     /// Broadcast mode for the transaction.
     pub broadcast_mode: BroadcastMode,
     /// Gas params for the transaction.

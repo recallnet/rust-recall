@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0, MIT
 
 use anyhow::anyhow;
-use fendermint_actor_blobs_shared::params::GetAccountParams;
-use fendermint_actor_blobs_shared::Method::{GetAccount, GetStats};
+use fendermint_actor_blobs_shared::{
+    accounts::{Account, GetAccountParams},
+    method::Method::{GetAccount, GetStats},
+    GetStatsReturn,
+};
 use fendermint_vm_actor_interface::blobs::BLOBS_ACTOR_ADDR;
-
-use serde::{Deserialize, Serialize};
-use tendermint::abci::response::DeliverTx;
-
 use recall_provider::{
     fvm_ipld_encoding,
     fvm_shared::address::Address,
@@ -16,14 +15,8 @@ use recall_provider::{
     query::{FvmQueryHeight, QueryProvider},
     response::decode_bytes,
 };
-
-// Commands to support:
-//   ✓ recall storage stats (subnet-wide summary)
-//   ✓ recall storage usage --address (see usage by account)
-//   recall storage add (add a blob directly)
-//   recall storage get [hash] (get a blob info directly)
-//   recall storage cat [hash] (get a blob directly)
-//   recall storage ls --address (list blobs by account)
+use serde::{Deserialize, Serialize};
+use tendermint::abci::response::DeliverTx;
 
 /// Storage usage stats for an account.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -40,8 +33,8 @@ impl Default for Usage {
     }
 }
 
-impl From<fendermint_actor_blobs_shared::state::AccountInfo> for Usage {
-    fn from(v: fendermint_actor_blobs_shared::state::AccountInfo) -> Self {
+impl From<Account> for Usage {
+    fn from(v: Account) -> Self {
         Self {
             capacity_used: v.capacity_used.to_string(),
         }
@@ -69,8 +62,8 @@ pub struct StorageStats {
     pub bytes_added: u64,
 }
 
-impl From<fendermint_actor_blobs_shared::params::GetStatsReturn> for StorageStats {
-    fn from(v: fendermint_actor_blobs_shared::params::GetStatsReturn) -> Self {
+impl From<GetStatsReturn> for StorageStats {
+    fn from(v: GetStatsReturn) -> Self {
         Self {
             capacity_free: v.capacity_free.to_string(),
             capacity_used: v.capacity_used.to_string(),
@@ -116,16 +109,14 @@ impl Storage {
 
 fn decode_stats(deliver_tx: &DeliverTx) -> anyhow::Result<StorageStats> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<fendermint_actor_blobs_shared::params::GetStatsReturn>(&data)
+    fvm_ipld_encoding::from_slice::<GetStatsReturn>(&data)
         .map(|v| v.into())
-        .map_err(|e| anyhow!("error parsing as StorageStats: {e}"))
+        .map_err(|e| anyhow!("error parsing as storage stats: {e}"))
 }
 
 fn decode_usage(deliver_tx: &DeliverTx) -> anyhow::Result<Option<Usage>> {
     let data = decode_bytes(deliver_tx)?;
-    fvm_ipld_encoding::from_slice::<Option<fendermint_actor_blobs_shared::state::AccountInfo>>(
-        &data,
-    )
-    .map(|v| v.map(|v| v.into()))
-    .map_err(|e| anyhow!("error parsing as Option<Usage>: {e}"))
+    fvm_ipld_encoding::from_slice::<Option<Account>>(&data)
+        .map(|v| v.map(|v| v.into()))
+        .map_err(|e| anyhow!("error parsing as storage usage: {e}"))
 }

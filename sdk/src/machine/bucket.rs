@@ -6,7 +6,7 @@ use std::{cmp::min, collections::HashMap, str::FromStr};
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fendermint_actor_blobs_shared::state::{Hash, PublicKey};
+use fendermint_actor_blobs_shared::bytes::B256;
 use fendermint_actor_bucket::{
     AddParams, DeleteParams, GetParams, ListObjectsReturn, ListParams,
     Method::{AddObject, DeleteObject, GetObject, ListObjects, UpdateObjectMetadata},
@@ -16,12 +16,6 @@ use fendermint_vm_actor_interface::adm::{CreateExternalReturn, Kind};
 use indicatif::HumanDuration;
 use iroh_blobs::Hash as IrohHash;
 use peekable::tokio::AsyncPeekable;
-use tendermint::abci::response::DeliverTx;
-use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
-use tokio::time::Instant;
-use tokio_stream::StreamExt;
-use tokio_util::io::ReaderStream;
-
 use recall_provider::{
     fvm_ipld_encoding,
     fvm_ipld_encoding::RawBytes,
@@ -34,13 +28,19 @@ use recall_provider::{
     Client, Provider,
 };
 use recall_signer::Signer;
+use tendermint::abci::response::DeliverTx;
+use tokio::io::{AsyncRead, AsyncSeekExt, AsyncWrite, AsyncWriteExt};
+use tokio::time::Instant;
+use tokio_stream::StreamExt;
+use tokio_util::io::ReaderStream;
+
+pub use fendermint_actor_bucket::{Object, ObjectState};
 
 use crate::progress::{new_message_bar, new_multi_bar, SPARKLE};
 use crate::{
     machine::{deploy_machine, Machine},
     progress::new_progress_bar,
 };
-pub use fendermint_actor_bucket::{Object, ObjectState};
 
 /// Maximum allowed object size in bytes.
 const MAX_OBJECT_LENGTH: u64 = 5_000_000_000; // 5GB
@@ -219,10 +219,10 @@ impl Bucket {
 
         let node_addr = provider.node_addr().await?;
         let params = AddParams {
-            source: PublicKey(*node_addr.node_id.as_bytes()),
+            source: B256(*node_addr.node_id.as_bytes()),
             key: key.into(),
-            hash: Hash(*object_hash.as_bytes()),
-            recovery_hash: Hash(*metadata_hash.as_bytes()),
+            hash: B256(*object_hash.as_bytes()),
+            recovery_hash: B256(*metadata_hash.as_bytes()),
             size,
             ttl: options.ttl,
             metadata: options.metadata,

@@ -4,8 +4,6 @@
 use std::collections::HashSet;
 
 use clap::{Args, Subcommand};
-use serde_json::json;
-
 use recall_provider::{
     fvm_shared::{address::Address, clock::ChainEpoch, econ::TokenAmount},
     json_rpc::JsonRpcProvider,
@@ -20,6 +18,7 @@ use recall_signer::{
     key::{parse_secret_key, SecretKey},
     AccountKind, Signer, Wallet,
 };
+use serde_json::json;
 
 use crate::{parse_address_list, print_json, print_tx_json, AddressArgs, BroadcastMode, TxArgs};
 
