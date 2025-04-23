@@ -4,9 +4,8 @@ This module contains the code for the Recall CI pipeline. It uses [Dagger](https
 Recall CLI and SDK tests against a `localnet` Docker image. It can be run identically both locally and in CI.
 
 ## Prerequisites
-- [Dagger](https://dagger.io/docs/install) installed
+- [Dagger](https://docs.dagger.io/install) installed
 - [Docker](https://docs.docker.com/get-docker/) installed and running
-- [Golang](https://golang.org/doc/install) installed (for `dagger` CLI)
 
 ## Initializing the pipeline
 
@@ -24,15 +23,40 @@ To run the pipeline, use the following command:
 ```bash
 DAGGER_NO_NAG=1 \
 DO_NOT_TRACK=1 \
-RECALL_PRIVATE_KEY=0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97 \
-DOCKER_PASSWORD=[password] \
-dagger call test --progress plain \
-  --docker-username [username] \
-  --docker-password env://DOCKER_PASSWORD \
-  --recall-private-key env://RECALL_PRIVATE_KEY \
-  --source ../
+dagger call test --progress plain  \
+  --source ../ \
+  2>&1 | grep -vi -E "resolve|containerd|libnetwork|client|daemon|checkpoint|task|^$"
 ```
 
-Docker credentials are passed in to avoid throughput issues with Docker Hub. These can be made optional in a future PR.
+The `grep` command is used to filter out some of the Dagger output that is not relevant to the pipeline. You can remove
+it if you want to see all the output.
 
-The `RECALL_PRIVATE_KEY` environment variable is for one of the wallets created by `anvil`.
+### Specifying Docker Credentials
+
+Docker credentials can optionally be passed in to avoid throttling issues with Docker Hub:
+
+```bash
+DAGGER_NO_NAG=1 \
+DO_NOT_TRACK=1 \
+dagger call test --progress plain \
+  --source ../ \
+  --docker-username $DOCKER_USERNAME \
+  --docker-password env://DOCKER_PASSWORD \
+  2>&1 | grep -vi -E "resolve|containerd|libnetwork|client|daemon|checkpoint|task|^$"
+```
+
+### Specifying the Localnet Docker image
+
+The pipeline uses the latest `textile/recall-localnet` Docker image by default. If you want to use a different image,
+perhaps a locally built one, you can specify it using the `--localnet-image` flag:
+
+```bash
+DAGGER_NO_NAG=1 \
+DO_NOT_TRACK=1 \
+dagger call test --progress plain \
+  --source ../ \
+  --localnet-image "textile/recall-localnet:sha-dc4da8c-3e80bf0" \
+  --docker-username $DOCKER_USERNAME \
+  --docker-password env://DOCKER_PASSWORD \
+  2>&1 | grep -vi -E "resolve|containerd|libnetwork|client|daemon|checkpoint|task|^$"
+```

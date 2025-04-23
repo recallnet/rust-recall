@@ -1,0 +1,24 @@
+[package]
+name = "recall_sdk_tests"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords.workspace = true
+version.workspace = true
+
+[lib]
+name = "recall_sdk_tests"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+async-tempfile = { workspace = true }
+more-asserts = { workspace = true }
+rand = { workspace = true }
+shellexpand = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true }
+
+recall_provider = { path = "../../provider" }
+recall_sdk = { path = "../../sdk" }
+recall_signer = { path = "../../signer" }

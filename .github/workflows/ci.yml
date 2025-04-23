@@ -11,10 +11,10 @@ env:
   CARGO_NET_GIT_FETCH_WITH_CLI: true
   DOCKER_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-  TEST_TARGET_NETWORK: localnet
-  RECALL_PRIVATE_KEY: "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97"
   DO_NOT_TRACK: 1
   DAGGER_NO_NAG: 1
+  # TODO: Use the latest localnet image once it can build with the latest IPC code
+  LOCALNET_IMAGE: "textile/recall-localnet:sha-dc4da8c-3e80bf0"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
@@ -46,25 +46,17 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     
-      # Cache Dagger volumes
-      - name: Cache Dagger volumes
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/dagger
-          key: ${{ runner.os }}-dagger-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Build
         run: make build
 
       - name: Run tests
         uses: dagger/dagger-for-github@8.0.0
         with:
-          version: '0.18.1'
+          version: '0.18.2'
           workdir: 'dagger'
           verb: call
           module: ci
-          args: test --source ../ --docker-username $DOCKER_USERNAME --docker-password env://DOCKER_PASSWORD --recall-private-key env://RECALL_PRIVATE_KEY
+          args: test --source ../ --localnet-image "$LOCALNET_IMAGE" --docker-username "$DOCKER_USERNAME" --docker-password env://DOCKER_PASSWORD 2>&1 | grep -vi -E "resolve|containerd|libnetwork|client|daemon|checkpoint|task|^$"
           dagger-flags: '--progress plain'
 
       - name: Run linter

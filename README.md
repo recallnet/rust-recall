@@ -79,15 +79,15 @@ docker run --privileged --rm --name recall-localnet \
 
 If you'd like to test against a specific IPC commit, look for the corresponding `localnet` image in the
 [Docker Hub repository](https://hub.docker.com/r/textile/recall-localnet/tags) using the first 7 characters of the IPC
-commit hash. For example, for commit `8c6792f5c306420a6915e9a83fefb10520417a8b`, the corresponding `localnet` image
-would be tagged `sha-8c6792f-*` (in this case, `sha-8c6792f-be1693d`). You can then run the following command:
+commit hash. For example, for commit `dc4da8c14c541e1ef9e398a594e65660465c47f5`, the corresponding `localnet` image
+would be tagged `sha-dc4da8c-*` (in this case, `sha-dc4da8c-3e80bf0`). You can then run the following command:
 
 ```bash
 docker run --privileged --rm -d --name recall-localnet \
   -p 8545:8545 \
   -p 8645:8645 \
   -p 26657:26657  \
-  textile/recall-localnet:sha-8c6792f-be1693d
+  textile/recall-localnet:sha-dc4da8c-3e80bf0
 ```
 
 Note that it can take several minutes for the `localnet` container to start up and be ready for testing. You can check
@@ -103,25 +103,25 @@ The following logs should appear when the container is ready:
 All containers started. Waiting for termination signal...
 ```
 
-Also note that some tests (e.g. the SDK tests) require additional environment variables to be set. You can set these
-environment variables in your shell before running the tests. For example, you can run the following command:
+### Extracting Network Config
+
+To extract the network config from the `localnet` container, you can run the following command:
 
 ```bash
-export RECALL_PRIVATE_KEY=0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97
+docker exec -it recall-localnet bash -c "cat /workdir/localnet-data/networks.toml"
 ```
+
+Add the `localnet` configuration to your `~/.config/recall/networks.toml` file.
 
 ### Adding New Integration Tests
 
 All the tests in the repo are written as Rust unit tests, even the integration tests. New integration tests can be added
-to the `sdk/tests` directory. The tests are run using the `cargo test` command, but note that you will need to set the
-`RECALL_PRIVATE_KEY` environment variable and start the `localnet` container before running the tests.
+to the `sdk/tests` directory.
 
 ### Adding New CLI Tests
 
-CLI tests are currently bash scripts located in the `dagger/ci/cli-tests` directory. These tests are run through the
-[CI pipeline](./dagger/README.md) and run against a `localnet` Docker image launched through Dagger. You can add new
-tests by creating a new bash script in this directory. The test scripts are numbered to ensure a deterministic order of
-execution.
+CLI tests are currently bash scripts located in the `tests/cli` directory. You can add new tests by creating a new bash
+script in this directory. The test scripts are numbered to ensure a deterministic order of execution.
 
 ## Contributing
 
