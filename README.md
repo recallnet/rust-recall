@@ -57,61 +57,43 @@ All the available commands include:
 
 - Build all crates: `make build`
 - Install the CLI: `make install`
-- Run tests: `make test`
+- Run unit tests: `make test`
 - Run linter: `make lint`
 - Run formatter: `make check-fmt`
 - Run clippy: `make check-clippy`
 - Do all of the above: `make all`
 - Clean dependencies: `make clean`
 
-## Testing
+## Integration Tests
 
-Some of the tests require a Docker container to be running for `localnet`, and so will fail if you run `make test`
-without starting the container first. You can start this container using the following command:
+The integration tests require a Docker container to be running for `localnet`. You can use the following Make commands
+to spin up a `localnet` Docker container and execute tests against it:
 
+SDK integration tests:
 ```bash
-docker run --privileged --rm --name recall-localnet \
-  -p 8545:8545 \
-  -p 8645:8645 \
-  -p 26657:26657  \
-  textile/recall-localnet:latest
+make test-sdk
+```
+
+CLI integration tests:
+```bash
+make test-cli
+```
+
+If you want to run all tests, including unit tests and SDK/CLI integration tests, you can use the following command:
+```bash
+make test-all
 ```
 
 If you'd like to test against a specific IPC commit, look for the corresponding `localnet` image in the
 [Docker Hub repository](https://hub.docker.com/r/textile/recall-localnet/tags) using the first 7 characters of the IPC
 commit hash. For example, for commit `dc4da8c14c541e1ef9e398a594e65660465c47f5`, the corresponding `localnet` image
-would be tagged `sha-dc4da8c-*` (in this case, `sha-dc4da8c-3e80bf0`). You can then run the following command:
+would be tagged `sha-dc4da8c-*` (in this case, `sha-dc4da8c-3e80bf0`).
+
+You can then specify the image tag in the Make command. For example:
 
 ```bash
-docker run --privileged --rm -d --name recall-localnet \
-  -p 8545:8545 \
-  -p 8645:8645 \
-  -p 26657:26657  \
-  textile/recall-localnet:sha-dc4da8c-3e80bf0
+RECALL_LOCALNET_IMAGE=textile/recall-localnet:sha-dc4da8c-3e80bf1 make test-sdk
 ```
-
-Note that it can take several minutes for the `localnet` container to start up and be ready for testing. You can check
-the status of the container using the following command:
-
-```text
-docker logs -f recall-localnet
-```
-
-The following logs should appear when the container is ready:
-
-```bash
-All containers started. Waiting for termination signal...
-```
-
-### Extracting Network Config
-
-To extract the network config from the `localnet` container, you can run the following command:
-
-```bash
-docker exec -it recall-localnet bash -c "cat /workdir/localnet-data/networks.toml"
-```
-
-Add the `localnet` configuration to your `~/.config/recall/networks.toml` file.
 
 ### Adding New Integration Tests
 
