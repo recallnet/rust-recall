@@ -58,14 +58,11 @@ func (m *Ci) Test(
 	}
 	return codeContainer.
 		WithServiceBinding("localnet", m.localnetService(localnetContainer)).
-		WithExec([]string{
-			"sh", "-c",
-			"make test",
-		}).
-		WithExec([]string{
-			"sh", "-c",
-			"find tests/cli -type f | sort | xargs -I{} sh -c 'chmod +x {} && {}'",
-		}).
+		WithExec([]string{"sh", "-c", "make lint"}).          // Lint
+		WithExec([]string{"sh", "-c", "make test"}).          // Unit tests
+		WithExec([]string{"sh", "-c", "make run-sdk-tests"}). // SDK integration tests
+		WithExec([]string{"sh", "-c", "make run-cli-tests"}). // CLI integration tests
+		WithExec([]string{"sh", "-c", "make doc"}).           // Docs
 		Stdout(ctx)
 }
 
@@ -148,7 +145,7 @@ func (m *Ci) codeContainer(
 		}).
 		WithDirectory("/src", source).
 		WithWorkdir("/src").
-		WithEnvVariable("TEST_TARGET_NETWORK_CONFIG", "/root/.config/recall/networks.toml").
+		WithEnvVariable("RECALL_NETWORK_CONFIG_FILE", "/root/.config/recall/networks.toml").
 		WithEnvVariable("RECALL_NETWORK", "localnet").
 		WithEnvVariable("RECALL_PRIVATE_KEY", testAccountPrivateKey).
 		WithExec([]string{

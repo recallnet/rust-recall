@@ -49,7 +49,7 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Run tests
+      - name: Lint, tests, docs
         uses: dagger/dagger-for-github@8.0.0
         with:
           version: '0.18.2'
@@ -58,9 +58,3 @@ jobs:
           module: ci
           args: test --source ../ --localnet-image "$LOCALNET_IMAGE" --docker-username "$DOCKER_USERNAME" --docker-password env://DOCKER_PASSWORD 2>&1 | grep -vi -E "resolve|containerd|libnetwork|client|daemon|checkpoint|task|^$"
           dagger-flags: '--progress plain'
-
-      - name: Run linter
-        run: make lint
-
-      - name: Generate documentation
-        run: make doc

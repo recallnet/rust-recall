@@ -56,7 +56,7 @@ pub mod test_utils {
     ];
 
     pub fn get_network_config() -> NetworkConfig {
-        let network_config_path = env::var("TEST_TARGET_NETWORK_CONFIG")
+        let network_config_path = env::var("RECALL_NETWORK_CONFIG_FILE")
             .unwrap_or_else(|_| DEFAULT_TEST_TARGET_NETWORK_CONFIG_PATH.to_string());
         let network_config_path = shellexpand::full(network_config_path.as_str()).unwrap();
         let network_config_path = Path::new(network_config_path.as_ref());

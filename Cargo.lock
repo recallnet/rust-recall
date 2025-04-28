@@ -7203,7 +7203,7 @@ dependencies = [
  "anyhow",
  "async-tempfile",
  "more-asserts",
- "rand",
+ "rand 0.8.5",
  "recall_provider",
  "recall_sdk",
  "recall_signer",

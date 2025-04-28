@@ -1,10 +1,14 @@
 # Integration Tests
 
-This directory contains integration tests for the sdk.  These run against the Recall network defined by the following env vars:
-  - `RECALL_PRIVATE_KEY`, a private key for a wallet that has funds on the parent chain, RECALL, and credits
+This directory contains integration tests for the sdk.
 
-An example of running these tests against localnet Anvil default account 8 follows:
-`RECALL_PRIVATE_KEY=0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97 cargo test -- --nocapture`
+You can use the following Make command to run the tests. This command will spin up a Localnet Docker container and run
+the tests against it. The `RECALL_PRIVATE_KEY` environment variable can be set to any of the private keys listed in the
+section below.
+
+```bash
+RECALL_PRIVATE_KEY=0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a make test-sdk
+```
 
 ## Anvil Test Accounts and Private Keys
 
