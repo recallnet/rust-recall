@@ -43,7 +43,6 @@ async fn main() -> anyhow::Result<()> {
     // Setup local wallet using private key from arg
     let mut signer = Wallet::new_secp256k1(pk, AccountKind::Ethereum, cfg.subnet_id)?;
     signer.init_sequence(&provider).await?;
-    let from = signer.address();
 
     // Create a new bucket
     let (machine, tx) = Bucket::new(
@@ -75,7 +74,7 @@ async fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
     let tx = machine
-        .add_from_path(&provider, &mut signer, from, key, file.file_path(), options)
+        .add_from_path(&provider, &mut signer, key, file.file_path(), options)
         .await?;
     println!(
         "Added 1MiB file to bucket {} with key {}",
@@ -119,7 +118,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Now, delete the object
     let tx = machine
-        .delete(&provider, &mut signer, from, key, Default::default())
+        .delete(&provider, &mut signer, key, Default::default())
         .await?;
     println!("Deleted object with key {} at tx 0x{}", key, tx.hash());
 

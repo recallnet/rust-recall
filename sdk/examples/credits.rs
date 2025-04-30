@@ -109,14 +109,7 @@ async fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
 
-    let tx = Credits::approve(
-        &provider,
-        &mut signer,
-        signer_address,
-        second_address,
-        approve_options,
-    )
-    .await?;
+    let tx = Credits::approve(&provider, &mut signer, second_address, approve_options).await?;
     println!("Approved credits - Transaction hash: 0x{}", tx.hash());
     if let TxStatus::Committed(receipt) = tx.status {
         println!("Gas used: {}", receipt.gas_used.unwrap_or_default());
@@ -144,14 +137,7 @@ async fn main() -> anyhow::Result<()> {
         ..Default::default()
     };
 
-    let tx = Credits::revoke(
-        &provider,
-        &mut signer,
-        signer_address,
-        second_address,
-        revoke_options,
-    )
-    .await?;
+    let tx = Credits::revoke(&provider, &mut signer, second_address, revoke_options).await?;
     println!("Revoked credits - Transaction hash: 0x{}", tx.hash());
     if let TxStatus::Committed(receipt) = tx.status {
         println!("Gas used: {}", receipt.gas_used.unwrap_or_default());

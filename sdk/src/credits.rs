@@ -271,7 +271,6 @@ impl Credits {
     pub async fn approve<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         to: Address,
         options: ApproveOptions,
     ) -> anyhow::Result<TxResult<Approval>>
@@ -279,7 +278,6 @@ impl Credits {
         C: Client + Send + Sync,
     {
         let params = ApproveCreditParams {
-            from,
             to,
             caller_allowlist: None, // TODO: remove this when it's been removed in ipc
             credit_limit: options.credit_limit,
@@ -305,7 +303,6 @@ impl Credits {
     pub async fn revoke<C>(
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         to: Address,
         options: RevokeOptions,
     ) -> anyhow::Result<TxResult<()>>
@@ -313,7 +310,6 @@ impl Credits {
         C: Client + Send + Sync,
     {
         let params = RevokeCreditParams {
-            from,
             to,
             for_caller: None, // TODO: remove this when it's been removed in ipc
         };

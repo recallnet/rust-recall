@@ -169,7 +169,6 @@ impl Bucket {
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         key: &str,
         reader: R,
         size: u64,
@@ -227,7 +226,6 @@ impl Bucket {
             ttl: options.ttl,
             metadata: options.metadata,
             overwrite: options.overwrite,
-            from,
         };
 
         let tx = signer
@@ -259,7 +257,6 @@ impl Bucket {
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         key: &str,
         path: impl AsRef<Path>,
         options: AddOptions,
@@ -288,7 +285,7 @@ impl Bucket {
             .map(|mime| mime.to_string());
         let options = self.add_content_type_to_metadata(options, content_type);
 
-        self.add_reader(provider, signer, from, key, file, total_size, options)
+        self.add_reader(provider, signer, key, file, total_size, options)
             .await
     }
 
@@ -297,17 +294,13 @@ impl Bucket {
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         key: &str,
         options: DeleteOptions,
     ) -> anyhow::Result<TxResult<()>>
     where
         C: Client + Send + Sync,
     {
-        let params = DeleteParams {
-            key: key.into(),
-            from,
-        };
+        let params = DeleteParams(key.into());
         let params = RawBytes::serialize(params)?;
         signer
             .send_transaction(
@@ -412,7 +405,6 @@ impl Bucket {
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         key: &str,
         metadata: HashMap<String, Option<String>>,
         options: UpdateObjectMetadataOptions,
@@ -425,7 +417,6 @@ impl Bucket {
         let params = UpdateObjectMetadataParams {
             key: key.into(),
             metadata,
-            from,
         };
         let params = RawBytes::serialize(params)?;
         signer
