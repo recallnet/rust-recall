@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
         return Err(anyhow!("Usage: [private key]"));
     }
 
-    let pk_kex = &args[2];
+    let pk_kex = &args[1];
     let pk = parse_secret_key(pk_kex)?;
 
     // Use testnet network defaults
