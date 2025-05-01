@@ -111,7 +111,6 @@ impl Timehub {
         &self,
         provider: &impl Provider<C>,
         signer: &mut impl Signer,
-        from: Address,
         payload: Bytes,
         options: PushOptions,
     ) -> anyhow::Result<TxResult<PushReturn>>
@@ -124,10 +123,7 @@ impl Timehub {
                 MAX_ACC_PAYLOAD_SIZE
             ));
         }
-        let params = RawBytes::serialize(PushParams {
-            cid_bytes: payload.to_vec(),
-            from,
-        })?;
+        let params = RawBytes::serialize(PushParams(payload.to_vec()))?;
         signer
             .send_transaction(
                 provider,

@@ -114,10 +114,7 @@ impl Account {
     where
         C: Client + Send + Sync,
     {
-        let params = SetSponsorParams {
-            from: signer.address(),
-            sponsor,
-        };
+        let params = SetSponsorParams(sponsor);
         let params = RawBytes::serialize(params)?;
         signer
             .send_transaction(

@@ -13,7 +13,7 @@ mod tests {
         bucket::{AddOptions, Bucket, GetOptions, QueryOptions},
         Machine,
     };
-    use recall_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
+    use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
 
     use crate::test_utils;
 
@@ -66,9 +66,8 @@ mod tests {
             metadata,
             ..Default::default()
         };
-        let from = signer.address();
         machine
-            .add_from_path(&provider, &mut signer, from, key, file.file_path(), options)
+            .add_from_path(&provider, &mut signer, key, file.file_path(), options)
             .await
             .unwrap();
 
@@ -116,7 +115,7 @@ mod tests {
 
         // Now, delete the object
         machine
-            .delete(&provider, &mut signer, from, key, Default::default())
+            .delete(&provider, &mut signer, key, Default::default())
             .await
             .unwrap();
 

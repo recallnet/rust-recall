@@ -27,7 +27,7 @@ use recall_sdk::{
 };
 use recall_signer::{
     key::{parse_secret_key, SecretKey},
-    AccountKind, Signer, Void, Wallet,
+    AccountKind, Void, Wallet,
 };
 use serde_json::{json, Value};
 use tokio::io::AsyncReadExt;
@@ -195,12 +195,10 @@ pub async fn handle_timehub(cfg: NetworkConfig, args: &TimehubArgs) -> anyhow::R
             let payload = Bytes::from(cid.to_bytes());
 
             let machine = Timehub::attach(args.address).await?;
-            let from = signer.address();
             let tx = machine
                 .push(
                     &provider,
                     &mut signer,
-                    from,
                     payload,
                     PushOptions {
                         broadcast_mode,

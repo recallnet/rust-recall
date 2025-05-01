@@ -183,11 +183,9 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let from = signer.address();
             let tx = Credits::approve(
                 &provider,
                 &mut signer,
-                from,
                 args.to,
                 ApproveOptions {
                     credit_limit: args.credit_limit.clone(),
@@ -215,11 +213,9 @@ pub async fn handle_credit(cfg: NetworkConfig, args: &CreditArgs) -> anyhow::Res
             )?;
             signer.set_sequence(sequence, &provider).await?;
 
-            let from = signer.address();
             let tx = Credits::revoke(
                 &provider,
                 &mut signer,
-                from,
                 args.to,
                 RevokeOptions {
                     broadcast_mode,

@@ -15,7 +15,7 @@ use recall_sdk::{
     },
     network::Network,
 };
-use recall_signer::{key::parse_secret_key, AccountKind, Signer, Wallet};
+use recall_signer::{key::parse_secret_key, AccountKind, Wallet};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -51,15 +51,8 @@ async fn main() -> anyhow::Result<()> {
     // Push a value to the accumulator
     let value =
         Cid::from_str("baeabeif2afeua6dg23holphe2ecingsqr7sjo5gdbmtvekjybzspxpmaf4")?.to_bytes();
-    let from = signer.address();
     let tx = machine
-        .push(
-            &provider,
-            &mut signer,
-            from,
-            value.into(),
-            Default::default(),
-        )
+        .push(&provider, &mut signer, value.into(), Default::default())
         .await?;
     println!(
         "Pushed to timehub {} with index {}",
