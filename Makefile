@@ -1,7 +1,6 @@
 .PHONY: all build install test test-sdk test-cli test-all doc clean lint check-fmt check-clippy run-localnet stop-localnet
 
-# TODO: Use the latest localnet image once it can build with the latest IPC code
-RECALL_LOCALNET_IMAGE ?= "textile/recall-localnet:sha-dc4da8c-3e80bf0"
+RECALL_LOCALNET_IMAGE ?= "textile/recall-localnet:latest"
 
 RECALL_NETWORK_CONFIG_FILE ?= /tmp/networks.toml
 
