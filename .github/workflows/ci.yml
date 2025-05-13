@@ -14,8 +14,7 @@ env:
   DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
   DO_NOT_TRACK: 1
   DAGGER_NO_NAG: 1
-  # TODO: Use the latest localnet image once it can build with the latest IPC code
-  LOCALNET_IMAGE: "textile/recall-localnet:sha-dc4da8c-3e80bf0"
+  LOCALNET_IMAGE: "textile/recall-localnet:latest"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
