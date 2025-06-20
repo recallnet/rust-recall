@@ -74,18 +74,18 @@ tendermint-rpc = { version = "0.31.1", features = [
 fvm_shared = "~4.3.0"
 fvm_ipld_encoding = "0.4.0"
 
-fendermint_actor_blobs_shared = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_actor_bucket = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_actor_recall_config_shared = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_actor_machine = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_actor_timehub = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_crypto = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_eth_api = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_vm_actor_interface = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-fendermint_vm_message = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
+fendermint_actor_blobs_shared = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_actor_bucket = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_actor_recall_config_shared = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_actor_machine = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_actor_timehub = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_crypto = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_eth_api = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_vm_actor_interface = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+fendermint_vm_message = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
 
-ipc_actors_abis = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
-ipc-api = { git = "https://github.com/recallnet/ipc.git", rev = "6af65f0abcb7210d17fa0dad0b99f72c5ea2b615" }
+ipc_actors_abis = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
+ipc-api = { git = "https://github.com/recallnet/ipc.git", rev = "567108afc4810a300cff7dc08b29d49831172f86" }
 
 # Use below when working locally on ipc and this repo simultaneously.
 # Assumes the ipc checkout is in a sibling directory with the same name.

@@ -47,12 +47,12 @@ pub const TESTNET_NETWORK_NAME: &str = "testnet";
 const TESTNET_RPC_URL: &str = "https://api.testnet.recall.chain.love";
 const TESTNET_OBJECT_API_URL: &str = "https://objects.testnet.recall.chain.love";
 const TESTNET_EVM_RPC_URL: &str = "https://evm.testnet.recall.chain.love";
-const TESTNET_SUBNET_ID: &str = "/r314159/t410fw7bjz5yw5ofw3t775xym34ogube4kammzma6mgq";
+const TESTNET_SUBNET_ID: &str = "/r314159/t410f5ooowgqbpfv747piopbp2mus5xfw7kmgpm7da2y";
 const TESTNET_CHAIN_ID: u64 = 2481632;
 const TESTNET_PARENT_EVM_RPC_URL: &str = "https://api.calibration.node.glif.io/rpc/v1";
-const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x63B59D98b99197863c9b0D8512C79AD667892ac5";
-const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x3e56a8a30762db79b5ddB099a51fe9eEa0CBE8Be";
-const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x791ecd69Ce942167bEeEF4E2352B27727d9ad73f";
+const TESTNET_PARENT_EVM_GATEWAY_ADDRESS: &str = "0x1e4c292a339B037ce9b5eCA4d69dBb8dC87390Ab";
+const TESTNET_PARENT_EVM_REGISTRY_ADDRESS: &str = "0x4d1EdDBb490f05e4B859Ee2288265Daa510FDeFd";
+const TESTNET_EVM_SUPPLY_SOURCE_ADDRESS: &str = "0x3A4539d46C8998544E4D993D256C272F19E192bC";
 const TESTNET_EVM_GATEWAY_ADDRESS: &str = "0x77aa40b105843728088c0132e43fc44348881da8";
 const TESTNET_EVM_REGISTRY_ADDRESS: &str = "0x74539671a1d2f1c8f200826baba665179f53a1b7";
 
